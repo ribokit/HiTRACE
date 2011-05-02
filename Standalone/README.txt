@@ -1,0 +1,1 @@
+Please visit http://dna.korea.ac.kr/pub/hitrace to download the stand-alone version of HiTRACE GUI.
