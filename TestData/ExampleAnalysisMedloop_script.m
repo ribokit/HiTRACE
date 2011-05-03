@@ -105,13 +105,13 @@ rdat0 = show_rdat( 'ExampleAnalysisMedloop_previousDMSreplicate.rdat' );
 wt_mean0 = mean(rdat0.area_peak(:,[1 37])');
 wt_err0  = std(rdat0.area_peak(:,[1 37])');
 
+clf;
 errorbar( rdat.seqpos, wt_mean, wt_err ); hold on
-errorbar( rdat0.seqpos, wt_mean0, wt_err0, 'r'); hold off
+errorbar( rdat0.seqpos, wt_mean0, wt_err0, 'r'); 
 d_mean = {wt_mean, wt_mean0 };
 d_err = {wt_err, wt_err0 };
 [d_mean_final, d_err_final] = get_average_standard_state( d_mean, d_err );
 
- 
 errorbar( rdat0.seqpos, d_mean_final, d_err_final, 'k'); hold off
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
