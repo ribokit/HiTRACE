@@ -1,4 +1,4 @@
-function [ area_correct_bsub, darea_correct_bsub ] = overmod_and_background_correct_by_LP( area_peak, backgd_cols, normbins, area_pred, darea_peak );
+function [ area_correct_bsub, darea_correct_bsub ] = overmod_and_background_correct_by_LP( area_peak, backgd_cols, normbins, area_pred, darea_peak, penalize_negative_weight );
 % OVERMOD_AND_BACKGROUND_CORRECT_BY_LP: correct for attenuation due to stops in reverse transcription and background correction
 % U ses linear programming for effective optimization and (any) guess for what the band intensities 'should' look like (uniform is OK).
 %
@@ -26,10 +26,12 @@ area_peak_in = area_peak;
 area_peak = quick_norm( area_peak, normbins );
 
 DAREA_PEAK_DEFINED = 1;
-if ~exist( 'darea_peak' ); 
+if ~exist( 'darea_peak' ) | isempty( darea_peak ); 
   darea_peak = area_peak * 0; 
   DAREA_PEAK_DEFINED = 0;
 end;
+
+if ~exist( 'penalize_negative_weight'); penalize_negative_weight = 1.0; end;
 
 for k = 1:size( area_peak, 2 ); darea_peak(:,k) = darea_peak(:,k) * sum( area_peak(:,k) )/sum( area_peak_in(:,k) ); end;
 
@@ -51,11 +53,11 @@ for k = 1: size( area_peak,2 )
   if exist( 'matlabpool' )
     if matlabpool( 'size' ) == 0 ;   res = findResource; matlabpool( res.ClusterSize ); end    
     parfor m = 1:length(overmod_correct)
-       [area_correct(:,m), params(:,m), sum_abs_deviation(m) ] = overmod_correct_inner_loop( k, m, overmod_correct, goodbins, area_peak, area_pred, backgd_estimate);
+       [area_correct(:,m), params(:,m), sum_abs_deviation(m) ] = overmod_correct_inner_loop( k, m, overmod_correct, goodbins, area_peak, area_pred, backgd_estimate, penalize_negative_weight);
     end
   else   
     for m = 1:length(overmod_correct)
-      [area_correct(:,m), params(:,m), sum_abs_deviation(m) ] = overmod_correct_inner_loop( k, m, overmod_correct, goodbins, area_peak, area_pred, backgd_estimate);
+      [area_correct(:,m), params(:,m), sum_abs_deviation(m) ] = overmod_correct_inner_loop( k, m, overmod_correct, goodbins, area_peak, area_pred, backgd_estimate, penalize_negative_weight);
     end
   end
 
@@ -81,7 +83,7 @@ for k = 1: size( area_peak,2 )
   fprintf( '%3d. Rate of modification: %8.3f. Background norm:  %8.3f.  Signal strength: %8.3f\n', k, ...
 	   overmod_correct(best_index), params(1,best_index), params(2,best_index) );
 
-  plot( overmod_correct, sum_abs_deviation,'k' );
+  %plot( overmod_correct, sum_abs_deviation,'k' );
   %pause;
   
 end
@@ -103,10 +105,10 @@ fprintf('\n');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function    [area_correct, params, sum_abs_deviation ] = overmod_correct_inner_loop( k, m, overmod_correct,goodbins,area_peak,area_pred,backgd_estimate);
+function    [area_correct, params, sum_abs_deviation ] = overmod_correct_inner_loop( k, m, overmod_correct,goodbins,area_peak,area_pred,backgd_estimate, penalize_negative_weight);
 area_correct = apply_overmod_correction( area_peak(:,k), overmod_correct(m) );
 s = area_correct(goodbins);
 y = area_pred(goodbins,k);
 b = backgd_estimate( goodbins );
     
-[ params, sum_abs_deviation ] = background_fit_LP( s, y, b );
+[ params, sum_abs_deviation ] = background_fit_LP( s, y, b, penalize_negative_weight );
