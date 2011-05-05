@@ -16,9 +16,8 @@ f  = [   0,           0,    ones(1,n),  ones(1,n), zeros( 1, n )           ];
 
 % Force all coefficients to be positive.
 % Force coefficient of data to be at least 0.5...
-
-
-LB(1) = 0.70 / mean( max(data,0.0) );
+LB(1) = 0.60 / mean( max(data,0.0) );
+%LB(1) = 0.70 / mean( max(data,0.0) );
 
 data_sort=sort(data);
 data_range = abs( data_sort( floor(n*0.1)+1) - data_sort( floor(n*0.9)+1 ) );
