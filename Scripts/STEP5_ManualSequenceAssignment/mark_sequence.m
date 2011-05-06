@@ -47,6 +47,7 @@ end
 contrast_factor = 40/ mean(mean(abs(image_x)));
 
 if (JUST_PLOT_SEQUENCE )
+  axes(USE_GUI);
   make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
 	     contrast_factor, offset, period,marks,mutpos);
   return;
@@ -57,13 +58,14 @@ numlanes = size(image_x,2);
 stop_sel = 0;
 
 if USE_GUI
+  axes(USE_GUI);
   make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
 	     contrast_factor, offset, period,marks,mutpos);
   uiwait( msgbox( 'Are you ready to interactively annotate the sequence?','Ready?','modal' ) )
 end
 
 while ~stop_sel
-
+  axes(USE_GUI);
   make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
 	     contrast_factor, offset, period,marks,mutpos);
 
