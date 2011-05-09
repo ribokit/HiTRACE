@@ -22,7 +22,7 @@ function varargout = HiTRACE_figure(varargin)
 
 % Edit the above text to modify the response to help HiTRACE_figure
 
-% Last Modified by GUIDE v2.5 06-May-2011 21:20:28
+% Last Modified by GUIDE v2.5 09-May-2011 15:20:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -88,6 +88,7 @@ handles.d_align = [];
 handles.filenames = {};
 handles.sequence = [];
 handles.mutposFile = [];
+handles.xsel = [];
 
 handles.step = 0;
 handles.stages = {'initial', 'profile', 'baseline', 'dpalign', 'annotation', 'finalresult'};
@@ -565,6 +566,8 @@ function runToolbar_ClickedCallback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 %% Run script
 % initialization stage
+menuSetting('running', handles);
+
 timeline = tic;
 
 if(isempty(handles.filenames))
@@ -705,7 +708,7 @@ for i = step:5
             [ marks, area_pred, mutpos] = get_predicted_marks_SHAPE_DMS_CMCT( structure, sequence, offset, seqpos, data_type);	
             marks = [ marks; (1:length(sequence))'+offset, (1:length(sequence))'+offset ];
             
-            xsel = [];
+            xsel = handles.xsel;
 	
             if length(xsel) == 0; cla; end;
 
