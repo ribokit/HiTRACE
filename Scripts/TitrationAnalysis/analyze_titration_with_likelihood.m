@@ -1,10 +1,20 @@
-function [log_L, K1_conc, nHill, sigma_all] = ...
-    analyze_titration_with_likelihood( ...
-	input_data, conc, resnum, K1_conc, nHill, whichres );
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Really simple wrapper to loop over K1 and K2.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [ log_L ] = analyze_titration_with_likelihood( input_data, conc, resnum, K1_conc, nHill, whichres );
+%  log_L  = analyze_titration_with_likelihood( input_data, conc, resnum, K1_conc, nHill, whichres );
+%
+% Likelihood-based analysis of structure mapping titration -- optimizes lane normalizaton and calculates
+%  errors at each residue while doing a grid search over midpoints and apparent Hill coefficients.
+%
+%  Inputs:
+%  input_data = matrix of input structure mapping data, approximately normalized (e.g., by mean intensity in each lane)
+%                 must have dimensions of (number of residues x number of lanes ).
+%  conc    = concentration of chemical in titration (e.g., [adenine], or [Mg2+] )
+%  resnum  = your favorite numbering of residues
+%  K1_conc = concentrations to search over. (Default: 10.^[-3.0 : 0.1 :3.0]).
+%  nHill   = apparent Hill coefficients to search over. (Default: nHill = [0.0:0.05:4] )
+%  whichres = [optional!] just look at this subset of input residues.
+%
+% (C) Rhiju Das, 2008-2011
+%
 
 if ~exist( 'K1_conc' ) | isempty( K1_conc ); K1_conc = 10.^[-3.0 : 0.1 :3.0]; end
 if ~exist( 'nHill' )  | isempty( nHill ); nHill = [0.0:0.05:4]; end;
