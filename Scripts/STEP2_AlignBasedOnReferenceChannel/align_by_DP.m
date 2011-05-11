@@ -9,8 +9,12 @@ function [d_out,x_warp_all,DP,choice] = align_by_DP( d_all, align_blocks_in, sla
 %if no 'block's are specified, align the whole thing to column 1
 if ~exist( 'align_blocks_in' ) | length( align_blocks_in) == 0;     align_blocks_in = { [1:size(d_all,2) ] }; end
 if ~iscell( align_blocks_in ); % might be a single refcol
-  refcol = align_blocks_in;
-  align_blocks_in = { [refcol, 1:(refcol-1), (refcol+1):size(d_all,2) ] };
+  if length( align_blocks_in) == 1
+    refcol = align_blocks_in;
+    align_blocks_in = { [refcol, 1:(refcol-1), (refcol+1):size(d_all,2) ] };
+  else
+    align_blocks_in = { align_blocks_in };
+  end
 end
 if ~exist( 'PLOT_STUFF' ); PLOT_STUFF = 1; end;
 if ~exist( 'slack' ); slack = 10; end;

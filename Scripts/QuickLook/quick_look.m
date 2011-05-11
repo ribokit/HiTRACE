@@ -26,8 +26,8 @@ function [d,da,labels,d_noalign,da_noalign] = quick_look( dirnames, ymin, ymax, 
 % (C) Rhiju Das, 2009-2011
 %
 if ~exist( 'ymin' ); ymin = 500;   ymax = 3500; end
-if ~exist( 'PLOT_STUFF' ) PLOT_STUFF = 1; end;
-  
+if exist( 'PLOT_STUFF' ) ~= 1;  PLOT_STUFF = 1; end;
+
 d = [];
 da = [];
 labels = {};

@@ -47,7 +47,7 @@ end
 contrast_factor = 40/ mean(mean(abs(image_x)));
 
 if (JUST_PLOT_SEQUENCE )
-  axes(USE_GUI);
+  if USE_GUI; axes(USE_GUI); end;
   make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
 	     contrast_factor, offset, period,marks,mutpos);
   return;
@@ -65,7 +65,7 @@ if USE_GUI
 end
 
 while ~stop_sel
-  axes(USE_GUI);
+  if USE_GUI; axes(USE_GUI); end;
   make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
 	     contrast_factor, offset, period,marks,mutpos);
 
@@ -177,9 +177,8 @@ while ~stop_sel
     if length( xsel ) < 2
       fprintf( 1, 'Need to guess first and last band!\n')
     else
-      [xsel,DP_SCORE, choice] = auto_assign_sequence( image_x, xsel, ...
-				      length( sequence ), offset, ...
-				      marks, mutpos );
+      seqpos = length(sequence) - [1:length(xsel)] + 1 + offset;
+      xsel = auto_assign_sequence( image_x, sequence,seqpos, offset, marks,mutpos, 0 );
     end
     
   end
@@ -187,7 +186,6 @@ while ~stop_sel
   
 end
 
-%seqpos = length(sequence) - [1:length(xsel)] + 1 + offset;
 
 if length( xsel ) > length( sequence )
   fprintf( 'WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!\n');
