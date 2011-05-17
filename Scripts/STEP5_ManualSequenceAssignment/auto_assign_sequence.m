@@ -1,4 +1,4 @@
-function [xsel] = auto_assign_sequence( image_x,sequence, seqpos, offset, area_pred, ideal_spacing, PLOT_STUFF );
+function [xsel, D] = auto_assign_sequence( image_x,sequence, seqpos, offset, area_pred, ideal_spacing, PLOT_STUFF );
 % AUTO_ASSIGN_SEQUENCE: (still experimental) automatic assignment of bands, given expected locations of marks
 %
 %
@@ -11,10 +11,11 @@ num_lanes = size( image_x, 2 );
 nres = length( sequence );
 
 for i = 1:num_lanes
-  peaks = localMaximum( image_x(:,i) );
-  vals = image_x( peaks, i );
-  [vals_norm, scalefactor ] = SHAPE_normalize( vals );
-  image_x(:,i) = image_x(:,i)/scalefactor;
+  %peaks = localMaximum( image_x(:,i) );
+  %vals = image_x( peaks, i );
+  %[vals_norm, scalefactor ] = SHAPE_normalize( vals );
+  scalefactor = mean( image_x(:,i) );
+  image_x(:,i) = image_x(:,i)/scalefactor/2;
 end
 
 if PLOT_STUFF
@@ -33,7 +34,7 @@ s = area_pred;
 %  end
 %end
 
-s(1,:)     = 10;
+s(1,:)      = 10;
 s(nres,:)   =  5;
 s(nres+1,:) = 10;
 s( find( s == 0.0 ) ) = 0.1;
@@ -43,9 +44,9 @@ if PLOT_STUFF
   subplot(1,2,2);
   image( s*50 );
   colormap( 1 - gray(100) );
-  %pause;
 end
 
 
-xsel_fit = solve_xsel_by_DP( image_x, s, sequence_at_bands, ideal_spacing );
+
+[xsel_fit, D]  = solve_xsel_by_DP( image_x, s, sequence_at_bands, ideal_spacing );
 xsel = xsel_fit(1:end-1);

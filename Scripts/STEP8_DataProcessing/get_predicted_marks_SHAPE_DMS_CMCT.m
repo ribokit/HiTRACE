@@ -7,6 +7,7 @@ function [ marks, area_pred, mutpos] = get_predicted_marks_SHAPE_DMS_CMCT( struc
 % 99999995. C (ddGTP ladder)
 % 99999996. G (ddCTP ladder)
 % 99999997. U (ddATP ladder)
+% 99999998. UV (double-pyrimidine ladder)
 
 marks = [];
 area_pred = [];
@@ -55,7 +56,7 @@ for i = 1:length( structure )
   end
 end
 
-% CMCT
+% sequencing ladders
 for i = 1:length( sequence )-1
 
   switch sequence(i+1)
@@ -72,8 +73,17 @@ for i = 1:length( sequence )-1
 end
 
 
-d_pred = zeros( length(sequence), 7 );
-for i = [1:7]
+% UV -- pyrimidines.
+for i = 2:length( structure )
+  if ( sequence(i) == 'C'  | sequence(i) == 'U'  ) & ...
+	( sequence(i-1) == 'C'  | sequence(i-1) == 'U'  ) 
+    marks = [ marks; MUTPOS_OFFSET+8, i+offset ];
+  end
+end
+
+
+d_pred = zeros( length(sequence), 8 );
+for i = [1:8]
   d_pred( marks( find( marks(:,1) == MUTPOS_OFFSET+i ), 2 ) - offset, i ) = 1.0;
 end
 
@@ -102,7 +112,7 @@ function  mutpos = figure_out_mutpos( data_type, MUTPOS_OFFSET );
 
 mutpos = [];
 
-OK_labels = {'SHAPE','DMS','CMCT','ddTTP','ddGTP','ddCTP','ddATP','nomod'};
+OK_labels = {'SHAPE','DMS','CMCT','ddTTP','ddGTP','ddCTP','ddATP','UV','nomod'};
 
 for i = 1:length( data_type )
 

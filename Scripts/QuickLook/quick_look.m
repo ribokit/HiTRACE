@@ -110,7 +110,7 @@ if PLOT_STUFF
   subplot(1,2,2);
   image( d0_reference_ladder*2);
   title( 'Reference ladder (channel 4)')
-  axis( [ 0.5 length( data_all)+0.5 ymin ymax] );
+  axis( [ 0.5 length( reorder )+0.5 ymin ymax] );
   
   for i = 1:length( line_pos );
     hold on
