@@ -22,7 +22,7 @@ function varargout = HiTRACE_figure(varargin)
 
 % Edit the above text to modify the response to help HiTRACE_figure
 
-% Last Modified by GUIDE v2.5 18-May-2011 16:07:08
+% Last Modified by GUIDE v2.5 27-May-2011 16:30:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -140,8 +140,12 @@ if(filename)
     
     setStatusLabel('Sequence loaded',handles);
     
-    for i = handles.displayComponents;
-        delete(i);
+    try
+        for i = handles.displayComponents;
+            delete(i);
+        end
+    catch err
+        close(handles.figure1);
     end
     
     handles.displayComponents = displaySetting('initial',handles);
@@ -279,12 +283,16 @@ for i = v
 end
 
 set(handles.runBtn, 'Enable', 'on');
+set(handles.prevBtn, 'Enable', 'on');
+set(handles.nextBtn, 'Enable', 'on');
 
 
 switch(mode)
     case 'initial'
         set(handles.nextToolbar, 'Enable', 'off');
         set(handles.prevToolbar, 'Enable', 'off');
+        set(handles.prevBtn, 'Enable', 'off');
+        set(handles.nextBtn, 'Enable', 'off');
         set(handles.rdatBtn, 'Enable', 'off');
         set(handles.saveworkspaceBtn, 'Enable', 'off');
     case 'running'
@@ -324,12 +332,15 @@ switch(mode)
         end
         
         set(handles.runBtn, 'Enable', 'off');
-        
+        set(handles.prevBtn, 'Enable', 'off');
+        set(handles.nextBtn, 'Enable', 'off');
     case 'lastpage'
         set(handles.nextToolbar, 'Enable', 'off');
+        set(handles.nextBtn, 'Enable', 'off');
     case 'midpage'
     case 'firstpage'
         set(handles.prevToolbar, 'Enable', 'off');
+        set(handles.prevBtn, 'Enable', 'off');
 end
 
 % --------------------------------------------------------------------
@@ -339,8 +350,12 @@ function optionToolbar_ClickedCallback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.settings = GeneralOption(handles.settings);
 guidata(hObject, handles);
-for i = handles.displayComponents
-    delete(i);
+try
+    for i = handles.displayComponents
+        delete(i);
+    end
+catch err
+    close(handles.figure1);
 end
 handles.displayComponents = displaySetting('initial', handles);  
 guidata(hObject, handles);
@@ -354,8 +369,12 @@ function finetuneToolbar_ClickedCallback(hObject, eventdata, handles)
 handles.fineTune = FineTunning(handles.fineTune);
 guidata(hObject, handles);
 
-for i = handles.displayComponents
-    delete(i);
+try
+    for i = handles.displayComponents
+        delete(i);
+    end
+catch err
+    close(handles.figure1);
 end
 handles.displayComponents = displaySetting('initial', handles);  
 guidata(hObject, handles);
@@ -394,10 +413,14 @@ if(name)
     setStatusLabel('Settings loaded', handles);
 end
 
-for i = handles.displayComponents
-    delete(i);
-end
 
+try
+    for i = handles.displayComponents
+        delete(i);
+    end
+catch err
+    close(handles.figure1);
+end
 guidata(hObject, handles);
 refreshSetting(handles);
 
@@ -489,8 +512,12 @@ function prevToolbar_ClickedCallback(hObject, eventdata, handles)
 % hObject    handle to prevToolbar (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-for j = handles.displayComponents
-    delete(j);
+try
+    for j = handles.displayComponents
+        delete(j);
+    end
+catch err
+    close(handles.figure1);
 end
 
 if(handles.step == 0)
@@ -515,8 +542,12 @@ function nextToolbar_ClickedCallback(hObject, eventdata, handles)
 % hObject    handle to nextToolbar (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-for j = handles.displayComponents
-    delete(j);
+try
+    for j = handles.displayComponents
+        delete(j);
+    end
+catch err
+    close(handles.figure1);
 end
 
 if(handles.step == 5)
@@ -586,9 +617,12 @@ if(filename)
     guidata(hObject, handles);
     
     setStatusLabel('Marks guide is set',handles);
-    
-    for i = handles.displayComponents;
-        delete(i);
+    try
+        for i = handles.displayComponents;
+            delete(i);
+        end
+    catch err
+        close(handles.figure1);
     end
     
     handles.displayComponents = displaySetting('initial',handles);
@@ -1366,3 +1400,64 @@ end
 
 function setStatusLabel(str,handles)
 set(handles.statusLabel, 'String', sprintf('Status: %s',str));
+
+
+% --- Executes on button press in prevBtn.
+function prevBtn_Callback(hObject, eventdata, handles)
+% hObject    handle to prevBtn (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+try
+    for j = handles.displayComponents
+        delete(j);
+    end
+catch err
+    close(handles.figure1);
+end
+
+if(handles.step == 0)
+    warndlg('This is the first step!');
+    handles.displayComponents = displaySetting(handles.stages{handles.step + 1},handles);
+    menuSetting('firstpage',handles);
+else
+    handles.step = handles.step -1;
+    handles.displayComponents = displaySetting(handles.stages{handles.step + 1},handles);
+
+    if(handles.step == 0)
+        menuSetting('firstpage',handles);
+    else
+        menuSetting('midpage',handles);
+    end
+end
+
+guidata(hObject,handles);
+
+% --- Executes on button press in nextBtn.
+function nextBtn_Callback(hObject, eventdata, handles)
+% hObject    handle to nextBtn (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+try
+    for j = handles.displayComponents
+        delete(j);
+    end
+catch err
+    close(handles.figure1);
+end
+
+if(handles.step == 5)
+    warndlg('This is the last step!');
+    handles.displayComponents = displaySetting(handles.stages{handles.step + 1},handles);
+    menuSetting('lastpage',handles);
+else
+    handles.step = handles.step + 1;
+    handles.displayComponents = displaySetting(handles.stages{handles.step + 1},handles);
+
+    if(handles.step == 5)
+        menuSetting('lastpage',handles);
+    else
+        menuSetting('midpage',handles);
+    end
+end
+
+guidata(hObject,handles);
