@@ -51,7 +51,7 @@ for i = 1:numres
   h = text( conc( startpt ), plot_offset*(i-1)+pred_fit(i,startpt), num2str( resnum( i ) ) );
   set(h,'color','k','horizontalalign','right','fontsize',8,'fontweight','bold');
 end
-set(gca,'ylim',[0 (numres+1)*plot_offset+max(max(data))],'xlim',[1e-2 1e2])
+set(gca,'ylim',[0 (numres+1)*plot_offset+max(max(data))],'xlim',[ min(conc) max(conc) ])
 
 xlabel('[M^{2+} (mM)]');
 ylabel('Peak intensity');

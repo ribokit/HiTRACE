@@ -71,7 +71,7 @@ while ~stop_sel
 
   title( ['j,l -- zoom. i,k -- up/down. q -- quit. left-click -- select. \newline',...
 	  'x -- auto-assign. ',...
-	  'middle button -- undo.', '   o -- load xsel.   p -- save xsel.']);
+	  'middle button -- undo.', ' r -- reset ']);
   
   [yselpick, xselpick, button ]  = ginput(1);
 
@@ -102,16 +102,8 @@ while ~stop_sel
     if( length(xsel) > 0 & length(xsel) < length(sequence) )
       if USE_GUI
 	btn = questdlg(sprintf('Warning: You have assigned only %d band position(s), which is less than the total number of bands (%d). How do you want to proceed?', length(xsel), length(sequence)), ...
-		       'Warning!', 'Auto assign', 'Return to image', 'Force to go','Force to go');
-        if(strcmp(btn, 'Auto assign'))
-	  if length( xsel ) < 2
-	    fprintf( 1, 'Need to guess first and last band!\n')
-	  else
-	    [xsel,DP_SCORE, choice] = auto_assign_sequence( image_x, xsel, ...
-						  length( sequence ), offset, ...
-						  marks, mutpos );
-	  end
-        elseif(strcmp(btn, 'Force to go'))
+		       'Warning!', 'Return to image', 'Force to go','Force to go');
+        if(strcmp(btn, 'Force to go'))
 	  stop_sel = 1;
         end
       else
@@ -173,14 +165,18 @@ while ~stop_sel
     zoom(1.10)
    case {'b', 'B'}
     zoom(0.90)
+   case {'r', 'R'}
+    xsel = []; % reset
    case {'x','X'}
-    if length( xsel ) < 2
-      fprintf( 1, 'Need to guess first and last band!\n')
+    if length( mutpos ) == size( image_x, 2 ) 
+          ideal_spacing = 24; % This should be an input parameter, probably!
+	  seqpos = length(sequence) - [1:length(xsel)] + 1 + offset;			
+	  % I am thinking of getting rid of mutpos/marks entirely, and replacing with area_pred -- rhiju
+	  area_pred = fill_area_pred_from_marks_and_mutpos( marks, mutpos, seqpos, offset );
+	  xsel = auto_assign_sequence( image_x, sequence, seqpos, offset, area_pred, ideal_spacing, 0 );    
     else
-      seqpos = length(sequence) - [1:length(xsel)] + 1 + offset;
-      xsel = auto_assign_sequence( image_x, sequence,seqpos, offset, marks,mutpos, 0 );
+      fprintf( 'the guidemark definitions have the %d entries, does not match %d lanes in the data.\n', length( mutpos ), size( image_x,2) );
     end
-    
   end
   
   

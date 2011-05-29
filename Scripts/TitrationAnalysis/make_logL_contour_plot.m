@@ -6,3 +6,4 @@ set(gca,'xlim',[-2 2],'ylim',[0 max(nHill)],'xtick',[-2:2],'ytick',[0:0.5:max(nH
 
 ylabel( 'n_{Hill}' );
 xlabel( 'log_{10} (K_1/ 1 mM)' );
+xlim( log([ min(K1) max(K1)]) /log(10) );
