@@ -790,6 +790,17 @@ for i = step:5
             
             if ~exist( 'data_type' ) data_type = {}; end;
             
+            if(~isempty(mutposFile)) 
+                data_type = textread(mutposFile,'%s'); % this probably should only occur once...
+                for n = 1:length( targetblock )
+                    for j = 1:length( targetblock{n} )
+                        m = targetblock{n}(j);
+                        if ( m <= length(data_type) &  ~isempty( strfind( data_type{m}, 'dd' ) ) )
+                            errordlg('You might be applying dynamic programming fine alignment to a lane with a sequencing ladder, and could get weird results','OK'); % Sungroh, can we have an option "change align blocks" that returns to the setting window?
+                        end
+                    end
+                end
+            end
             
             seqpos = ( (length(sequence)-dist) : -1 :1 ) + offset;
             
@@ -1351,7 +1362,7 @@ set(handles.targetblockEdit, 'String', handles.fineTune.targetblock);
 set(handles.dpCheck, 'Value', handles.fineTune.dpAlign);
 
 
-set(handles.fileListbox, 'String', handles.filenames);
+set(handles.fileListbox, 'String', handles.filenames, 'Value', 1);
 set(handles.sequenceEdit, 'String', handles.sequence);
 set(handles.guideEdit, 'String', handles.mutposFile);
 
