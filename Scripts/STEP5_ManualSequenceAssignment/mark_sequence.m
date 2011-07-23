@@ -173,7 +173,7 @@ while ~stop_sel
 	  seqpos = length(sequence) - [1:length(xsel)] + 1 + offset;			
 	  % I am thinking of getting rid of mutpos/marks entirely, and replacing with area_pred -- rhiju
 	  area_pred = fill_area_pred_from_marks_and_mutpos( marks, mutpos, seqpos, offset );
-	  xsel = auto_assign_sequence( image_x, sequence, seqpos, offset, area_pred, ideal_spacing, 0 );    
+	  xsel = auto_assign_sequence( image_x, sequence, seqpos, offset, area_pred, ideal_spacing, xsel, 0 );    
     else
       fprintf( 'the guidemark definitions have the %d entries, does not match %d lanes in the data.\n', length( mutpos ), size( image_x,2) );
     end

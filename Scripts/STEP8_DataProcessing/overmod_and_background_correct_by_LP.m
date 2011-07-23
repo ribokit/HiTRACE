@@ -106,7 +106,9 @@ fprintf('\n');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function    [area_correct, params, sum_abs_deviation ] = overmod_correct_inner_loop( k, m, overmod_correct,goodbins,area_peak,area_pred,backgd_estimate, penalize_negative_weight);
-area_correct = apply_overmod_correction( area_peak(:,k), overmod_correct(m) );
+
+%area_correct = apply_overmod_correction( area_peak(:,k), overmod_correct(m) );
+area_correct = apply_overmod_correction_EXACT( area_peak(:,k), overmod_correct(m) );
 s = area_correct(goodbins);
 y = area_pred(goodbins,k);
 b = backgd_estimate( goodbins );

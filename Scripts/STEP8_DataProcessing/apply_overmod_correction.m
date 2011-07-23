@@ -1,4 +1,4 @@
-function  d_unmod = apply_overmod_correction( d, modification_ratio );
+function  [ d_unmod, correction ] = apply_overmod_correction( d, modification_ratio );
 
 
 % Don't read the first few residues -- dominated by fluorescence
@@ -11,4 +11,5 @@ d_cumulative_sum( eat_in:end ) = cumsum( d(eat_in:end) );
 d_cumulative_sum = d_cumulative_sum/d_cumulative_sum( end );
 
 %plot( d_cumulative_sum ); pause;
-d_unmod = d .* exp ( modification_ratio .* d_cumulative_sum );
+correction = exp ( modification_ratio .* d_cumulative_sum );
+d_unmod = d .* correction;

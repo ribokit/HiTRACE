@@ -126,7 +126,7 @@ end
 
 
 
-%fprintf(fid,'%s\n','<PARAM name="flat" value="true" />');
+fprintf(fid,'%s\n','<PARAM name="flat" value="true" />');
 fprintf(fid,'%s\n','</applet></BODY></HTML>');
 
 fclose( fid );

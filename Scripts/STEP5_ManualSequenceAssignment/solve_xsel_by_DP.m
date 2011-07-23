@@ -1,9 +1,15 @@
-function [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, PLOT_STUFF, xsel );
-% [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, PLOT_STUFF, xsel );
+function [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds, PLOT_STUFF );
+% [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds, PLOT_STUFF );
 
 if ~exist( 'PLOT_STUFF' ); PLOT_STUFF = 1; end;
-
 if ~exist( 'ideal_spacing'); ideal_spacing = 24; end;
+if ~exist( 'input_bounds' ) input_bounds = []; end;
+
+START_POS = 0;
+if length( input_bounds ) >= 1; START_POS = round(input_bounds(1)); end;
+
+END_POS = 0;
+if length( input_bounds ) >= 2; END_POS = round(input_bounds(end)); end;
 
 % basic initialization
 width = ideal_spacing/4.0; % gaussian width.
@@ -77,7 +83,14 @@ prev_pos_best = [];
 % Initialize matrix.
 % I_data^2 + I_pred^2 - 2 * I_data*I_pred
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-D(:,1) = I_data_2  +   sum(alpha_ideal(1,:).^2) * g0  -  2 * alpha_ideal(1,:) * f(x,:)' + PEAK_WEIGHT*peak_bonus;
+start_vals = I_data_2  +   sum(alpha_ideal(1,:).^2) * g0  -  2 * alpha_ideal(1,:) * f(x,:)' + PEAK_WEIGHT*peak_bonus;
+
+if ( START_POS > 0 )
+  START_POS
+  D(START_POS,1) = start_vals( START_POS );  
+else
+  D(:,1) = start_vals;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Fill matrix
@@ -127,6 +140,8 @@ xsel_fit = [];
 image( prev_pos_best )
 image( D/1000)
 [Dmin, xsel_fit(N) ] = min( D(:,N) );
+if ( END_POS > 0 ) xsel_fit(N) = END_POS; end;
+
 for n = (N-1) : -1 : 1
   xsel_fit(n) = prev_pos_best( xsel_fit(n+1), n+1 );  
 end
