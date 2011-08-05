@@ -1,0 +1,4 @@
+../TestData/061611_Ann_RNAgame30_2011-06-16_0083/
+../TestData/061611_Ann_RNAgame30_2011-06-16_0084/
+../TestData/061611_Ann_RNAgame30_2011-06-16_0085/
+../TestData/061611_Ann_RNAgame30_2011-06-16_0086/

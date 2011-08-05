@@ -6,7 +6,6 @@ function [ data_all, filenames_all, data_init, data_length ] = ...
 %
 % (C) R. Das 2008-2011
 
-figure(1)
 data = {};
 data_all = {};
 data_init = [];

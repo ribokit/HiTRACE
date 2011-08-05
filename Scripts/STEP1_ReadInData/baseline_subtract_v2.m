@@ -34,7 +34,7 @@ if ~exist('B') | B == 0
   B = 2e4;
 end
 if ~exist('PLOT_STUFF')
-  PLOT_STUFF = 1;
+  PLOT_STUFF = 0;
 end
 
 if exist('matlabpool' )

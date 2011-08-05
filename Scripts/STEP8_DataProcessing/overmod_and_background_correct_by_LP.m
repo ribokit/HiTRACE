@@ -88,17 +88,6 @@ for k = 1: size( area_peak,2 )
   
 end
 
-clf;
-subplot(1,3,1)
-image( 20*area_peak );
-
-subplot(1,3,2)
-image( 20*area_correct_bsub );
-
-subplot(1,3,3)
-image( 40*area_pred );
-
-colormap( 1- gray(100));
 fprintf('\n');
 
 
@@ -107,8 +96,8 @@ fprintf('\n');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function    [area_correct, params, sum_abs_deviation ] = overmod_correct_inner_loop( k, m, overmod_correct,goodbins,area_peak,area_pred,backgd_estimate, penalize_negative_weight);
 
-%area_correct = apply_overmod_correction( area_peak(:,k), overmod_correct(m) );
-area_correct = apply_overmod_correction_EXACT( area_peak(:,k), overmod_correct(m) );
+area_correct = apply_overmod_correction( area_peak(:,k), overmod_correct(m) );
+% area_correct = apply_overmod_correction_EXACT( area_peak(:,k), overmod_correct(m) );
 s = area_correct(goodbins);
 y = area_pred(goodbins,k);
 b = backgd_estimate( goodbins );
