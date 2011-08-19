@@ -1047,7 +1047,7 @@ for i = step:handles.max
             end
             
             seqpos = ( (length(sequence)-dist) : -1 :1 ) + offset;
-            peak_spacing = 24;
+            peak_spacing = 12;
             
             if(eternaCheck)
                 data_types = {'SHAPE','SHAPE','nomod','ddTTP'};
@@ -1059,12 +1059,12 @@ for i = step:handles.max
                 if(verLessThan('matlab', '7.10.0'))
                     for j = which_sets;
                       setStatusLabel(sprintf('Auto assign annotation... ( %d / %d )',j,which_sets(end)), handles);
-                      xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-20), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
+                      xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
                     end
                 else
                     setStatusLabel('Auto assign annotation parallely...', handles);
                     parfor j = which_sets;
-                      xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-20), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
+                      xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
                     end
                 end
                 
@@ -1079,7 +1079,7 @@ for i = step:handles.max
                 for j = which_sets;
                     setStatusLabel(sprintf('Manual annotation... ( %d / %d )', j, which_sets(end)), handles);
                     set(handles.profileCombo, 'Value', j);
-                    xsel{j} = mark_sequence( handles.d_bsub{j}, xsel{j}, sequence{j}(1:end-dist), 0, offset, period, marks{j}, mutpos{j}, handles.displayComponents);
+                    xsel{j} = mark_sequence( handles.d_bsub{j}, xsel{j}, sequence{j}(1:end-dist), 0, offset, period, marks{j}, mutpos{j}, all_area_pred{j},handles.displayComponents);
                     numpeaks{j} = length(xsel{j});
                 end
                 
@@ -1111,7 +1111,7 @@ for i = step:handles.max
                 figure(handles.figure1);
                 handles.displayComponents = axes('Position', [0.5 0.2 0.45 0.7]);
 
-                xsel = mark_sequence( handles.d_align, xsel, sequence(1:end-dist), 0, offset, period, marks, mutpos, handles.displayComponents);
+                xsel = mark_sequence( handles.d_align, xsel, sequence(1:end-dist), 0, offset, period, marks, mutpos, area_pred, handles.displayComponents);
 
                 numpeaks = length(xsel);
 
@@ -1158,7 +1158,7 @@ for i = step:handles.max
             backgd_sub_col = 3;
             penalize_negative_weight = 2.0;
             for j = which_sets
-              [ area_bsub{j}, darea_bsub{j}] = overmod_and_background_correct_by_LP( handles.area_peak{j}, backgd_sub_col, [4:size(handles.area_peak{j},1)-4], handles.all_area_pred{j}, [], penalize_negative_weight );
+              [ area_bsub{j}, darea_bsub{j}] = overmod_and_background_correct_logL( handles.area_peak{j}, backgd_sub_col, [4:size(handles.area_peak{j},1)-4], handles.all_area_pred{j});
              % pause;
             end
 
@@ -1177,7 +1177,7 @@ for i = step:handles.max
               data_cols = [a];
 
               % average over appropriate columns...
-              data = mean(area_bsub{i}( goodbins, data_cols ), 2)';
+              data = mean(area_bsub{j}( goodbins, data_cols ), 2)';
 
               % normalize.
               [data_norm, scalefactor] = SHAPE_normalize( data );
@@ -1987,7 +1987,15 @@ function eternaCheck_Callback(hObject, eventdata, handles)
 % hObject    handle to eternaCheck (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+eterna = get(hObject, 'Value');
+if(eterna)
+    set(handles.startEdit, 'Enable', 'On');
+    set(handles.endEdit, 'Enable', 'On');
+else
+    set(handles.startEdit, 'Enable', 'Off');
+    set(handles.endEdit, 'Enable', 'Off');
+end
+    
 % Hint: get(hObject,'Value') returns toggle state of eternaCheck
 
 

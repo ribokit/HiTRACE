@@ -55,21 +55,3 @@ for k = 1: size( area_peak,2 )
   %pause;
   
 end
-
-
-clf;
-subplot(1,3,1)
-normfactor = mean( mean( area_peak ) );
-image( 40*area_peak/normfactor );
-
-subplot(1,3,2)
-image( 100*area_correct_bsub );
-
-subplot(1,3,3)
-image( 40*area_pred );
-
-colormap( 1- gray(100));
-fprintf('\n');
-
-
-

@@ -15,6 +15,11 @@ end
 
 if ~exist( 'PLOT_STUFF' ) PLOT_STUFF = 1; end;
 
+if ~exist( 'slack' ) slack = 10; end;
+if ~exist( 'maxShift' ) maxShift = 100; end;
+if ~exist( 'windowSize' ) windowSize = 100; end;
+
+
 if ( size( d, 1) ~= size( d_ref, 1 )  |  size( d, 2) ~= size( d_ref, 2 ) ); fprintf( 'd and d_ref are not the same size!' ); end;
 
 

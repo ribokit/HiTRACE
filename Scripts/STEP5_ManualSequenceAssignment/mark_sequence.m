@@ -1,6 +1,6 @@
 function [xsel] = mark_sequence( image_x, xsel, sequence, ...
 				 JUST_PLOT_SEQUENCE, offset, period, ...
-				 marks,mutpos, USE_GUI);
+				 marks,mutpos, area_pred, USE_GUI);
 % MARK_SEQUENCE - Tool for rapid manual assignment of bands in electropherograms.
 %
 %  [xsel] = mark_sequence( image_x, xsel, sequence, ...
@@ -30,6 +30,7 @@ if ~exist('offset');  offset = -999; end
 if ~exist('period');  period = 1; end
 if ~exist('marks');  marks = []; end
 if ~exist('mutpos');  mutpos = []; end
+if ~exist('area_pred'); area_pred = []; end
 if ~exist('USE_GUI');  USE_GUI = 0; end
 
 colormap( 1 - gray(100) );
@@ -169,11 +170,11 @@ while ~stop_sel
     xsel = []; % reset
    case {'x','X'}
     if length( mutpos ) == size( image_x, 2 ) 
-          ideal_spacing = 24; % This should be an input parameter, probably!
+      ideal_spacing = 24;
 	  seqpos = length(sequence) - [1:length(xsel)] + 1 + offset;			
-	  % I am thinking of getting rid of mutpos/marks entirely, and replacing with area_pred -- rhiju
-	  area_pred = fill_area_pred_from_marks_and_mutpos( marks, mutpos, seqpos, offset );
-	  xsel = auto_assign_sequence( image_x, sequence, seqpos, offset, area_pred, ideal_spacing, xsel, 0 );    
+	  % I am thinking of getting rid of mutpos/marks entirely, and
+	  % replacing with area_pred -- rhiju
+	  xsel = auto_assign_sequence( image_x, sequence, seqpos, offset, area_pred, ideal_spacing, [], 0 );    
     else
       fprintf( 'the guidemark definitions have the %d entries, does not match %d lanes in the data.\n', length( mutpos ), size( image_x,2) );
     end
