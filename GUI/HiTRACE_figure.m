@@ -22,7 +22,7 @@ function varargout = HiTRACE_figure(varargin)
 
 % Edit the above text to modify the response to help HiTRACE_figure
 
-% Last Modified by GUIDE v2.5 04-Aug-2011 19:33:28
+% Last Modified by GUIDE v2.5 22-Aug-2011 11:10:04
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -74,6 +74,7 @@ settings.baseline = 1;
 settings.eternaStart = 6;
 settings.eternaEnd = 6;
 settings.eternaCheck = 0;
+settings.peakspacing = 24;
 
 fineTune.slack = 10;
 fineTune.shift = 100;
@@ -449,7 +450,9 @@ switch(mode)
         set(handles.saveworkspaceBtn, 'Enable', 'off');
         set(handles.profileCombo, 'Enable', 'off');
         set(handles.dataCombo, 'Enable', 'off');
-    case 'running'
+        set(handles.startEdit, 'Enable', 'off');
+        set(handles.endEdit, 'Enable', 'off');
+	case 'running'
         v = get(handles.uitoolbar1, 'Children');
         for i = v
             set(i,'Enable', 'off');
@@ -884,6 +887,8 @@ eternaCheck = handles.settings.eternaCheck;
 eternaStart = handles.settings.eternaStart;
 eternaEnd = handles.settings.eternaEnd;
 
+peak_spacing = handles.settings.peakspacing;
+
 slack = handles.fineTune.slack;
 shift = handles.fineTune.shift;
 windowsize = handles.fineTune.windowsize;
@@ -1047,7 +1052,6 @@ for i = step:handles.max
             end
             
             seqpos = ( (length(sequence)-dist) : -1 :1 ) + offset;
-            peak_spacing = 12;
             
             if(eternaCheck)
                 data_types = {'SHAPE','SHAPE','nomod','ddTTP'};
@@ -1759,6 +1763,7 @@ set(handles.startEdit, 'String', handles.settings.eternaStart);
 set(handles.endEdit, 'String', handles.settings.eternaEnd);
 set(handles.eternaCheck, 'Value', handles.settings.eternaCheck);
 
+set(handles.peakspacingEdit, 'String', handles.settings.peakspacing);
 
 set(handles.slackEdit, 'String', handles.fineTune.slack);
 set(handles.shiftEdit, 'String', handles.fineTune.shift);
@@ -1791,6 +1796,7 @@ handles.settings.eternaStart = str2double(get(handles.startEdit, 'String'));
 handles.settings.eternaEnd = str2double(get(handles.startEdit, 'String'));
 handles.settings.eternaCheck = get(handles.eternaCheck, 'Value');
 
+handles.settings.peakspacing = str2double(get(handles.peakspacingEdit, 'String'));
 
 if(handles.settings.eternaCheck)
     file = get(handles.sequenceEdit, 'String');
@@ -2060,3 +2066,26 @@ function resetBtn_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 delete(handles.figure1);
 HiTRACE_figure;
+
+
+
+function peakspacingEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to peakspacingEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of peakspacingEdit as text
+%        str2double(get(hObject,'String')) returns contents of peakspacingEdit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function peakspacingEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to peakspacingEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

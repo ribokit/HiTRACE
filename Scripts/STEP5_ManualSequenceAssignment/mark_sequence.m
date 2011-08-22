@@ -170,7 +170,7 @@ while ~stop_sel
     xsel = []; % reset
    case {'x','X'}
     if length( mutpos ) == size( image_x, 2 ) 
-      ideal_spacing = 24;
+      ideal_spacing = handles.settings.peakspacing;
 	  seqpos = length(sequence) - [1:length(xsel)] + 1 + offset;			
 	  % I am thinking of getting rid of mutpos/marks entirely, and
 	  % replacing with area_pred -- rhiju
