@@ -1083,7 +1083,7 @@ for i = step:handles.max
                 for j = which_sets;
                     setStatusLabel(sprintf('Manual annotation... ( %d / %d )', j, which_sets(end)), handles);
                     set(handles.profileCombo, 'Value', j);
-                    xsel{j} = mark_sequence( handles.d_bsub{j}, xsel{j}, sequence{j}(1:end-dist), 0, offset, period, marks{j}, mutpos{j}, all_area_pred{j},handles.displayComponents);
+                    xsel{j} = mark_sequence( handles.d_bsub{j}, xsel{j}, sequence{j}(1:end-dist), 0, offset, period, marks{j}, mutpos{j}, all_area_pred{j},peak_spacing,handles.displayComponents);
                     numpeaks{j} = length(xsel{j});
                 end
                 
@@ -1115,7 +1115,7 @@ for i = step:handles.max
                 figure(handles.figure1);
                 handles.displayComponents = axes('Position', [0.5 0.2 0.45 0.7]);
 
-                xsel = mark_sequence( handles.d_align, xsel, sequence(1:end-dist), 0, offset, period, marks, mutpos, area_pred, handles.displayComponents);
+                xsel = mark_sequence( handles.d_align, xsel, sequence(1:end-dist), 0, offset, period, marks, mutpos, area_pred, peak_spacing, handles.displayComponents);
 
                 numpeaks = length(xsel);
 

@@ -1,6 +1,6 @@
 function [xsel] = mark_sequence( image_x, xsel, sequence, ...
 				 JUST_PLOT_SEQUENCE, offset, period, ...
-				 marks,mutpos, area_pred, USE_GUI);
+				 marks,mutpos, area_pred, peak_spacing, USE_GUI);
 % MARK_SEQUENCE - Tool for rapid manual assignment of bands in electropherograms.
 %
 %  [xsel] = mark_sequence( image_x, xsel, sequence, ...
@@ -170,11 +170,10 @@ while ~stop_sel
     xsel = []; % reset
    case {'x','X'}
     if length( mutpos ) == size( image_x, 2 ) 
-      ideal_spacing = handles.settings.peakspacing;
-	  seqpos = length(sequence) - [1:length(xsel)] + 1 + offset;			
+      seqpos = length(sequence) - [1:length(xsel)] + 1 + offset;			
 	  % I am thinking of getting rid of mutpos/marks entirely, and
 	  % replacing with area_pred -- rhiju
-	  xsel = auto_assign_sequence( image_x, sequence, seqpos, offset, area_pred, ideal_spacing, [], 0 );    
+	  xsel = auto_assign_sequence( image_x, sequence, seqpos, offset, area_pred, peak_spacing, [], 0 );    
     else
       fprintf( 'the guidemark definitions have the %d entries, does not match %d lanes in the data.\n', length( mutpos ), size( image_x,2) );
     end
