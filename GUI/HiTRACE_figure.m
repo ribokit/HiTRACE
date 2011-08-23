@@ -22,7 +22,7 @@ function varargout = HiTRACE_figure(varargin)
 
 % Edit the above text to modify the response to help HiTRACE_figure
 
-% Last Modified by GUIDE v2.5 22-Aug-2011 11:10:04
+% Last Modified by GUIDE v2.5 23-Aug-2011 15:00:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,6 +66,7 @@ imshow('hitrace_logo.png');
 % initialization for settings
 settings.refcol = 4;
 settings.offset = -10;
+settings.autorangeCheck = 0;
 settings.ymin = 2200;
 settings.ymax = 4200;
 settings.dist = 20;
@@ -520,6 +521,9 @@ switch(mode)
         end
 end
 
+eternaCheck_Callback(handles.eternaCheck, [], handles);
+autorangeCheck_Callback(handles.autorangeCheck, [], handles);
+
 % --------------------------------------------------------------------
 function optionToolbar_ClickedCallback(hObject, eventdata, handles)
 % hObject    handle to optionToolbar (see GCBO)
@@ -878,6 +882,7 @@ filenames = handles.filenames;
 ymin = handles.settings.ymin;
 ymax = handles.settings.ymax;
 dist = handles.settings.dist;
+autorange = handles.settings.autorangeCheck;
 offset = handles.settings.offset;
 refine = handles.settings.refine;
 refcol = handles.settings.refcol;
@@ -922,6 +927,15 @@ for i = step:handles.max
             setStatusLabel('Loading and alignment...', handles);
 
             [ handles.d, handles.da] = quick_look( filenames, ymin, ymax, [], [], refcol, 0);
+            
+            if(autorange)
+                [ymin ymax] = findTimeRange(handles.d);
+                
+                handles.settings.ymin = ymin;
+                handles.settings.ymax = ymax;
+                refreshSetting(handles);
+            end
+                
             
             for j = handles.displayComponents
                 delete(j);
@@ -1753,6 +1767,8 @@ end
 function refreshSetting(handles)
 set(handles.refcolEdit, 'String', handles.settings.refcol);
 set(handles.offsetEdit, 'String', handles.settings.offset);
+set(handles.autorangeCheck, 'Value', handles.settings.autorangeCheck);
+autorangeCheck_Callback(handles.autorangeCheck, [] ,handles);
 set(handles.yminEdit, 'String', handles.settings.ymin);
 set(handles.ymaxEdit, 'String', handles.settings.ymax);
 set(handles.distEdit, 'String', handles.settings.dist);
@@ -1780,6 +1796,7 @@ set(handles.strEdit, 'String', handles.structure);
 function handles = setupSetting(handles)
 handles.settings.refcol = str2double(get(handles.refcolEdit, 'String'));
 handles.settings.offset = str2double(get(handles.offsetEdit, 'String'));
+handles.settings.autorangeCheck = get(handles.autorangeCheck, 'Value');
 handles.settings.ymin = str2double(get(handles.yminEdit, 'String'));
 handles.settings.ymax = str2double(get(handles.ymaxEdit, 'String'));
 handles.settings.dist = str2double(get(handles.distEdit, 'String'));
@@ -2089,3 +2106,18 @@ function peakspacingEdit_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in autorangeCheck.
+function autorangeCheck_Callback(hObject, eventdata, handles)
+% hObject    handle to autorangeCheck (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if(get(hObject,'Value'))
+    set(handles.ymaxEdit, 'Enable', 'Off');
+    set(handles.yminEdit, 'Enable', 'Off');
+else
+    set(handles.ymaxEdit, 'Enable', 'On');
+    set(handles.yminEdit, 'Enable', 'On');
+end
+% Hint: get(hObject,'Value') returns toggle state of autorangeCheck
