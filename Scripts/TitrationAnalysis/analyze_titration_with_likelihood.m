@@ -68,11 +68,16 @@ end
 
 % let's try to do a good job of figuring out errors by looking over likelihood
 hold on
-c = contour( log_L, log_L_best - 2.0 );
-p1_low    = interp1( 1:length(param1), param1,  min( c(2,2:end) ) );
-p1_high   = interp1( 1:length(param1), param1,  max( c(2,2:end) ) );
-p2_low    = interp1( 1:length(param2), param2,  min( c(1,2:end) ) );
-p2_high   = interp1( 1:length(param2), param2,  max( c(1,2:end) ) );
+if ( length( param1 ) > 1 & length( param2 ) > 1 )
+ c = contour( log_L, log_L_best - 2.0 );
+ p1_low    = interp1( 1:length(param1), param1,  min( c(2,2:end) ) );
+ p1_high   = interp1( 1:length(param1), param1,  max( c(2,2:end) ) );
+ p2_low    = interp1( 1:length(param2), param2,  min( c(1,2:end) ) );
+ p2_high   = interp1( 1:length(param2), param2,  max( c(1,2:end) ) );
+else
+ [p1_low,p1_high] = get_1D_error( param1, log_L );
+ [p2_low,p2_high] = get_1D_error( param2, log_L );
+end
 titlestring = sprintf( '%s = %6.4f + %6.4f - %6.4f\n', p1_name, p1_best, p1_high-p1_best, p1_best - p1_low );
 titlestring = [titlestring, sprintf( '%s = %4.2f + %4.2f - %4.2f', p2_name, p2_best, p2_high - p2_best, p2_best - p2_low ) ];
 fprintf( [titlestring,'\n'] )
@@ -85,13 +90,51 @@ pred_fit_fine = C_state'*f;
 
 figure(1)
 clf
+if ( length( param1 ) > 1 & length( param2 ) > 1 )
 make_logL_contour_plot( log_L, param1, param2, p1_name, p2_name );
+else
+    plot( param1, log_L );
+end
 title( titlestring );
 
 figure(2)
 clf
 plot_titration_data( input_data, resnum, conc, pred_fit, sigma_at_each_residue, lane_normalization, conc_fine, pred_fit_fine );
 title( titlestring );
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [p_low,p_high] = get_1D_error( param, log_L );
+
+if length( param ) < 2
+    p_low  = param;
+    p_high = param;
+    return;
+end
+
+%clf; plot( param, log_L ); pause;
+
+[ log_L_max, min_idx ] = max( log_L )
+param( min_idx )
+log_L_cutoff = log_L_max - 2.0;
+
+idx = min_idx-1;
+while (idx > 0 & log_L(idx) > log_L_cutoff )
+    idx = idx - 1;  
+end
+p_low = param( idx+1 );
+
+
+idx = min_idx+1;
+while (idx <= length(param) & log_L(idx) > log_L_cutoff )
+    idx = idx + 1;  
+end
+p_high = param( idx-1 );
+
+
+
+
 
 
 
