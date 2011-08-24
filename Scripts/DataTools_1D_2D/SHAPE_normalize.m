@@ -37,7 +37,7 @@ for k = 1:size( d_for_scalefactor, 2 )
   end
 
   scalefactor(k) = mean(dsort(  round( 0.9 * length(dsort)):end ) );
-    
+
   d_norm(:,k) = d_for_scalefactor(:,k) / scalefactor(k);
 end
 

@@ -1,4 +1,6 @@
-function [ min_SHAPE, max_SHAPE, threshold_SHAPE, ETERNA_score ] = determine_thresholds_and_ETERNA_score( data, pred );
+function [ min_SHAPE, max_SHAPE, threshold_SHAPE, ETERNA_score ] = determine_thresholds_and_ETERNA_score_test( data, pred, NEW_SETTINGS );
+
+if ~exist( 'NEW_SETTINGS' ); NEW_SETTINGS = 0; end;
 
 figure(3)
 clf;
@@ -28,11 +30,13 @@ data_range = abs( data_sort( floor(n*0.1)+1) - data_sort( floor(n*0.9)+1 ) );
 UB(1) = inf;
 
 % baseline
-LB(2) = -0.3;
-UB(2) =  0.3;
-%LB(2) = -0.1;
-%UB(2) =  0.1;
-
+if NEW_SETTINGS
+  LB(2) = -0.3;
+  UB(2) =  0.3;
+else
+  LB(2) = -0.1;
+  UB(2) =  0.1;
+end
 
 % 'slack' variable  -- positive deviations from data.
 LB( 2 + [1:n] ) = zeros(1,n);

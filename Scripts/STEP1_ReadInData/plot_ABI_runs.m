@@ -33,7 +33,10 @@ for k = 1:length( datafiles );
   data_in{ count } =  d;
 end
 
-if length( data_in ) == 0; return; end; % did the files exist?
+if length( data_in ) == 0; 
+  fprintf( 'WARNING!!! Could not read .ab1 files from: %s\n', dirname );
+  return; 
+end; % did the files exist?
 
 if CORRECT
   lm = load( 'leakage_matrix1.txt' );

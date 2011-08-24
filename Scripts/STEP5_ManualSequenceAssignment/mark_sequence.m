@@ -23,6 +23,7 @@ function [xsel] = mark_sequence( image_x, xsel, sequence, ...
 % (C) R. Das, 2008-2011
 % (Substantial) modification to script in SAFA (SemiAutomated Footprinting Analysis) software.
 %
+subplot(1,1,1);
 
 if ~exist('xsel');  xsel = []; end
 if ~exist('JUST_PLOT_SEQUENCE');  JUST_PLOT_SEQUENCE = 0; end
@@ -69,7 +70,7 @@ while ~stop_sel
   if USE_GUI; axes(USE_GUI); end;
   make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
 	     contrast_factor, offset, period,marks,mutpos);
-
+  
   title( ['j,l -- zoom. i,k -- up/down. q -- quit. left-click -- select. \newline',...
 	  'x -- auto-assign. ',...
 	  'middle button -- undo.', ' r -- reset ']);
@@ -211,17 +212,17 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function make_plot( image_x, xsel, ymin, ymax, sequence, ...
-		    JUST_PLOT_SEQUENCE, contrast_factor, offset, period,marks,mutpos)
+		    JUST_PLOT_SEQUENCE, contrast_factor, offset, period,marks,mutpos )
 
 numlanes = size( image_x, 2 ) ;
 
 %if ( ~JUST_PLOT_SEQUENCE )
-image(contrast_factor * abs(image_x));
+ image(contrast_factor * abs(image_x));
 %end
-
 
 xlim = get(gca,'xlim');
 xscale = abs(xlim(1) - xlim(2));
+axis( [ 0.5 numlanes+0.5 ymin ymax]);
 
 xwid = 1.0;
 if ( length( xsel ) > 0 )
@@ -229,13 +230,21 @@ if ( length( xsel ) > 0 )
 end
 
 hold on
-for i = 1:length( xsel )
+xsel_to_plot = find( xsel >= ymin & xsel <= ymax );
 
-  if (~JUST_PLOT_SEQUENCE )
-  h1 = plot( [0.5 numlanes+0.5 ], [xsel(i) xsel(i)], 'color',[1 0.5 0] ); 
+for i = xsel_to_plot
+  
+  SHOW_LINES = 1;
+  if SHOW_LINES
+    if (~JUST_PLOT_SEQUENCE )
+      h1 = plot( [0.5 numlanes+0.5 ], [xsel(i) xsel(i)], 'color',[1 0.5 0] ); 
+    end
   end
-
-  if ( i <= length( sequence ) &  xsel(i) >= ymin && xsel(i) <= ymax ) 
+  
+  SHOW_LABELS = 1;
+  show_text = 0;
+  mycolor = [ 1 0.5 0];
+  if  SHOW_LABELS & i <= length(sequence )
     seqchar = sequence( end- i +1 );
     
     txt_to_show = seqchar;
@@ -253,9 +262,7 @@ for i = 1:length( xsel )
       h2 = text( 0.5, xsel(i), txt_to_show );        
       set(h2,'HorizontalAlignment','right');
     end
-
-
-    mycolor = [ 0 0 0];
+  
     if  ( seqchar ==  'A' )
       %mycolor = [0 0 0];
       mycolor = [0 0 1];
@@ -267,38 +274,38 @@ for i = 1:length( xsel )
 	mycolor = [1 0 0];
       end
     end
+  end
 
-    SHOW_CIRCLES = 0;
-    if SHOW_CIRCLES
-      seqpos = length(sequence) - i + 1 + offset;
-      goodpoints = find( mutpos == seqpos );
-      plot( -0.5 + goodpoints, xsel(i)+0*goodpoints, 'ro' );
+  SHOW_CIRCLES = 0;
+  if SHOW_CIRCLES
+    seqpos = length(sequence) - i + 1 + offset;
+    goodpoints = find( mutpos == seqpos );
+    plot( -0.5 + goodpoints, xsel(i)+0*goodpoints, 'ro' );
+  end
+  
+  SHOW_MARKS = 1;
+  if SHOW_MARKS & ~isempty( marks );
+    signalpos = marks(: ,2 );
+    seqpos = length(sequence) - i + 1 + offset;
+    goodpoints = find( signalpos == seqpos );
+    mutres = marks( goodpoints, 1);
+    xloc = [];
+    for ( m = mutres' )
+      xloc = find( m == mutpos);
+      plot( xloc, xsel(i)+0*xloc, 'ro' );
+      %  for ( n = xloc )	  
+      %    h = rectangle( 'Position', [n-0.5, xsel(i)-0.5*xwid, 1, xwid] );
+      %    set(h,'edgecolor','r');
+      %  end
     end
-
-    SHOW_MARKS = 1;
-    if SHOW_MARKS & ~isempty( marks );
-      signalpos = marks(: ,2 );
-      seqpos = length(sequence) - i + 1 + offset;
-      goodpoints = find( signalpos == seqpos );
-      mutres = marks( goodpoints, 1);
-      xloc = [];
-      for ( m = mutres' )
-	xloc = find( m == mutpos);
-	plot( xloc, xsel(i)+0*xloc, 'ro' );
-	%  for ( n = xloc )	  
-	%    h = rectangle( 'Position', [n-0.5, xsel(i)-0.5*xwid, 1, xwid] );
-	%    set(h,'edgecolor','r');
-	%  end
-      end
-    end
-
-    if (exist( 'h1' ) )
+  end
+  
+  if (exist( 'h1' ) )
     set(h1,'color',mycolor);
-    end
+  end
   if ( show_text )
     %set(h2,'color',mycolor,'fontweight','bold');    
     set(h2,'fontweight','bold','fontsize',6,'clipping','off');
-  end
   end
 
 end

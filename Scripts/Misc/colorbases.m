@@ -1,4 +1,4 @@
-function colorbases(imagex,offset,base_locations, residue_locations, whichres,whattoplot,maxplot,maxplot2,colorscheme,makelegend)
+function imagex_color = colorbases(imagex,offset,base_locations, residue_locations, whichres,whattoplot,maxplot,maxplot2,colorscheme,makelegend,square_width)
 %hold off; image(imagex); hold on; axis equal; 
 [xsize,ysize,zsize]=size(imagex);
 axis([0 ysize 0 xsize]); zoomedin = 0;
@@ -9,7 +9,8 @@ if (nargin<7) maxplot = max(abs(whattoplot));end;
 if (nargin<8) maxplot2 = maxplot;end;
 if ~exist('colorscheme') colorscheme = 1;end;
     
-square_width = 12;
+if ~exist( 'square_width'); square_width = 12;end;
+
 imagex_color = double(imagex);
 count = 1;
 for k=whichres
@@ -39,33 +40,37 @@ for k=whichres
     xbins =  bottom:top; 
     ybins = left:right;
     for n=1:3
-%        imagex_color(xbins,ybins,n) = double(imagex(xbins,ybins,n))*colorplot(n);
-        imagex_color(xbins,ybins,n) = 255*colorplot(n);
+      imagex_color(xbins,ybins,n) = double(imagex(xbins,ybins,n))*colorplot(n);
+        %imagex_color(xbins,ybins,n) = 255*colorplot(n);
     end
     
-    xbins =  bottom:top; 
-    ybins = left-1;
-    for n=1:3
+    MAKE_BOX_OUTLINE = 0;
+    if MAKE_BOX_OUTLINE;    
+      xbins =  bottom:top; 
+      ybins = left-1;
+      for n=1:3
         imagex_color(xbins,ybins,n) = 0;
+      end
+      
+      xbins =  bottom:top; 
+      ybins = right+1;
+      for n=1:3
+        imagex_color(xbins,ybins,n) = 0;
+      end
+      
+      xbins =  bottom-1; 
+      ybins = left:right;
+      for n=1:3
+        imagex_color(xbins,ybins,n) = 0;
+      end
+      
+      xbins =  top+1; 
+      ybins = left:right;
+      for n=1:3
+        imagex_color(xbins,ybins,n) = 0;
+      end
     end
     
-    xbins =  bottom:top; 
-    ybins = right+1;
-    for n=1:3
-        imagex_color(xbins,ybins,n) = 0;
-    end
-    
-    xbins =  bottom-1; 
-    ybins = left:right;
-    for n=1:3
-        imagex_color(xbins,ybins,n) = 0;
-    end
-    
-    xbins =  top+1; 
-    ybins = left:right;
-    for n=1:3
-        imagex_color(xbins,ybins,n) = 0;
-    end
     count=count+1;
 end
 
@@ -89,13 +94,18 @@ end
 
 if (makelegend)
 numlines = 10;  
-x_offset = 5*square_width;
+x_offset = square_width;
+y_offset = 10*square_width;
 sizebar = 4;
 for k=1:-(1/numlines):-1
-    ybins = square_width:2*square_width;
-    xbins = x_offset + ...
+    ybins = x_offset -square_width + [1:square_width];
+    xbins = y_offset + ...
         [round(sizebar*-1*k*square_width) : round(sizebar*-1*k*square_width)+sizebar*square_width/numlines];
-    colorplot = getcolor(k, maxplot,maxplot2,colorscheme);
+    if k > 0
+      colorplot = getcolor( maxplot*k, maxplot,maxplot2,colorscheme);
+    else
+      colorplot = getcolor( maxplot2*k, maxplot,maxplot2,colorscheme);
+    end
     for n=1:3
         imagex_color(xbins,ybins,n) = double(imagex(xbins,ybins,n))*colorplot(n);
     end
@@ -103,12 +113,16 @@ end
 end
 
 hold off; image(imagex_color/256); hold on; axis equal
-
 if (makelegend)
-k=-1;
-text(2*square_width,x_offset+round(sizebar*-1*k*square_width),['-',num2str(abs(maxplot2))]);
-k=+1;
-text(2*square_width,x_offset+round(sizebar*-1*k*square_width),['+',num2str(maxplot)]);
+  if colorscheme == 8
+    k=0;
+    text(x_offset,y_offset+round(sizebar*-1*k*square_width),'0');
+  else
+    k=-1;
+    text(x_offset,y_offset+round(sizebar*-1*k*square_width),['-',num2str(abs(maxplot2))]);
+  end
+  k=+1;
+  text(x_offset,y_offset+round(sizebar*-1*k*square_width),['+',num2str(maxplot)]);
 end
 
 axis off

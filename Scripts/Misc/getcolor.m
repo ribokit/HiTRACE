@@ -2,6 +2,8 @@ function  colorplot = getcolor(colorvalue, maxplot,maxplot2,colorscheme);
 
 if ~exist('colorscheme') colorscheme = 1; end;
 
+if isnan( colorvalue); colorplot = [0.7 0.7 0.7]; return;end;
+  
 switch colorscheme
     case 1 %Red-white-blue
         if (colorvalue>0)
@@ -69,5 +71,19 @@ switch colorscheme
         end
         GREENSCALE=0.8;
         colorplot(2) = colorplot(2)*GREENSCALE;
+    case 8 %Red-orange-white
+        colorplot = [1,1,1];
+	a = colorvalue/maxplot;
+	
+	if (a >= 0.1 & a < 0.8 )
+	  b = ( a - 0.1)/(0.8-0.1);
+	  colorplot = [1, 1-0.5*b, 1-b ];
+        elseif ( a >= 0.8 & a < 1.0)
+	  b = ( a - 0.8)/0.2;
+	  colorplot = [1, 0.5 * (1-b), 0 ];
+	elseif ( a >= 1.0 )
+	  colorplot = [1, 0, 0];
+        end
+        return
 end
 

@@ -8,11 +8,12 @@ numres = length(residue_locations);
 if (nargin<6) maxplot = max(abs(whattoplot));end;
 if (nargin<7) maxplot2 = maxplot;end;
 if ~exist('colorscheme') colorscheme = 1;end;
+if ~exist( 'boxsize') boxsize = 24; end;
 
 square_width = boxsize;
 imagex_color = double(imagex);
 count = 1;
-for k=whichres
+for k = whichres
     x=residue_locations(1,k - offset);
     y=residue_locations(2,k - offset);
     %   h=rectangle('Position', ...
@@ -21,7 +22,7 @@ for k=whichres
     xbins = max(floor(y-square_width/2),1) :  min(floor(y+square_width/2),xsize); 
     ybins = max(floor(x-square_width/2),1) :  min(floor(x+square_width/2),ysize); 
     for n=1:3
-        imagex_color(xbins,ybins,n) = double(imagex(xbins,ybins,n))*colorplot(n);
+      imagex_color(xbins,ybins,n) = double(imagex(xbins,ybins,n))*colorplot(n);
     end
     count=count+1;
 end
@@ -40,8 +41,7 @@ end
 % end
 
 %Make a "legend"
-if ~exist('makelegend') makelegend=1;
-end;
+if ~exist('makelegend') makelegend=1;end;
 
 if (makelegend)
     numlines = 10;
@@ -68,4 +68,3 @@ if (makelegend)
 end
 
 axis off
-
