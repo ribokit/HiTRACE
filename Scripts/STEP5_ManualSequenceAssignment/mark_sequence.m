@@ -23,8 +23,6 @@ function [xsel] = mark_sequence( image_x, xsel, sequence, ...
 % (C) R. Das, 2008-2011
 % (Substantial) modification to script in SAFA (SemiAutomated Footprinting Analysis) software.
 %
-subplot(1,1,1);
-
 if ~exist('xsel');  xsel = []; end
 if ~exist('JUST_PLOT_SEQUENCE');  JUST_PLOT_SEQUENCE = 0; end
 if ~exist('offset');  offset = -999; end
