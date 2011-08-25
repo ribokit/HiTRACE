@@ -1037,7 +1037,7 @@ for i = step:handles.max
                 end
 
                 if dpAlign
-                    handles.d_align= align_by_DP( handles.d_bsub(ymin:ymax, : ), targetblock, slack, shift, windowsize, 0);
+                    handles.d_align= align_by_DP_using_ref( handles.d_bsub(ymin:ymax, : ), handles.da(ymin:ymax,:), [], slack, shift, windowsize, 0);
                 else
                     handles.d_align = handles.d_bsub(ymin:ymax, : );
                 end
