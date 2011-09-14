@@ -5,6 +5,8 @@ if ~exist( 'APPLY_ZSCORE_CUTOFF' ) APPLY_ZSCORE_CUTOFF = 1; end;
 if ~exist( 'ZSCORE_CUTOFF' ) ZSCORE_CUTOFF = 0.0; end;
 if ~exist( 'ONLY_A_C' ) ONLY_A_C = 0; end;
 if ~exist( 'print_stuff' ); print_stuff = 0; end
+if ~exist( 'd_nomod' ); d_nomod = []; end
+
 
 Z = []; mutpos = [];seqplot = [];
 if length( rdat_files ) == 0; return; end;
@@ -63,7 +65,7 @@ function [ Zscore_full, mutpos ] = get_Zscore_and_apply_filter( d, d_nomod, MEAN
 
 Zscore = [];
 
-a_input = d.area_peak;
+a_input = d.reactivity;
 normbins = [ 10: size( a_input,1)-10 ];
 a = quick_norm( a_input, normbins );
 
@@ -140,7 +142,7 @@ end
 Z_NOMOD_CUTOFF = 6.0;
 if ~isempty( d_nomod )  
 
-  b = d_nomod.area_peak;
+  b = d_nomod.reactivity;
   if ( size( b, 1 ) ~= size( a, 1 ) )
     fprintf( 'Hey, d_nomod needs to have the same dimensions as d !!!\n' ); return;
   end

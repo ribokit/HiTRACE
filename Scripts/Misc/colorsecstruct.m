@@ -30,7 +30,8 @@ end
 %Make a "legend"
 numlines = 10;  
 sizebar = 4;
-x_offset =  size(imagex,1) - sizebar*2*square_width;
+%x_offset =  size(imagex,1) - sizebar*2*square_width;
+x_offset =  sizebar*2*square_width;
 
 bounds = [1 -1];
 if COLORCODE == 2; bounds  = [1 0]; end;

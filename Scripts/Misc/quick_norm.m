@@ -1,4 +1,10 @@
-function d_out = quick_norm( d, bins );
+function [d_out, norm_factor ] = quick_norm( d, bins );
+
+do_transpose = 0;
+if size( d, 1) == 1 && size( d, 2)>1
+  d = d';
+  do_transpose = 1;
+end
 
 if ~exist('bins')
   bins = 1:size(d, 1);
@@ -13,3 +19,7 @@ end
 norm_factor = 1.0 ./ mean( d( bins,:),1);
 
 d_out = d * diag( norm_factor );
+
+if do_transpose
+  d_out = d_out';
+end
