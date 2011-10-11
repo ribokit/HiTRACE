@@ -1,4 +1,4 @@
-function [ log_L, C_state ] = analyze_titration_with_likelihood( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in )
+function [ log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale ] = analyze_titration_with_likelihood( input_data, conc, resnum, param1, param2, whichres, fit_type, C_state_in, plot_res )
 %  log_L  = analyze_titration_with_likelihood( input_data, conc, resnum, K1_conc, param2, whichres );
 %
 % Likelihood-based analysis of structure mapping titration -- optimizes lane normalizaton and calculates
@@ -65,6 +65,7 @@ end
 
 [logLbest, pred_fit, lane_normalization, sigma_at_each_residue, C_state ] =...
     do_new_likelihood_fit( input_data, conc, p1_best, p2_best, fit_type, [],  C_state_in );
+%lane_normalization
 
 % let's try to do a good job of figuring out errors by looking over likelihood
 hold on
@@ -93,7 +94,7 @@ clf
 if ( length( param1 ) > 1 & length( param2 ) > 1 )
 make_logL_contour_plot( log_L, param1, param2, p1_name, p2_name );
 else
-    plot( param1, log_L );
+  semilogx( param1, log_L );
 end
 title( titlestring );
 
@@ -102,6 +103,11 @@ clf
 plot_titration_data( input_data, resnum, conc, pred_fit, sigma_at_each_residue, lane_normalization, conc_fine, pred_fit_fine );
 title( titlestring );
 
+
+for i = 1:size( input_data, 1 )
+  input_data_rescale(i,:) = (input_data(i,:) - C_state(1,i))/(C_state(2,i)-C_state(1,i));
+  pred_fit_fine_rescale(i,:) = (pred_fit_fine(i,:) - C_state(1,i))/(C_state(2,i)-C_state(1,i));
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -1,6 +1,7 @@
 function  [ logL, pred_fit, lane_normalization, sigma_at_each_residue, C_state ] = ...
-    do_new_likelihood_fit( data, conc, K1, n, fit_type, lane_normalization, C_state_in  );
+    do_new_likelihood_fit( data, conc, K1, n, fit_type, lane_normalization, C_state_in, beta_C  );
 
+if ~exist( 'beta_C' ); beta_C = 0.1; end;
 if ~exist( 'fit_type' ); fit_type = 'hill'; end;
 
 %Expect a minimum of ~10% error due to systematics.
@@ -28,7 +29,7 @@ sigma_at_each_residue = ones( 1, numres );
 
 for n = 1:numiter
 
-  [pred_fit, pred_fit_before_scaling, C_state ] = do_linear_fit_vs_conc( data, f, lane_normalization, C_state_in, sigma_at_each_residue );
+  [pred_fit, pred_fit_before_scaling, C_state ] = do_linear_fit_vs_conc( data, f, lane_normalization, C_state_in, sigma_at_each_residue, beta_C );
 
   sigma_at_each_residue = get_sigma_at_each_residue( data, pred_fit, SIGMIN_FRAC );
   if ( n < numiter )
@@ -51,6 +52,7 @@ logL = - numconc * sum( log( sigma_at_each_residue ) );
 
 if ( sigma_normalization > 0 )  logL = logL - numconc * numres * log( sigma_normalization ); end;
 
+if exist( 'C_in' ) logL = logL - beta_C * sum( sum( (( C_in - C_state ) * diag( 1./sigma_normalization)).^2 ) ); end;
 
 return;
 
@@ -58,15 +60,17 @@ return;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [pred_fit, pred_fit_before_scaling, C ] = do_linear_fit_vs_conc( data, f, lane_normalization, C_in, sigma_at_each_residue );
+function [pred_fit, pred_fit_before_scaling, C ] = do_linear_fit_vs_conc( data, f, lane_normalization, C_in, sigma_at_each_residue, beta );
 
 numres = size( data, 1 );
 numconc = size( data, 2);
 num_states = size( f, 1 );
 [lane_norm_grid, dummy] = meshgrid( lane_normalization, 1:numres );
 
-if exist( 'C_in' ) & ~isempty( C_in )
-   % this is a special case -- we 'know' what the states look like, and just
+JUST_SCALE_CIN = 0;
+if exist( 'C_in' ) & ~isempty( C_in ) & JUST_SCALE_CIN
+
+  % this is a special case -- we 'know' what the states look like, and just
    % need to scale them proportionally.
   pred_fit = lane_norm_grid .* ( C_in' * f );
   for a = 1:num_states
@@ -75,10 +79,17 @@ if exist( 'C_in' ) & ~isempty( C_in )
     kappa(a) = sum(sum(data .* pred_fit_contribution)) / sum(sum(pred_fit .* pred_fit_contribution));
   end
   C = diag(kappa) * C_in;
+
 else
   A = f * diag( lane_normalization.^2 ) * f';
   % reactivity of each state.
-  B = data*f';
+  B =  data*diag(lane_normalization)*f';
+
+  if exist( 'C_in' ) & ~isempty( C_in )
+    A = A + beta;
+    B = B + beta * C_in';
+  end
+  
   C = A\B'; 
   
   % to enforce that C is positive...
@@ -86,7 +97,6 @@ else
   %  C(:,m) = lsqnonneg( A, B(m,:)' );
   %end
 end
-
 
 pred_fit_before_scaling = C' * f;
 pred_fit = lane_norm_grid .* pred_fit_before_scaling; 
