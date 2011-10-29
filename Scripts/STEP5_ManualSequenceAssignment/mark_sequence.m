@@ -76,6 +76,9 @@ while ~stop_sel
   [yselpick, xselpick, button ]  = ginput(1);
 
  
+  if(isempty(button))
+      continue;
+  end
   switch( button )
    case 1
     xsel = [xsel xselpick];
