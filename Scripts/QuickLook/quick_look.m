@@ -70,11 +70,20 @@ if ~exist( 'reorder' ) | length( reorder) == 0;  reorder = [ 1 : length( data_al
 % standard...
 if ~exist( 'refcol');  refcol = [ 4 ]; end
 
+for i = length(reorder)
+    size_v = size(data_all{i},1);
+end
+max_size = max(size_v);
+
 d0_signal = [];
 d0_reference_ladder = [];
-for i = 1:length( reorder )
-  d0_signal(:,i)           = baseline_subtract(data_all{reorder(i)}(:,1));
-  d0_reference_ladder(:,i) = baseline_subtract(data_all{reorder(i)}(:,refcol));
+for i = 1:length( reorder )  
+    if(size(data_all{reorder(i)},1) < max_size)
+        data_all{reorder(i)}(max_size, size(data_all{reorder(i)},2)) = 0;
+    end
+    
+  d0_signal(1:size(data_all{reorder(i)}(:,1),1),i)           = baseline_subtract(data_all{reorder(i)}(:,1));
+  d0_reference_ladder(1:size(data_all{reorder(i)}(:,1),1),i) = baseline_subtract(data_all{reorder(i)}(:,refcol));
 end
 
 %for output, in case we want it.
