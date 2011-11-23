@@ -31,8 +31,13 @@ ylabel('Peak intensity');
 
 % outliers?
 vals =  max( pred_fit' );
-gp = find( vals < ( mean( vals ) + 3*std( vals ) ) ); % remove outliers
-ylim( [ 0 max( vals( gp ) )]);
+gp = find( vals <= ( mean( vals ) + 3*std( vals ) ) ); % remove outliers
+if length(vals(gp) ) > 1
+  ylim( [ 0 max( vals( gp ) )]);
+else
+  ylim( [min( pred_fit )  max(pred_fit)] );
+end
+
 xlim( [min(resnum)-1,  max(resnum)+1] );
 %set(gca,'ylim',[0 (numconc+1)*plot_offset])
 hold off
@@ -50,7 +55,9 @@ for i = 1:numres
   h = text( conc(startpt), plot_offset*(i-1)+pred_fit(i,startpt), num2str( resnum( i ) ) );
   set(h,'color','k','fontsize',8,'fontweight','bold');
 end
-set(gca,'ylim',[0 (numres+1)*plot_offset+max(max(data))],'xlim',[ min(conc) max(conc) ])
+ylim2 = [0 (numres+1)*plot_offset+max(max(data))];
+if ( size( pred_fit, 1 )== 1  ) ylim2 = [min( data) max(data) ]; end;
+set(gca,'ylim',ylim2,'xlim',[ min(conc) max(conc) ])
 
 xlabel('[M^{2+} (mM)]');
 ylabel('Peak intensity');

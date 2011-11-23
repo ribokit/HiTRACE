@@ -19,6 +19,10 @@ if ~exist('ymax')
 end
 
 datafiles = dir( [dirname,'/*ab1'] );
+if length( datafiles ) == 0
+% fragment analysis files -- appear to be the same format as ab1
+  datafiles = dir( [dirname,'/*fsa'] ); 
+end
 
 count = 0;
 

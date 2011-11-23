@@ -10,6 +10,7 @@ function [data_align, x_realign] = align_to_first_ver2( data, PLOT_STUFF, refcol
 %
 FULL_SIGNAL_WINDOW = 5000;
 
+
 if ~exist('refcol')
   refcol = 1;
 end

@@ -1,5 +1,5 @@
 function [d,da,labels,d_noalign,da_noalign] = quick_look( dirnames, ymin, ymax, reorder, ...
-				     labels, refcol, PLOT_STUFF )
+				     labels, refcol, PLOT_STUFF, reflane )
 % QUICK_LOOK  basic read-in script for ABI sequencer files for HiTRACE analysis
 %
 %  [d,da,labels,d_noalign,da_noalign] = quick_look( dirnames, ymin, ymax, reorder, labels, refcol, PLOT_STUFF )
@@ -27,6 +27,7 @@ function [d,da,labels,d_noalign,da_noalign] = quick_look( dirnames, ymin, ymax, 
 %
 if ~exist( 'ymin' ); ymin = 500;   ymax = 3500; end
 if exist( 'PLOT_STUFF' ) ~= 1;  PLOT_STUFF = 1; end;
+if ~exist( 'reflane' ); reflane = 1;end;
 
 d = [];
 da = [];
@@ -70,6 +71,12 @@ if ~exist( 'reorder' ) | length( reorder) == 0;  reorder = [ 1 : length( data_al
 % standard...
 if ~exist( 'refcol');  refcol = [ 4 ]; end
 
+%truncate data to the same length (this shouldn't be necessary, but happened once with a mixed-up data set from the PAN facility.
+%for i = 1:length( data_all )
+%  if (i == 1); whichpixels = [ 1 : size( data_all{reorder(i)}, 1 ) ]; end;
+%  data_all{i} = data_all{i}(whichpixels,:);
+%end
+
 for i = length(reorder)
     size_v = size(data_all{i},1);
 end
@@ -77,6 +84,11 @@ max_size = max(size_v);
 
 d0_signal = [];
 d0_reference_ladder = [];
+
+%for i = 1:length( reorder )  
+%  d0_signal(:,i)           = baseline_subtract(data_all{reorder(i)}(:,1));
+%  d0_reference_ladder(:,i) = baseline_subtract(data_all{reorder(i)}(:,refcol));
+%end
 for i = 1:length( reorder )  
     if(size(data_all{reorder(i)},1) < max_size)
         data_all{reorder(i)}(max_size, size(data_all{reorder(i)},2)) = 0;
@@ -153,7 +165,7 @@ for i = 1:length(data_init)
     final_index = length( data_all );
   end
   data_align_group{i} = align_capillaries( ...
-      { data_all{[start_index:final_index]} }, refcol, 1);
+      { data_all{[start_index:final_index]} }, refcol, reflane);
 end
 
 data_align = align_capillaries_group( data_align_group, refcol, 1, 1);

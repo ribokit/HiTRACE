@@ -20,10 +20,13 @@ num_capillaries = size( data, 2 );
 numpts = size( data{1}, 1);
 %colorcode = jet( num_capillaries ); % sryoon
 
-d = zeros(numpts, num_capillaries); % sryoon
-
 for i = 1:num_capillaries
-  d(:,i) = data{i}(:,refcol);
+  numpts = max( numpts,  length(data{i}(:,refcol) ));
+end
+d = zeros(numpts, num_capillaries); 
+for i = 1:num_capillaries
+  numpts = length(data{i}(:,refcol) );
+  d(1:numpts,i) = data{i}(:,refcol);
 end
 
 if REFINE
@@ -43,7 +46,7 @@ for i = 1:num_capillaries
 %     d  = data{i}(:,m);
 %     data_shift(:,m) = interp1( x, d, x_realign(:,i),'linear',0.0 );
 %   end
-  data_shift = interp1(x, data{i}, x_realign(:,i), 'linear',0.0 ); % sryoon
+  data_shift = interp1( [1:length(data{i})]', data{i}, x_realign(:,i), 'linear',0.0 ); % sryoon
   data_align{i} = data_shift;
 end
 

@@ -90,7 +90,7 @@ else
     B = B + beta * C_in';
   end
   
-  C = A\B'; 
+  C = A\B';
   
   % to enforce that C is positive...
   %for m = 1:size( B, 1 );

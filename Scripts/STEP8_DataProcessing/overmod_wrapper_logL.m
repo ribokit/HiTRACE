@@ -4,6 +4,7 @@ if ~exist( 'normbins' ) | isempty( normbins); normbins = [1:length(b)]; end;
 if ~exist( 'area_pred' ); area_pred = 0*b - 1; end;
 if ~exist( 'PLOT_STUFF' ); PLOT_STUFF = 0; end;
 
+%overmod = [0.0:0.1:4.0];
 overmod = [0.0:0.05:2.0];
 n = length( overmod );
 

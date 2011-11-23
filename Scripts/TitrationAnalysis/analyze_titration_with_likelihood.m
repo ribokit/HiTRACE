@@ -19,6 +19,7 @@ function [ log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale 
 
 if ~exist( 'param1' ) | isempty( param1 ); param1 = 10.^[-3.0 : 0.1 :3.0]; end
 if ~exist( 'param2' ) | isempty( param2 ); param2 = [0.0:0.05:4]; end;
+if ~exist( 'resnum' ) | isempty( resnum ); resnum = [1:size( input_data, 1 ) ]; end;
 if exist( 'whichres' ) & ~isempty( whichres )
   for k = 1:length(whichres)
     res_to_fit(k) = find( resnum == whichres(k) );
