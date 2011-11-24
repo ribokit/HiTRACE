@@ -919,7 +919,13 @@ while( ~isempty(r) )
 end
 s_string = [s_string, '};' ];
 eval( s_string );
-
+if eternaCheck
+    data_types = {'SHAPE','SHAPE','nomod','ddTTP'};
+    for j = which_sets  
+      seqpos = length(sequence{j})-20 - [1:(length(sequence{j})-20)] + 1 + offset;
+      [ marks{j}, all_area_pred{j}, mutpos{j} ] = get_predicted_marks_SHAPE_DMS_CMCT( structure, sequence{j}, offset , seqpos, data_types );
+    end
+end
 
 for i = step:handles.max
     switch(i)
@@ -1009,10 +1015,22 @@ for i = step:handles.max
                     
                 end
 
+                if(verLessThan('matlab', '7.10.0'))
+                    for j = which_sets;
+                      setStatusLabel(sprintf('Auto assign annotation... ( %d / %d )',j,which_sets(end)), handles);
+                      xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
+                    end
+                else
+                    setStatusLabel('Auto assign annotation parallely...', handles);
+                    parfor j = which_sets;
+                      xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
+                    end
+                end
+                
                 for j = handles.displayComponents
                     delete(j);
                 end
-                
+                                
                 handles.displayComponents = displaySetting('baseline', handles);
             else
                 setStatusLabel('Nonlinear alignment by DP...', handles);
@@ -1067,26 +1085,11 @@ for i = step:handles.max
             
             seqpos = ( (length(sequence)-dist) : -1 :1 ) + offset;
             
+            if~isempty(handles.xsel)
+                xsel = handles.xsel;
+            end
+            
             if(eternaCheck)
-                data_types = {'SHAPE','SHAPE','nomod','ddTTP'};
-                for j = which_sets  
-                  seqpos = length(sequence{j})-20 - [1:(length(sequence{j})-20)] + 1 + offset;
-                  [ marks{j}, all_area_pred{j}, mutpos{j} ] = get_predicted_marks_SHAPE_DMS_CMCT( structure, sequence{j}, offset , seqpos, data_types );
-                end
-
-                if(verLessThan('matlab', '7.10.0'))
-                    for j = which_sets;
-                      setStatusLabel(sprintf('Auto assign annotation... ( %d / %d )',j,which_sets(end)), handles);
-                      xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
-                    end
-                else
-                    setStatusLabel('Auto assign annotation parallely...', handles);
-                    parfor j = which_sets;
-                      xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
-                    end
-                end
-                
-                
                 for j = handles.displayComponents
                     delete(j);
                 end
@@ -1097,7 +1100,7 @@ for i = step:handles.max
                 for j = which_sets;
                     setStatusLabel(sprintf('Manual annotation... ( %d / %d )', j, which_sets(end)), handles);
                     set(handles.profileCombo, 'Value', j);
-                    xsel{j} = mark_sequence( handles.d_bsub{j}, xsel{j}, sequence{j}(1:end-dist), 0, offset, period, marks{j}, mutpos{j}, all_area_pred{j},peak_spacing,handles.displayComponents);
+                    xsel{j} = mark_sequence( handles.d_bsub{j}, xsel{j}, sequence{j}(1:end-dist), 0, offset, period, marks{j}, mutpos{j}, all_area_pred{j},peak_spacing,handles);
                     numpeaks{j} = length(xsel{j});
                 end
                 

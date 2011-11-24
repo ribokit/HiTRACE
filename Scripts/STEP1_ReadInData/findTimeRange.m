@@ -10,5 +10,5 @@ for j = 1:size(d,2);
     max_list(j) = y(end);
 end
 
-ymin = round(median(min_list) - 300);
-ymax = round(median(max_list) + 300);
+ymin = round(median(min_list) - 100);
+ymax = round(median(max_list) + 100);

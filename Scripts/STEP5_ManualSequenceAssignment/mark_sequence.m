@@ -47,7 +47,7 @@ end
 contrast_factor = 40/ mean(mean(abs(image_x)));
 
 if (JUST_PLOT_SEQUENCE )
-  if USE_GUI; axes(USE_GUI); end;
+  if isstruct(USE_GUI); axes(USE_GUI.displayComponents); end;
   make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
 	     contrast_factor, offset, period,marks,mutpos);
   return;
@@ -57,21 +57,21 @@ numlanes = size(image_x,2);
 
 stop_sel = 0;
 
-if USE_GUI
-  axes(USE_GUI);
+if isstruct(USE_GUI)
+  axes(USE_GUI.displayComponents);
   make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
 	     contrast_factor, offset, period,marks,mutpos);
   uiwait( msgbox( 'Are you ready to interactively annotate the sequence?','Ready?','modal' ) )
 end
 
 while ~stop_sel
-  if USE_GUI; axes(USE_GUI); end;
+  if isstruct(USE_GUI); axes(USE_GUI.displayComponents);; end;
   make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
 	     contrast_factor, offset, period,marks,mutpos);
   
   title( ['j,l -- zoom. i,k -- up/down. q -- quit. left-click -- select. \newline',...
 	  'x -- auto-assign. ',...
-	  'middle button -- undo.', ' r -- reset ']);
+	  'middle button -- undo.', ' r -- reset.', ' t,b -- page up/down.', sprintf(' # of Annotation: %d / %d', length(xsel),length(sequence))]);
   
   [yselpick, xselpick, button ]  = ginput(1);
 
@@ -102,9 +102,9 @@ while ~stop_sel
             xsel = sort( xsel );
         end
    case {'q','Q','z','Z'}
-    if( length(xsel) > 0 & length(xsel) < length(sequence) )
-      if USE_GUI
-	btn = questdlg(sprintf('Warning: You have assigned only %d band position(s), which is less than the total number of bands (%d). How do you want to proceed?', length(xsel), length(sequence)), ...
+    if( length(xsel) > 0 && (length(xsel) < length(sequence) || length(xsel) > length(sequence)) )
+      if isstruct(USE_GUI)
+	btn = questdlg(sprintf('Warning: You have assigned only %d band position(s), which is less/more than the total number of bands (%d). How do you want to proceed?', length(xsel), length(sequence)), ...
 		       'Warning!', 'Return to image', 'Force to go','Force to go');
         if(strcmp(btn, 'Force to go'))
 	  stop_sel = 1;
@@ -164,10 +164,18 @@ while ~stop_sel
     xsel = xsel - 5;
    case {'s','S'}
     xsel = xsel + 5;
-   case {'v','V'}
-    zoom(1.10)
-   case {'b', 'B'}
-    zoom(0.90)
+%    case {'v','V'}
+%     zoom(1.10)
+%    case {'b', 'B'}
+%     zoom(0.90)
+      case {'b', 'B'}
+        yscale = (ymax - ymin);
+        ymin = ymin - yscale;
+        ymax = ymax - yscale;
+      case {'t', 'T'}
+        yscale = (ymax - ymin);
+        ymin = ymin - yscale;
+        ymax = ymax - yscale;
    case {'r', 'R'}
     xsel = []; % reset
    case {'x','X'}
