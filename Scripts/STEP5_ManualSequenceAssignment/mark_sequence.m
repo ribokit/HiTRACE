@@ -170,8 +170,8 @@ while ~stop_sel
 %     zoom(0.90)
       case {'b', 'B'}
         yscale = (ymax - ymin);
-        ymin = ymin - yscale;
-        ymax = ymax - yscale;
+        ymin = ymin + yscale;
+        ymax = ymax + yscale;
       case {'t', 'T'}
         yscale = (ymax - ymin);
         ymin = ymin - yscale;
