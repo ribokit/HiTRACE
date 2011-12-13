@@ -306,7 +306,12 @@ switch(mode)
         component = [h1 h2 h3];
     case 'score'
         index = get(handles.profileCombo,'Value');
-        index2 = get(handles.dataCombo, 'Value');
+        if( get(handles.dataCombo, 'Value') == 'MgCl2')
+            index2 = 1;
+        else
+            index2 = 2;
+        end
+        
         area_bsub = handles.area_bsub;
         nres = size( area_bsub{index}, 1);
 
@@ -403,11 +408,6 @@ switch(mode)
 end
 
 function menuSetting(mode, handles)
-v = get(handles.uitoolbar1, 'Children');
-for i = v
-    set(i,'Enable', 'on');
-end
-
 v = get(handles.listPanel, 'Children');
 for i = v
     set(i,'Enable', 'on');
@@ -443,8 +443,6 @@ set(handles.dataCombo, 'Enable', 'on');
 
 switch(mode)
     case 'initial'
-        set(handles.nextToolbar, 'Enable', 'off');
-        set(handles.prevToolbar, 'Enable', 'off');
         set(handles.prevBtn, 'Enable', 'off');
         set(handles.nextBtn, 'Enable', 'off');
         set(handles.rdatBtn, 'Enable', 'off');
@@ -454,11 +452,6 @@ switch(mode)
         set(handles.startEdit, 'Enable', 'off');
         set(handles.endEdit, 'Enable', 'off');
 	case 'running'
-        v = get(handles.uitoolbar1, 'Children');
-        for i = v
-            set(i,'Enable', 'off');
-        end
-        
         v = get(handles.listPanel, 'Children');
         for i = v
             set(i,'Enable', 'off');
@@ -491,7 +484,6 @@ switch(mode)
         set(handles.dataCombo, 'Enable', 'off');
         set(handles.resetBtn, 'Enable', 'off');
     case 'lastpage'
-        set(handles.nextToolbar, 'Enable', 'off');
         set(handles.nextBtn, 'Enable', 'off');
         
         if(handles.settings.eternaCheck)
@@ -510,7 +502,6 @@ switch(mode)
             set(handles.dataCombo, 'Enable', 'off');
         end
     case 'firstpage'
-        set(handles.prevToolbar, 'Enable', 'off');
         set(handles.prevBtn, 'Enable', 'off');
         if(handles.settings.eternaCheck)
             set(handles.profileCombo, 'Enable', 'on');
@@ -1822,7 +1813,7 @@ if(handles.settings.eternaCheck)
     file = get(handles.sequenceEdit, 'String');
     [handles.ids, handles.target_names, handles.subrounds, handles.sequence, handles.design_names ] = parse_EteRNA_sequence_file( file );
     set(handles.profileCombo,'String', handles.design_names);
-    set(handles.dataCombo,'String', {'1', '2'});
+    set(handles.dataCombo,'String', {'MgCl2', 'NaCl'});
     handles.max = 6;
 else
     file = get(handles.sequenceEdit, 'String');
