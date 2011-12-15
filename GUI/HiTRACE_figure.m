@@ -107,6 +107,10 @@ handles.displayComponents = displaySetting('initial', handles);
 menuSetting('initial', handles);
 refreshSetting(handles);
 % Update handles structure
+
+global skip_init;
+skip_init = false;
+
 guidata(hObject, handles);
 
 % UIWAIT makes HiTRACE_figure wait for user response (see UIRESUME)
@@ -843,18 +847,22 @@ function runBtn_Callback(hObject, eventdata, handles)
 handles = setupSetting(handles);
 guidata(hObject, handles);
 
+global skip_init;
+
 menuSetting('running', handles);
 
 timeline = tic;
 
-if(isempty(handles.filenames))
-    errordlg('Please add one or more data folders. You can select the location of a folder by clicking the ''Add'' button. Alternatively, you can load a text file that contains a list of folders (one path per line).','Error!');
-    return;
-end
+if(~skip_init)
+    if(isempty(handles.filenames))
+        errordlg('Please add one or more data folders. You can select the location of a folder by clicking the ''Add'' button. Alternatively, you can load a text file that contains a list of folders (one path per line).','Error!');
+        return;
+    end
 
-if(isempty(handles.sequence))
-    errordlg('Please specify your input sequence. You can load one from a plain text file.','Error!');
-    return;
+    if(isempty(handles.sequence))
+        errordlg('Please specify your input sequence. You can load one from a plain text file.','Error!');
+        return;
+    end
 end
 
 setStatusLabel('Initailizing...', handles);
@@ -922,17 +930,17 @@ for i = step:handles.max
     switch(i)
         case 1
             setStatusLabel('Loading and alignment...', handles);
-
-            [ handles.d, handles.da] = quick_look( filenames, ymin, ymax, [], [], refcol, 0);
+            if(~skip_init)
+                [ handles.d, handles.da] = quick_look( filenames, ymin, ymax, [], [], refcol, 0);
+            end
             
             if(autorange)
                 [ymin ymax] = findTimeRange(handles.d);
-                
+
                 handles.settings.ymin = ymin;
                 handles.settings.ymax = ymax;
                 refreshSetting(handles);
             end
-                
             
             for j = handles.displayComponents
                 delete(j);
@@ -1231,6 +1239,8 @@ fin=toc(timeline);
 str = sprintf('Finished (running time = %f seconds). In order to return to the initial setting window, please close the viewer window.', fin);
 h = questdlg(str, 'Finish!', 'Done', 'Done');
 
+skip_init = true;
+
 menuSetting('lastpage',handles);
 handles.step = handles.max;
 guidata(hObject, handles);
@@ -1298,6 +1308,7 @@ function loadworkspaceBtn_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 [name path]= uigetfile('*.mat','Pick a workspace file');
+global skip_init;
 
 if(name)
     fullname = strcat(path, name);
@@ -1360,6 +1371,9 @@ if(name)
         
         guidata(hObject, handles);
         setStatusLabel('Workspace loaded', handles);
+        
+        
+        skip_init = true;
     else
         errordlg('Invalid workspace file.', 'Error!');
     end
@@ -1532,9 +1546,11 @@ function seqBtn_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 setStatusLabel('Open a sequence',handles);
+global skip_init;
 [filename pathname]= uigetfile('*.txt','Pick a sequence file');
 if(filename)
     set(handles.sequenceEdit, 'String', strcat(pathname,filename));
+    skip_init=false;    
 end
 
 % --- Executes on button press in loadlistBtn.
@@ -1543,6 +1559,7 @@ function loadlistBtn_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 [filename pathname]= uigetfile('*.txt','Pick a list txt file');
+global skip_init;
 
 if(filename)
     fid = fopen(strcat(pathname,filename), 'r');
@@ -1557,6 +1574,7 @@ if(filename)
         
         guidata(hObject, handles);
     end
+    skip_init=false;
 end
 
 % --- Executes on selection change in fileListbox.
@@ -1588,6 +1606,7 @@ function addBtn_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
  dir = uigetdir;
+ global skip_init;
  if(dir)
      str = handles.filenames;
      if(isempty(str))
@@ -1599,8 +1618,8 @@ function addBtn_Callback(hObject, eventdata, handles)
      handles.filenames = str;
      set(handles.fileListbox,'String', str, 'Max', length(str), 'Value', 1);
      
-     
      guidata(hObject, handles);
+     skip_init=false;
  end
 
 % --- Executes on button press in removeBtn.
@@ -1611,7 +1630,7 @@ function removeBtn_Callback(hObject, eventdata, handles)
 h = handles.fileListbox;
 names = get(h,'String');
 remove = get(h,'Value');
-
+global skip_init;
 ind = zeros(length(names),1);
 if remove > 0 & remove <= length(ind)
     ind(remove) = 1;
@@ -1623,6 +1642,8 @@ if remove > 0 & remove <= length(ind)
     set(h, 'String', names, 'Value', 1);
 
     guidata(hObject, handles);
+    
+    skip_init=false;
 end
 
 
@@ -1788,6 +1809,7 @@ set(handles.guideEdit, 'String', handles.mutposFile);
 set(handles.strEdit, 'String', handles.structure);
 
 function handles = setupSetting(handles)
+global skip_init;
 handles.settings.refcol = str2double(get(handles.refcolEdit, 'String'));
 handles.settings.offset = str2double(get(handles.offsetEdit, 'String'));
 handles.settings.autorangeCheck = get(handles.autorangeCheck, 'Value');
@@ -1809,18 +1831,24 @@ handles.settings.eternaCheck = get(handles.eternaCheck, 'Value');
 
 handles.settings.peakspacing = str2double(get(handles.peakspacingEdit, 'String'));
 
-if(handles.settings.eternaCheck)
-    file = get(handles.sequenceEdit, 'String');
-    [handles.ids, handles.target_names, handles.subrounds, handles.sequence, handles.design_names ] = parse_EteRNA_sequence_file( file );
+if(handles.settings.eternaCheck)    
+    if(~skip_init)
+        file = get(handles.sequenceEdit, 'String');
+        [handles.ids, handles.target_names, handles.subrounds, handles.sequence, handles.design_names ] = parse_EteRNA_sequence_file( file );
+    end
+    
     set(handles.profileCombo,'String', handles.design_names);
     set(handles.dataCombo,'String', {'MgCl2', 'NaCl'});
+        
     handles.max = 6;
 else
-    file = get(handles.sequenceEdit, 'String');
-    fid = fopen(file);
-    str = textscan(fid, '%s');
-    handles.sequence = str{1}{1};
-    fclose(fid);
+    if(~skip_init)
+        file = get(handles.sequenceEdit, 'String');
+        fid = fopen(file);
+        str = textscan(fid, '%s');
+        handles.sequence = str{1}{1};
+        fclose(fid);
+    end
     handles.max = 5;
 end
 
