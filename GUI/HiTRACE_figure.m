@@ -856,12 +856,12 @@ function runBtn_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global skip_init;
 if(~skip_init)
-    if(isempty(handles.filenames))
+    if(isempty(get(handles.fileListbox, 'String')))
         errordlg('Please add one or more data folders. You can select the location of a folder by clicking the ''Add'' button. Alternatively, you can load a text file that contains a list of folders (one path per line).','Error!');
         return;
     end
 
-    if(isempty(handles.sequence))
+    if(isempty(get(handles.sequenceEdit, 'String')))
         errordlg('Please specify your input sequence. You can load one from a plain text file.','Error!');
         return;
     end
