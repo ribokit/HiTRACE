@@ -57,7 +57,7 @@ handles.output = hObject;
 
 if(~isdeployed)
     addpath(genpath(pwd));
-    addpath(genpath(strcat(pwd,'../Scripts')));
+    addpath(genpath(strcat(pwd,'/../Scripts')));
 end
 
 axes(handles.logoAxes);
