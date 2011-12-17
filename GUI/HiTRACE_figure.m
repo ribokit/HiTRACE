@@ -1013,17 +1013,19 @@ for i = step:handles.max
                     end
                     
                 end
-
-                if(verLessThan('matlab', '7.10.0'))
-                    for j = which_sets;
-                      setStatusLabel(sprintf('Auto assign annotation... ( %d / %d )',j,which_sets(end)), handles);
-                      xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
+                if(~skip_init)
+                    if(verLessThan('matlab', '7.10.0'))
+                        for j = which_sets;
+                          setStatusLabel(sprintf('Auto assign annotation... ( %d / %d )',j,which_sets(end)), handles);
+                          xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
+                        end
+                    else
+                        setStatusLabel('Auto assign annotation parallely...', handles);
+                        parfor j = which_sets;
+                          xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
+                        end
                     end
-                else
-                    setStatusLabel('Auto assign annotation parallely...', handles);
-                    parfor j = which_sets;
-                      xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
-                    end
+           
                 end
                 
                 for j = handles.displayComponents
@@ -1351,7 +1353,7 @@ if(name)
             handles.all_area_pred = structure.all_area_pred;
             
             set(handles.profileCombo,'String', handles.design_names);
-            set(handles.dataCombo,'String', {'1', '2'});
+            set(handles.dataCombo,'String', {'MgCl2', 'NaCl'});
         end
         
         handles.step = 0;
