@@ -56,8 +56,8 @@ function HiTRACE_figure_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 if(~isdeployed)
-    addpath(genpath('../Scripts'));
-    addpath(genpath('etc/'));
+    addpath(genpath(pwd));
+    addpath(genpath(strcat(pwd,'../Scripts')));
 end
 
 axes(handles.logoAxes);
@@ -65,17 +65,17 @@ imshow('hitrace_logo.png');
 
 % initialization for settings
 settings.refcol = 4;
-settings.offset = -10;
+settings.offset = 0;
 settings.autorangeCheck = 0;
 settings.ymin = 2200;
 settings.ymax = 4200;
 settings.dist = 20;
 settings.refine = 1;
 settings.baseline = 1;
-settings.eternaStart = 6;
-settings.eternaEnd = 6;
+settings.eternaStart = 9;
+settings.eternaEnd = 9;
 settings.eternaCheck = 0;
-settings.peakspacing = 24;
+settings.peakspacing = 12;
 
 fineTune.slack = 10;
 fineTune.shift = 100;
@@ -309,13 +309,10 @@ switch(mode)
         colormap( 1 - gray(100) );
         component = [h1 h2 h3];
     case 'score'
-        index = get(handles.profileCombo,'Value');
-        if( get(handles.dataCombo, 'Value') == 'MgCl2')
-            index2 = 1;
-        else
-            index2 = 2;
-        end
         
+        index = get(handles.profileCombo,'Value');
+        index2 = get(handles.dataCombo, 'Value');
+            
         area_bsub = handles.area_bsub;
         nres = size( area_bsub{index}, 1);
 
@@ -412,14 +409,27 @@ switch(mode)
 end
 
 function menuSetting(mode, handles)
-v = get(handles.listPanel, 'Children');
-for i = v
-    set(i,'Enable', 'on');
-end
+global skip_init;
+if(skip_init)
+    v = get(handles.listPanel, 'Children');
+    for i = v
+        set(i,'Enable', 'off');
+    end
 
-v = get(handles.seqPanel, 'Children');
-for i = v
-    set(i,'Enable', 'on');
+    v = get(handles.seqPanel, 'Children');
+    for i = v
+        set(i,'Enable', 'off');
+    end
+else
+    v = get(handles.listPanel, 'Children');
+    for i = v
+        set(i,'Enable', 'on');
+    end
+
+    v = get(handles.seqPanel, 'Children');
+    for i = v
+        set(i,'Enable', 'on');
+    end
 end
 
 v = get(handles.optionPanel, 'Children');
@@ -844,15 +854,7 @@ function runBtn_Callback(hObject, eventdata, handles)
 % hObject    handle to runBtn (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles = setupSetting(handles);
-guidata(hObject, handles);
-
 global skip_init;
-
-menuSetting('running', handles);
-
-timeline = tic;
-
 if(~skip_init)
     if(isempty(handles.filenames))
         errordlg('Please add one or more data folders. You can select the location of a folder by clicking the ''Add'' button. Alternatively, you can load a text file that contains a list of folders (one path per line).','Error!');
@@ -864,6 +866,18 @@ if(~skip_init)
         return;
     end
 end
+
+
+handles = setupSetting(handles);
+
+guidata(hObject, handles);
+
+
+
+menuSetting('running', handles);
+
+timeline = tic;
+
 
 setStatusLabel('Initailizing...', handles);
 
@@ -1358,10 +1372,12 @@ if(name)
         
         handles.step = 0;
         
+        skip_init = true;
         for i = handles.displayComponents
             delete(i);
         end
         handles.displayComponents = displaySetting('initial',handles);
+        
         menuSetting('firstpage',handles);
         refreshSetting(handles);
         
@@ -1373,9 +1389,6 @@ if(name)
         
         guidata(hObject, handles);
         setStatusLabel('Workspace loaded', handles);
-        
-        
-        skip_init = true;
     else
         errordlg('Invalid workspace file.', 'Error!');
     end
@@ -2106,6 +2119,8 @@ function resetBtn_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 delete(handles.figure1);
+global skip_init;
+skip_init = false;
 HiTRACE_figure;
 
 
