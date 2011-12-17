@@ -1378,8 +1378,9 @@ if(name)
         end
         handles.displayComponents = displaySetting('initial',handles);
         
-        menuSetting('firstpage',handles);
+        
         refreshSetting(handles);
+        menuSetting('firstpage',handles);
         
         if(handles.settings.eternaCheck)
             handles.max = 6;
