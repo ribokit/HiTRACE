@@ -1169,7 +1169,7 @@ for i = step:handles.max
             if(eternaCheck)
                 for j = which_sets
                     if(refine)
-                        [area_peak{j}, prof_fit{j}] = do_the_fit_FAST( handles.d_bsub{j}, handles.xsel{j}', 0.0, 0);
+                        [area_peak{j}, prof_fit{j}] = do_the_fit_fast( handles.d_bsub{j}, handles.xsel{j}', 0.0, 0);
                     else
                         [area_peak{j}, prof_fit{j}] = do_the_fit_GUI( handles.d_bsub{j}, handles.xsel{j}' );
                     end
