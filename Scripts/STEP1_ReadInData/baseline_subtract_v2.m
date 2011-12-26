@@ -21,16 +21,16 @@ function [d_sub, bd] = baseline_subtract_v2( d, ymin,ymax, A, B, PLOT_STUFF)
 
 
 %Declare boundaries
-if ~exist( 'ymin') | ymin == 0
+if ~exist( 'ymin') || ymin == 0
   ymin = 1;
 end
-if ~exist( 'ymax') | ymax == 0
+if ~exist( 'ymax') || ymax == 0
   ymax = size(d,1);
 end
-if ~exist('A') | A == 0
+if ~exist('A') || A == 0
   A = 2e9;
 end
-if ~exist('B') | B == 0
+if ~exist('B') || B == 0
   B = 2e4;
 end
 if ~exist('PLOT_STUFF')
