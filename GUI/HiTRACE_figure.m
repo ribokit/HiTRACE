@@ -22,7 +22,7 @@ function varargout = HiTRACE_figure(varargin)
 
 % Edit the above text to modify the response to help HiTRACE_figure
 
-% Last Modified by GUIDE v2.5 23-Aug-2011 15:00:53
+% Last Modified by GUIDE v2.5 27-Dec-2011 16:42:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -497,6 +497,7 @@ switch(mode)
         set(handles.profileCombo, 'Enable', 'off');
         set(handles.dataCombo, 'Enable', 'off');
         set(handles.resetBtn, 'Enable', 'off');
+        return;
     case 'lastpage'
         set(handles.nextBtn, 'Enable', 'off');
         
@@ -525,7 +526,6 @@ switch(mode)
             set(handles.dataCombo, 'Enable', 'off');
         end
 end
-
 eternaCheck_Callback(handles.eternaCheck, [], handles);
 autorangeCheck_Callback(handles.autorangeCheck, [], handles);
 
@@ -667,7 +667,7 @@ function saveResult(handles)
 [name path] = uiputfile('Output.rdat', 'Save to RDAT file');
 if(name)
     if(handles.settings.eternaCheck)
-        seqpos = [length(handles.sequence{1})-20: -1: 1 ];
+        seqpos = [length(handles.sequence{1})-handles.settings.dist: -1: 1 ];
         nres = size( handles.area_bsub{1}, 1);
         goodbins = [(nres-handles.settings.eternaEnd):-1:handles.settings.eternaStart+1];
         data_type = {'SHAPE','SHAPE','nomod','ddTTP'}; 
@@ -916,8 +916,11 @@ mutposFile = handles.mutposFile;
 sequence = handles.sequence;
 structure = handles.structure;
 
+typeFile = handles.typeFile;
+
 num_sequences = length( sequence );
 which_sets = 1 : num_sequences;
+
 
 period= 1;
 
@@ -933,9 +936,21 @@ end
 s_string = [s_string, '};' ];
 eval( s_string );
 if eternaCheck
-    data_types = {'SHAPE','SHAPE','nomod','ddTTP'};
+    if(~skip_init)    
+        if(~isempty(typeFile))
+            data_types = textread(typeFile, '%s');
+        end
+    end
+
+    if(~exist('data_types') || isempty(data_types))
+        data_types = {'SHAPE', 'SHAPE', 'nomod', 'ddTTP'};
+    end
+
+    handles.data_types = data_types;
+    guidata(hObject, handles);
+    
     for j = which_sets  
-      seqpos = length(sequence{j})-20 - [1:(length(sequence{j})-20)] + 1 + offset;
+      seqpos = length(sequence{j})-dist - [1:(length(sequence{j})-dist)] + 1 + offset;
       [ marks{j}, all_area_pred{j}, mutpos{j} ] = get_predicted_marks_SHAPE_DMS_CMCT( structure, sequence{j}, offset , seqpos, data_types );
     end
 end
@@ -1014,7 +1029,7 @@ for i = step:handles.max
                     for j = which_sets;
                       str = sprintf('Signal (baseline subtraction enabled) ( %d / %d )', j, which_sets(end));
                       setStatusLabel(str, handles);
-                      d_r{j} = handles.d_align( : ,j + ([1:4] - 1)*num_sequences );
+                      d_r{j} = handles.d_align( : ,j + ([1:numel(data_types)] - 1)*num_sequences );
                       handles.d_bsub{j} = baseline_subtract_v2( d_r{j} );
                     end
                 else
@@ -1022,7 +1037,7 @@ for i = step:handles.max
                     for j = which_sets;
                       str = sprintf('Signal (baseline subtraction skipped) ( %d / %d )', j, which_sets(end));
                       setStatusLabel(str, handles);
-                      d_r{j} = handles.d_align( : ,j + ([1:4] - 1)*num_sequences );
+                      d_r{j} = handles.d_align( : ,j + ([1:numel(data_types)] - 1)*num_sequences );
                       handles.d_bsub{j} = d_r{j};
                     end
                     
@@ -1191,7 +1206,7 @@ for i = step:handles.max
             handles.displayComponents = displaySetting('finalresult', handles);
             guidata(hObject, handles);
         case 6
-            backgd_sub_col = 3;
+            backgd_sub_col = find(strcmp(data_types, 'nomod'));
             penalize_negative_weight = 2.0;
             for j = which_sets
               [ area_bsub{j}, darea_bsub{j}] = overmod_and_background_correct_logL( handles.area_peak{j}, backgd_sub_col, [4:size(handles.area_peak{j},1)-4], handles.all_area_pred{j});
@@ -1205,7 +1220,7 @@ for i = step:handles.max
             min_SHAPE = {}; max_SHAPE={};threshold_SHAPE={};ETERNA_score={};
             area_bsub_norm  = area_bsub;
             for j = which_sets
-              for a = 1:2  
+              for a = find(strcmp(data_types, 'SHAPE'));
 
               nres = size( area_bsub{j}, 1);
 
@@ -1279,6 +1294,7 @@ fineTune = handles.fineTune;
 sequence = handles.sequence;
 sequenceFile = handles.sequenceFile;
 mutposFile =  handles.mutposFile;
+typeFile =  handles.typeFile;
 filenames = handles.filenames;
 structure = handles.structure;
 
@@ -1294,6 +1310,7 @@ mutpos = handles.mutpos;
 prof_fit = handles.prof_fit;
 
 if(handles.settings.eternaCheck)
+    data_types = handles.data_types;
     area_bsub = handles.area_bsub;
     darea_bsub = handles.darea_bsub;
     area_bsub_norm = handles.area_bsub_norm;
@@ -1309,10 +1326,10 @@ if(handles.settings.eternaCheck)
     design_names = handles.design_names;
     
     all_area_pred = handles.all_area_pred;
-    uisave({'settings', 'fineTune', 'sequence', 'sequenceFile', 'structure', 'mutposFile', ...
+    uisave({'settings', 'fineTune', 'sequence', 'sequenceFile', 'typeFile', 'structure', 'mutposFile', ...
         'filenames', 'd', 'da' , 'd_bsub', 'd_align', 'xsel', 'numpeaks', 'marks', 'mutpos', ...
         'prof_fit','area_bsub', 'darea_bsub', 'area_bsub_norm', 'darea_bsub_norm', 'min_SHAPE', ...
-        'max_SHAPE', 'threshold_SHAPE', 'ETERNA_score', 'ids', 'target_names', 'subrounds', ...
+        'data_types', 'max_SHAPE', 'threshold_SHAPE', 'ETERNA_score', 'ids', 'target_names', 'subrounds', ...
         'design_names', 'all_area_pred'}, 'workspace.mat');
 else
     uisave({'settings', 'fineTune', 'sequence', 'sequenceFile', 'structure', 'mutposFile', 'filenames', 'd', 'da' , 'd_bsub', 'd_align', 'xsel', 'numpeaks', 'marks', 'mutpos', 'prof_fit'}, 'workspace.mat');    
@@ -1392,6 +1409,11 @@ if(name)
         setStatusLabel('Workspace loaded', handles);
     else
         errordlg('Invalid workspace file.', 'Error!');
+    end
+    
+    if(isfield(structure, 'data_types'))
+        handles.typeFile = structure.typeFile;
+        handles.data_types = structure.data_types;
     end
 end
 
@@ -1870,6 +1892,7 @@ end
 
 handles.filenames = get(handles.fileListbox, 'String');
 handles.sequenceFile = get(handles.sequenceEdit, 'String');
+handles.typeFile = get(handles.datatypeEdit, 'String');
 handles.structure = get(handles.strEdit ,'String');
 handles.mutposFile = get(handles.guideEdit, 'String');
 
@@ -2161,3 +2184,38 @@ else
     set(handles.yminEdit, 'Enable', 'On');
 end
 % Hint: get(hObject,'Value') returns toggle state of autorangeCheck
+
+
+
+function datatypeEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to datatypeEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of datatypeEdit as text
+%        str2double(get(hObject,'String')) returns contents of datatypeEdit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function datatypeEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to datatypeEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in datatypeBtn.
+function datatypeBtn_Callback(hObject, eventdata, handles)
+% hObject    handle to datatypeBtn (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+setStatusLabel('Open a sequence',handles);
+[filename pathname]= uigetfile('*.txt','Pick a sequence file');
+if(filename)
+    set(handles.datatypeEdit, 'String', strcat(pathname,filename));
+end
