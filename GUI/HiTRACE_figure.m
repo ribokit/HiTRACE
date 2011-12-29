@@ -670,8 +670,8 @@ if(name)
         seqpos = [length(handles.sequence{1})-handles.settings.dist: -1: 1 ];
         nres = size( handles.area_bsub{1}, 1);
         goodbins = [(nres-handles.settings.eternaEnd):-1:handles.settings.eternaStart+1];
-        data_type = {'SHAPE','SHAPE','nomod','ddTTP'}; 
-        added_salt = {'chemical:MgCl2:10mM','chemical:NaCl:1M','',''};
+        data_type = handles.data_types; 
+        added_salt = cell(size(data_type));
         bad_lanes = [];
         comments = {'Chemical mapping data for the EteRNA design project.'};
         eterna_create_rdat_files_GUI( strcat(path,name), handles.target_names{1}, handles.structure, handles.sequence, ...
@@ -938,7 +938,7 @@ eval( s_string );
 if eternaCheck
     if(~skip_init)    
         if(~isempty(typeFile))
-            data_types = textread(typeFile, '%s');
+            data_types = textread(typeFile, '%s')';
         end
     end
 
