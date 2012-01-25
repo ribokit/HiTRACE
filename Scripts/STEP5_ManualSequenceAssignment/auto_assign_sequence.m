@@ -46,7 +46,5 @@ if PLOT_STUFF
   colormap( 1 - gray(100) );
 end
 
-
-
 [xsel_fit, D]  = solve_xsel_by_DP( image_x, s, sequence_at_bands, ideal_spacing, input_bounds );
 xsel = xsel_fit(1:end-1);

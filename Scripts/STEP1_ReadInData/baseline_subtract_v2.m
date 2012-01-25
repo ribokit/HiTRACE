@@ -34,11 +34,11 @@ if ~exist('B') || B == 0
   B = 2e4;
 end
 if ~exist('PLOT_STUFF')
-  PLOT_STUFF = 0;
+  PLOT_STUFF = 1;
 end
 
 if exist('matlabpool' )
-  parfor k = 1:size(d,2)
+  parfor k = 1:size(d,2);
       fprintf(1,'Baseline subtracting...%d\n',k);
       [d_sub(:,k),bdx(:,k)] = baseline_subtract_v2_one_profile( d(:,k), ymin,ymax,A,B);
   end 

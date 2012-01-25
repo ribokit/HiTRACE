@@ -5,6 +5,13 @@
 % Kladwang, W., Cordero P., and Das, R. (2011) "A mutate-and-map strategy
 % accurately infers the base pairs of a 35-nucleotide model RNA".
 % RNA 17:522-534.
+%
+% Updated in Jan. 2012, R. Das.
+%
+% Check out more detailed run-through of the demo in:
+%
+% https://docs.google.com/a/stanford.edu/Doc?docid=0AfZX7iE4SSSOZGM4MmpmbXZfMTI0cjJwMjJrZmg&hl=en
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -17,23 +24,30 @@ filenames =  { ...
     '063010_Ann_Medloop_L1_DMS1_Run_3100_2010-06-30_291',...
     '063010_Ann_Medloop_L1_DMS1_Run_3100_2010-06-30_292',...
     '063010_Ann_Medloop_L1_DMS1_Run_3100_2010-06-30_293',...
-    '../../Data/062310_Ann_Medloop_redoQC_Run_3100_2010-06-23_268',...
+    '062310_Ann_Medloop_redoQC_Run_3100_2010-06-23_268',...
 	     };
 
-reorder = [ 1:52 ]; % or could just not specify -- by default all profiles get read in.
+reorder = [ 1:52 ]; % or could just not specify, or give as empty set [] -- by default all profiles get read in.
 [d,da] = quick_look( filenames, ymin, ymax, reorder );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% baseline subtract removes any smooth offsets in signals.
-d_bsub = baseline_subtract_v2( d, ymin, ymax, 2e6, 2e4 );
-d_bsub_cut = d_bsub( ymin:ymax, : );
+% align the data based on the reference channel. ('nonlinear warping')
+d_align  = align_by_DP_using_ref( d([ymin:ymax],:), da([ymin:ymax],:) );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% align by warping (dynamic programming)
-align_blocks = { [41 42 1], [1:40] };
-d_align  = align_by_DP( d_bsub_cut, align_blocks );
+% OPTIONAL: baseline subtract removes any smooth offsets in signals.
+d_align_nobsub = d_align;
+d_align = baseline_subtract_v2( d_align_nobsub );
 
-% optional manual alignment -- kept here for completeness.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% OPTIONAL: align by warping (dynamic programming)
+%align_blocks = { [41 42 1], [1:40]};
+%d_align_before_more_alignment = d_align;
+%d_align1  = align_by_DP( d_align_before_more_alignment, align_blocks );
+%d_align = d_align1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% OPTIONAL manual alignment -- kept here for completeness.
 %d_old = d_bsub_cut; anchorlines = [];
 %[d_manual_align, anchorlines] = align_userinput_saveanchorlines(100*d_old,1,1,anchorlines);
 %d_bsub_cut = d_manual_align;
@@ -61,9 +75,9 @@ seqpos = [ (length(sequence) - 20): -1 : 1] + offset;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Interactive sequence annotation
-xsel = []; period = 1;
+xsel = []; period = 1; clf;
 sequence_actual = sequence( 1: end-20 );
-xsel = mark_sequence( d_align, xsel, sequence_actual, 0, offset, period, marks,mutpos);
+xsel = mark_sequence( d_align, xsel, sequence_actual, 0, offset, period, marks,mutpos,area_pred);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Fit to Gaussians
@@ -73,7 +87,10 @@ area_peak = do_the_fit_FAST( d_align, xsel );
 % Background subtraction and correction for 'overmodification', a.k.a., attenuation of longer products
 backgd_col = [41];
 norm_bins = [10 : (size(area_peak,1)-10) ];
-[area_bsub, darea_bsub]  = overmod_and_background_correct_by_LP( area_peak, backgd_col, norm_bins, area_pred );
+[area_bsub, darea_bsub]  = overmod_and_background_correct_logL( area_peak, backgd_col, norm_bins );
+
+image( area_bsub * 40)
+errorbar( area_bsub(:,1), darea_bsub(:,1) ); ylim([-0.5 2] )
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

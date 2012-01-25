@@ -20,7 +20,7 @@ x = [1:num_pixels]';
 
 % Define a model for peak separations
 MIN_SEP = round(ideal_spacing/3);
-MAX_SEP = ideal_spacing*2;
+MAX_SEP = round(ideal_spacing)*2;
 beta_SEP = 0.1*ones( N, 1 );
 optimal_SEP = ideal_spacing * ones(N, 1);
 
@@ -115,8 +115,8 @@ for n = 2:N
     blah = 1;
 
     sum_n = sum(alpha_ideal(n,:).^2);
-    overlap_n_nminus1 = sum(alpha_ideal(n,:) .* alpha_ideal(n-1,:));
-
+    overlap_n_nminus1 = sum(alpha_ideal(n,:) .* alpha_ideal(n-1,:));    
+    
     D_overlap = ...
 	+ sum_n * g0 + ... % score for Ipred^2
 	+ ( 2 * overlap_n_nminus1 * g(i - prev_pos)' ) ... % score for Ipred^2
