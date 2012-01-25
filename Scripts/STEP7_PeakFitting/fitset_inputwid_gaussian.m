@@ -29,37 +29,45 @@ global xsel_constraint_strength;
 xsel_constraint_strength = 0.1;
 profiles = [   xsel_constraint_strength*xpeak profiles ];
 pixels =   [          minbin*ones(1,numpeaks) pixels'  ]';
+ 
+% pin=[xpeak log(amppeak)];
+% 
+% stol=0.001;
+% niter=10;
+% wt=0*pixels+1;
+% dp=0*pin+1;
 
-pin=[xpeak log(amppeak)];
 
-stol=0.001;
-niter=10;
-wt=0*pixels+1;
-dp=0*pin+1;
+n = 1:length(xpeak);
+param(3*(n-1) + 2) = xpeak;
+param(3*(n-1) + 1) = log(amppeak);
+param(3*(n-1) + 3) = 3;
 
-options = [0*pin; widthpeak'/100, Inf*amppeak]';
-%options = [0*pin; widthpeak'/100, 5*amppeak, 0.1,0.5]';
-%options = [0*pin; widthpeak'/10, widthpeak'/10, Inf*amppeak]';
-%options = [widthpeak/100, widthpeak/100, amppeak/100; Inf*pin]';
-params = pin;
+% options = [0*pin; widthpeak'/100, Inf*amppeak]';
+% %options = [0*pin; widthpeak'/100, 5*amppeak, 0.1,0.5]';
+% %options = [0*pin; widthpeak'/10, widthpeak'/10, Inf*amppeak]';
+% %options = [widthpeak/100, widthpeak/100, amppeak/100; Inf*pin]';
+% params = pin;
+
+[iter p c] =levmar('gaussianfit', 'jacgaussian', param, profiles, 50, [], 1:length(profiles));
 
 %Try to use MATLAB's optimization toolbox for faster speed.
-OPTIM_TOOLBOX = exist( 'lsqnonlin' );
-if OPTIM_TOOLBOX
-  options = optimset( 'LevenbergMarquardt','on','Jacobian','on','TolFun',stol,'MaxIter',50,'Display','off');
-  fun = @( pin )evaluate_deviation_inputwid_gaussian( pixels, profiles, pin  );
-  params = lsqnonlin( fun, pin, [], [], options )';
-  [dev_profile, jacobian, f ] = fun( params' );
-else
-  [f,params,kvg,iter,corp,covp,covr,stdresid,Z,r2]= ...
-      leasqr(pixels, profiles,pin,'predict_profile_inputwid_gaussian',stol,niter,wt,dp,'predict_partials_inputwid_gaussian',options);
-end
+% OPTIM_TOOLBOX = exist( 'lsqnonlin' );
+% if OPTIM_TOOLBOX
+%   options = optimset( 'LevenbergMarquardt','on','Jacobian','on','TolFun',stol,'MaxIter',50,'Display','off');
+%   fun = @( pin )evaluate_deviation_inputwid_gaussian( pixels, profiles, pin  );
+%   params = lsqnonlin( fun, pin, [], [], options )';
+%   [dev_profile, jacobian, f ] = fun( params' );
+% else
+%   [f,params,kvg,iter,corp,covp,covr,stdresid,Z,r2]= ...
+%       leasqr(pixels, profiles,pin,'predict_profile_inputwid_gaussian',stol,niter,wt,dp,'predict_partials_inputwid_gaussian',options);
+% end
 
 % Extract the peak positions, their amplitudes and the 
 % two Lorentzian coefficients from params
-xpeak_fit=params(  1         : numpeaks)';
+xpeak_fit= p( 3*(n-1) + 2)';
 % Now take the exponential of the fitted peak amplitudes
-amppeak  = exp(params( numpeaks+1: 2*numpeaks))';
+amppeak  = p(params(3*(n-1) + 1))';
 %width_fit  = params(2*numpeaks+1);
 
 % Get the distance between peaks

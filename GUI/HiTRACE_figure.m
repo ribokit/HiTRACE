@@ -1422,7 +1422,7 @@ if(name)
     end
 end
 
-function guideEdit_Callback(hObject, eventdata, handles)
+function guideEdit_Callback(hObject, ~, handles)
 % hObject    handle to guideEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -2231,21 +2231,80 @@ function loadRdat_Callback(hObject, eventdata, handles)
 % hObject    handle to loadRdat (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-[name path]= uigetfile('*.mat','Pick a rdat file');
+[name path]= uigetfile('*.rdat;*.txt','Pick a rdat file');
 
 if(name)
     fullname = strcat(path, name);
     structure = read_rdat_file(fullname);
     
-end
-
-try
-    for i = handles.displayComponents
-        delete(i);
+    %for RDAT 0.24
+    handles.structure = structure.structure;
+    handles.settings.offset = structure.offset;
+    handles.annotation = structure.annotation;
+    
+    design_names = {};
+    target_names = {};
+    ids = [];
+    subrounds = [];
+    sequences = {};
+    added_salts = {};
+    
+    for i = 1:length(structure.data_annotation)
+        data = strrep(structure.data_annotations{1}, '_', ' ');
+        for j = 1:length(data)
+            [tok remains]= strtok(data{j}, ':');
+            switch(tok)
+                case 'EteRNA'
+                    [tok remains]= strtok(remains, ':');
+                    switch(tok)
+                        case 'design name'
+                            line.design_name = strtok(remains, ':');
+                        case 'target'
+                            line.target = strtok(remains, ':');
+                        case 'ID'
+                            line.id = str2num(strtok(remains, ':'));
+                        case 'subround'
+                            line.subround = str2num(strtok(remains, ':'));
+                    end
+                case 'sequence'
+                    line.sequence = strtok(remains, ':');
+                case 'chemical'
+                    if(isfield(line, 'added_salt'))
+                        line.added_salt = [line.added_salt , ' ', remains(2:end)];
+                    else
+                        line.added_salt = remains(2:end);
+                    end
+            end
+        end
+        data_str{i} = line;
+%        idx = search_Str(design_names, line.design_name);
+%        if(isempty(idx))
+%             design_names = {design_names, line.design_name};
+%             target_names = {target_names, line.target};
+%             ids = [ids, line.id];
+%             subrounds = [subrounds, line.subround];
+%             sequences = {sequences, line.sequence};
+%             added_salt = {added_salt, added_salt};
+%        else
+%             
+%        end  
     end
-catch err
-    close(handles.figure1);
+    handles.data_str = data_str;
+    try
+        for i = handles.displayComponents
+            delete(i);
+        end
+    catch err
+        close(handles.figure1);
+    end
+    guidata(hObject, handles);
+    refreshSetting(handles);
 end
-guidata(hObject, handles);
-refreshSetting(handles);
 
+function idx = search_Str(strs, str)
+idx = [];
+for i = 1:length(strs)
+    if(strcmp(strs{i}, str))
+        idx = [idx, i];
+    end
+end

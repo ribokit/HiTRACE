@@ -50,26 +50,9 @@ parfor j= whichpos
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   xsel_fit = xsel_start;
   width_peak = width_peak_start;
-  if VARY_XSEL
-   [xsel_fit, w,a,areapeak ] = ...
-    fitset_inputwid_gaussian( d_align(:,j), 1:numpeaks, xsel_start, ...
-			      width_peak_start, x_disallow );
-  end
-  
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  % Fit widths
-  if VARY_WIDTH
-    [width_peak, a,areapeak] = ...
-	fitset_varywidonly_gaussian( d_align(:,j), 1:numpeaks, xsel_fit, ...
-			 width_peak_start, x_disallow);
-  end
-  
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  if VARY_XSEL2
-    [xsel_fit, w,a,areapeak,f ] = ...
-	fitset_inputwid_gaussian( d_align(:,j), 1:numpeaks, xsel_fit, ...
-				  width_peak, x_disallow );
-  end
+[xsel_fit, w,a,areapeak ] = ...
+fitset_inputwid_gaussian( d_align(:,j), 1:numpeaks, xsel_start, ...
+              width_peak_start, x_disallow );
 
   % bizarro -- why do parameters return as complex numbers?
   % anyway, imaginary parts appear to be close zero.
