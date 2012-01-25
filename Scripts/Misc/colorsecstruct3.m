@@ -45,7 +45,8 @@ if ~exist('makelegend') makelegend=1;end;
 
 if (makelegend)
     numlines = 10;
-    x_offset = 5*square_width;
+    x_offset = size( imagex,2) - 2*square_width;
+    %x_offset = 5*square_width;
     sizebar = 4;
     for k=1:-(1/numlines):-1
         ybins = square_width:2*square_width;

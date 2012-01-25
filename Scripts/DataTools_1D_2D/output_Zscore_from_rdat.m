@@ -16,7 +16,7 @@ if ~iscell( rdat_files ); rdat_files = { rdat_files }; end;
 NRES = 0;
 if ~isempty( d_nomod); 
   if ischar( d_nomod )
-    d_nomod = read_rdat_files( d_nomod);
+    d_nomod = read_rdat_file( d_nomod);
   end
   NRES = length( d_nomod.sequence ); 
   Z_sum = zeros( NRES, NRES );

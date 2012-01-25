@@ -260,6 +260,7 @@ for i = xsel_to_plot
     seqnum = length(sequence) - i + 1 + offset;
     if  ( ~(offset == -999) ) %& JUST_PLOT_SEQUENCE)
       txt_to_show = [seqchar,num2str( seqnum)];
+    %      if ( JUST_PLOT_SEQUENCE ) txt_to_show = num2str(seqnum); end;
     end    
     
     show_text = 1;

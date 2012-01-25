@@ -173,11 +173,10 @@ data_align = align_capillaries_group( data_align_group, refcol, 1, 1);
 
 d = []; da= [];
 
-
 NORMALIZE = 1;
 for i = 1:length( reorder); 
   d(:,i)  = baseline_subtract(data_align{reorder(i)}(:,1));
-  da(:,i) = baseline_subtract(data_align{reorder(i)}(:,refcol));
+  da(:,i) = abs(baseline_subtract(data_align{reorder(i)}(:,refcol)));
 
   if(  ymax > size( d, 1 ) ) 
     fprintf( 'WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!\n')

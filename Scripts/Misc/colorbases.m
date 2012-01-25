@@ -1,4 +1,4 @@
-function imagex_color = colorbases(imagex,offset,base_locations, residue_locations, whichres,whattoplot,maxplot,maxplot2,colorscheme,makelegend,square_width)
+function imagex_color = colorbases(imagex,offset,base_locations, residue_locations, whichres,whattoplot,maxplot,maxplot2,colorscheme,makelegend,square_width,maxlabel,minlabel)
 %hold off; image(imagex); hold on; axis equal; 
 [xsize,ysize,zsize]=size(imagex);
 axis([0 ysize 0 xsize]); zoomedin = 0;
@@ -94,8 +94,8 @@ end
 
 if (makelegend)
 numlines = 10;  
-x_offset = square_width;
-y_offset = 10*square_width;
+x_offset = size( imagex,2) - 2*square_width;
+y_offset = 5*square_width;
 sizebar = 4;
 for k=1:-(1/numlines):-1
     ybins = x_offset -square_width + [1:square_width];
@@ -111,6 +111,9 @@ for k=1:-(1/numlines):-1
     end
 end
 end
+if ~exist( 'maxlabel' ) maxlabel = ['+',num2str(abs(maxplot))]; end;
+
+if ~exist( 'minlabel' ) maxlabel = ['-',num2str(abs(maxplot2))]; end;
 
 hold off; image(imagex_color/256); hold on; axis equal
 if (makelegend)
@@ -119,10 +122,10 @@ if (makelegend)
     text(x_offset,y_offset+round(sizebar*-1*k*square_width),'0');
   else
     k=-1;
-    text(x_offset,y_offset+round(sizebar*-1*k*square_width),['-',num2str(abs(maxplot2))]);
+    text(x_offset,y_offset+round(sizebar*-1*k*square_width),minlabel);
   end
   k=+1;
-  text(x_offset,y_offset+round(sizebar*-1*k*square_width),['+',num2str(maxplot)]);
+  text(x_offset,y_offset+round(sizebar*-1*k*square_width),maxlabel);
 end
 
 axis off

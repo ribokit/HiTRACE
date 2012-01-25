@@ -29,6 +29,15 @@ switch colorscheme
         if (frac_color>1) frac_color = 1; end;
         colorplot = frac_color*colorval2 + (1-frac_color)*colorval1;
 
+   case -3  % Blue-gray-yellow, faded
+        colorval1 = [0.5 0.5 1];
+        colorval2 = [1 1 0];
+        maxplot2 = -abs(maxplot2);
+        frac_color = (colorvalue - maxplot2)/(maxplot-maxplot2);
+        if (frac_color<0) frac_color = 0; end;
+        if (frac_color>1) frac_color = 1; end;
+        colorplot = frac_color*colorval2 + (1-frac_color)*colorval1;
+
     case 4 % Magenta-lightblue-cyan
         colorval1 = [1 0 1];
         colorval2 = [0 1 1];
@@ -71,6 +80,14 @@ switch colorscheme
         end
         GREENSCALE=0.8;
         colorplot(2) = colorplot(2)*GREENSCALE;
+    case 9 % Red-green [faded]
+        colorval2 = [1 0.3 0.3];
+        colorval1 = [0.3 0.9 0.5];
+        maxplot2 = -abs(maxplot2);
+        frac_color = (colorvalue - maxplot2)/(maxplot-maxplot2);
+        if (frac_color<0) frac_color = 0; end;
+        if (frac_color>1) frac_color = 1; end;
+        colorplot = frac_color*colorval2 + (1-frac_color)*colorval1;
     case 8 %Red-orange-white
         colorplot = [1,1,1];
 	a = colorvalue/maxplot;
@@ -84,6 +101,25 @@ switch colorscheme
 	elseif ( a >= 1.0 )
 	  colorplot = [1, 0, 0];
         end
+        return
+    case 10 %Green-white-red
+        colorplot = [1,1,1];
+	a = colorvalue/maxplot;
+        if (colorvalue>0)
+            colorplot = [1, max(1-colorvalue/maxplot,0), max(1-colorvalue/maxplot,0)] ;
+        else
+            colorplot = [max(1+colorvalue/abs(maxplot2),0),  1.0, max(1+colorvalue/abs(maxplot2),0) ] ;
+        end
+        return
+    case 11 %blue-white-red
+        colorplot = [1,1,1];
+	a = colorvalue/maxplot;
+        if (colorvalue>0)
+            colorplot = [1, max(1-colorvalue/maxplot,0), max(1-colorvalue/maxplot,0)] ;
+        else
+            colorplot = [max(1+colorvalue/abs(maxplot2),0),  max(1+colorvalue/abs(maxplot2),0), 1 ] ;
+        end
+	colorplot = 1 - 0.5*( 1-colorplot);
         return
 end
 

@@ -27,7 +27,7 @@ if ~exist( 'area_pred' )
   area_pred = [];
 end
 if ~exist( 'area_peak_error' )
-  area_peak_error = area_peak * 0.0;
+  area_peak_error = abs(area_peak) * 0.2;
 end
 
 b = mean( area_peak( :, backgd_cols ), 2 );
