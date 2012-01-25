@@ -22,7 +22,7 @@ function varargout = HiTRACE_figure(varargin)
 
 % Edit the above text to modify the response to help HiTRACE_figure
 
-% Last Modified by GUIDE v2.5 27-Dec-2011 16:42:20
+% Last Modified by GUIDE v2.5 25-Jan-2012 18:49:31
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -672,6 +672,7 @@ if(name)
         goodbins = [(nres-handles.settings.eternaEnd):-1:handles.settings.eternaStart+1];
         data_type = handles.data_types; 
         added_salt = cell(size(data_type));
+        added_salt = {'chemical:MgCl2:10mM','chemical:MgCl2:10mM chemical:FMN:20uM', 'chemical:MgCl2:10mM chemical:FMN:200uM', '', ''};
         bad_lanes = [];
         comments = {'Chemical mapping data for the EteRNA design project.'};
         eterna_create_rdat_files_GUI( strcat(path,name), handles.target_names{1}, handles.structure, handles.sequence, ...
@@ -921,6 +922,9 @@ typeFile = handles.typeFile;
 num_sequences = length( sequence );
 which_sets = 1 : num_sequences;
 
+if(isfield(handles, 'data_types'))
+    data_types =handles.data_types;
+end
 
 period= 1;
 
@@ -1220,7 +1224,7 @@ for i = step:handles.max
             min_SHAPE = {}; max_SHAPE={};threshold_SHAPE={};ETERNA_score={};
             area_bsub_norm  = area_bsub;
             for j = which_sets
-              for a = find(strcmp(data_types, 'SHAPE'));
+              for a = find(strcmp(data_types, 'SHAPE') | strcmp(data_types, 'DMS'));
 
               nres = size( area_bsub{j}, 1);
 
@@ -1414,6 +1418,7 @@ if(name)
     if(isfield(structure, 'data_types'))
         handles.typeFile = structure.typeFile;
         handles.data_types = structure.data_types;
+        guidata(hObject, handles);
     end
 end
 
@@ -2219,3 +2224,28 @@ setStatusLabel('Open a sequence',handles);
 if(filename)
     set(handles.datatypeEdit, 'String', strcat(pathname,filename));
 end
+
+
+% --- Executes on button press in loadRdat.
+function loadRdat_Callback(hObject, eventdata, handles)
+% hObject    handle to loadRdat (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+[name path]= uigetfile('*.mat','Pick a rdat file');
+
+if(name)
+    fullname = strcat(path, name);
+    structure = read_rdat_file(fullname);
+    
+end
+
+try
+    for i = handles.displayComponents
+        delete(i);
+    end
+catch err
+    close(handles.figure1);
+end
+guidata(hObject, handles);
+refreshSetting(handles);
+

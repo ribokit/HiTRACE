@@ -33,7 +33,7 @@ end
 sequence_out = '';
 for m = 1:length(sequence{1}); sequence_out = [sequence_out,'X']; end;
 
-annotations = {'experimentType:StandardState','chemical:Na-HEPES:50mM(pH8.0)','temperature:24C','modifier:SHAPE','processing:overmodificationCorrection','processing:backgroundSubtraction'};
+annotations = {'experimentType:StandardState','chemical:Na-HEPES:50mM(pH8.0)','temperature:24C','modifier:DMS','processing:overmodificationCorrection','processing:backgroundSubtraction'};
 
 count = 0;
 offset = 0; % for EteRNA generally, there are no weird sequence offsets.
@@ -47,7 +47,7 @@ for i = 1:length( sequence)
   end
   
   for j = 1:length( data_type )
-    if strcmp( data_type{j}, 'SHAPE' )  &  ~match_bad_lanes( i, j, bad_lanes )
+    if (strcmp( data_type{j}, 'SHAPE' ) || strcmp( data_type{j}, 'DMS' ))&  ~match_bad_lanes( i, j, bad_lanes )
       count = count + 1;
       area_out(:,count) = area_bsub{i}(:,j);
       darea_out(:,count) = darea_bsub{i}(:,j);
@@ -59,9 +59,9 @@ for i = 1:length( sequence)
 	  ['EteRNA:ID:',num2str(ids(m)) ],...
 	  ['EteRNA:subround:',num2str(subrounds(m))], ...
 	  ['EteRNA:score:EteRNA_score:',num2str(EteRNA_score{i,j},'%6.1f')],...
-	  ['EteRNA:score:min_SHAPE:',num2str(min_SHAPE{i,j},'%7.3f')],...
-	  ['EteRNA:score:max_SHAPE:',num2str(max_SHAPE{i,j},'%7.3f')],...
-	  ['EteRNA:score:threshold_SHAPE:',num2str(threshold_SHAPE{i,j},'%7.3f')],...
+	  ['EteRNA:score:min_DMS:',num2str(min_SHAPE{i,j},'%7.3f')],...
+	  ['EteRNA:score:max_DMS:',num2str(max_SHAPE{i,j},'%7.3f')],...
+	  ['EteRNA:score:threshold_DMS:',num2str(threshold_SHAPE{i,j},'%7.3f')],...
 		   };		    
       if length( added_salt{j} > 0 ); data_annotations{count} = [ data_annotations{count}, added_salt{j} ]; end;
       data_annotations{count} = [ data_annotations{count}, ['sequence:',sequence{i}] ];
