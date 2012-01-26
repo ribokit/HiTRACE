@@ -15,7 +15,13 @@ function [ log_L, C_state, input_data_rescale, conc_fine, pred_fit_fine_rescale 
 %  fit_type = string specifying functional form to search: "hill", "double_exp", "one_two"
 %
 % (C) Rhiju Das, 2008-2011
-%
+% 
+%1/24/11
+%Added parfor loop, and got rid of fprint statement of log values inside
+%the loop. Also have two variables that can be returned, p1_s, p2_s, which
+%is a matrix of [best estimate of parameter log_err1 log_err2].
+%Namita
+
 
 if ~exist( 'param1' ) | isempty( param1 ); param1 = 10.^[-3.0 : 0.1 :3.0]; end
 if ~exist( 'param2' ) | isempty( param2 ); param2 = [0.0:0.05:4]; end;
@@ -36,6 +42,9 @@ p2_best = 999;
 
 [ f, p1_name, p2_name ] = feval( fit_type, conc, param1(1), param2(1) );
 
+tic
+matlabpool
+fprintf(1,'Dont Worry, Code is Running...\n')
 for i = 1: length( param1)
   for j = 1: length( param2) % this could be parallelized for speed..
 
@@ -49,13 +58,13 @@ for i = 1: length( param1)
     log_L(i,j) = logL;
     sigma_all(:,i,j) = [sigma_at_each_residue' std( lane_normalization )];
         
-    fprintf(1,'%s %8.4f. %s %8.4f ==>  LogL %8.4f\n', p1_name, p1, p2_name, p2, log_L(i,j));
-    
-    if (log_L(i,j) > log_L_best)
-      log_L_best = log_L(i,j);
-      p1_best = p1;
-      p2_best = p2;
-    end
+%      fprintf(1,'%s %8.4f. %s %8.4f ==>  LogL %8.4f\n', p1_name, p1, p2_name, p2, log_L(i,j));
+%     
+%     if (log_L(i,j) > log_L_best)
+%       log_L_best = log_L(i,j);
+%       p1_best = p1;
+%       p2_best = p2;
+%     end
 
 %    sigma_at_each_residue'
 %    plot_data( input_data, resnum, conc, pred_fit, sigma_at_each_residue );
@@ -63,6 +72,17 @@ for i = 1: length( param1)
 
   end;
 end
+matlabpool close
+t = toc;
+
+log_L_best = max(log_L(:));
+[ind1, ind2] = find(log_L == log_L_best);
+
+p1_best = param1(ind1);
+p2_best = param2(ind2);
+
+fprintf(1,'%s %8.4f. %s %8.4f ==>  LogL %8.4f\n', p1_name, p1_best, p2_name, p2_best, log_L_best);
+
 
 [logLbest, pred_fit, lane_normalization, sigma_at_each_residue, C_state ] =...
     do_new_likelihood_fit( input_data, conc, p1_best, p2_best, fit_type, [],  C_state_in );
@@ -83,6 +103,10 @@ end
 titlestring = sprintf( '%s = %6.4f + %6.4f - %6.4f\n', p1_name, p1_best, p1_high-p1_best, p1_best - p1_low );
 titlestring = [titlestring, sprintf( '%s = %4.2f + %4.2f - %4.2f', p2_name, p2_best, p2_high - p2_best, p2_best - p2_low ) ];
 fprintf( [titlestring,'\n'] )
+
+p1_s = [p1_best p1_high-p1_best p1_best - p1_low ];
+p2_s = [p2_best p2_high - p2_best p2_best - p2_low];
+
 
 
 log_10_conc = log( conc( find( conc > 0 ) ) ) / log( 10 );
