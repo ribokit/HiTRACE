@@ -103,6 +103,7 @@ handles.xsel = [];
 handles.step = 0;
 handles.stages = {'initial', 'profile', 'baseline', 'dpalign', 'annotation', 'finalresult', 'score'};
 
+handles.rdat_str = [];
 handles.displayComponents = displaySetting('initial', handles);
 menuSetting('initial', handles);
 refreshSetting(handles);
@@ -671,8 +672,7 @@ if(name)
         nres = size( handles.area_bsub{1}, 1);
         goodbins = [(nres-handles.settings.eternaEnd):-1:handles.settings.eternaStart+1];
         data_type = handles.data_types; 
-        added_salt = cell(size(data_type));
-        added_salt = {'chemical:MgCl2:10mM','chemical:MgCl2:10mM chemical:FMN:20uM', 'chemical:MgCl2:10mM chemical:FMN:200uM', '', ''};
+        added_salt = handles.rdat_str.added_salts;
         bad_lanes = [];
         comments = {'Chemical mapping data for the EteRNA design project.'};
         eterna_create_rdat_files_GUI( strcat(path,name), handles.target_names{1}, handles.structure, handles.sequence, ...
@@ -862,7 +862,8 @@ if(~skip_init)
         return;
     end
 
-    if(isempty(get(handles.sequenceEdit, 'String')))
+    if(isempty(get(handles.sequenceEdit, 'String')) && (isempty(handles.rdat_str) && isempty(handles.rdat_str.sequences)))
+        
         errordlg('Please specify your input sequence. You can load one from a plain text file.','Error!');
         return;
     end
@@ -1044,7 +1045,6 @@ for i = step:handles.max
                       d_r{j} = handles.d_align( : ,j + ([1:numel(data_types)] - 1)*num_sequences );
                       handles.d_bsub{j} = d_r{j};
                     end
-                    
                 end
                 if(~skip_init)
                     if(verLessThan('matlab', '7.10.0'))
@@ -1877,7 +1877,16 @@ handles.settings.peakspacing = str2double(get(handles.peakspacingEdit, 'String')
 if(handles.settings.eternaCheck)    
     if(~skip_init)
         file = get(handles.sequenceEdit, 'String');
-        [handles.ids, handles.target_names, handles.subrounds, handles.sequence, handles.design_names ] = parse_EteRNA_sequence_file( file );
+        if(~isempty(handles.rdat_str) && ~isempty(handles.rdat_str.sequences))
+            handles.ids = handles.rdat_str.ids;
+            handles.target_names = handles.rdat_str.target_names;
+            handles.subrounds = handles.rdat_str.subrounds;
+            handles.sequence = handles.rdat_str.sequences;
+            handles.design_names = handles.rdat_str.design_names;
+        else
+            [handles.ids, handles.target_names, handles.subrounds, handles.sequence, handles.design_names ] = parse_EteRNA_sequence_file( file );
+        end
+        
     end
     
     set(handles.profileCombo,'String', handles.design_names);
@@ -2238,9 +2247,14 @@ if(name)
     structure = read_rdat_file(fullname);
     
     %for RDAT 0.24
+    if(isempty(structure))
+        warndlg('Invalid or corrupted RDAT file.', 'Warning!');
+        return;
+    end
+    
     handles.structure = structure.structure;
     handles.settings.offset = structure.offset;
-    handles.annotation = structure.annotation;
+    handles.annotations = structure.annotations;
     
     design_names = {};
     target_names = {};
@@ -2249,51 +2263,81 @@ if(name)
     sequences = {};
     added_salts = {};
     
-    for i = 1:length(structure.data_annotation)
-        data = strrep(structure.data_annotations{1}, '_', ' ');
-        for j = 1:length(data)
-            [tok remains]= strtok(data{j}, ':');
-            switch(tok)
-                case 'EteRNA'
-                    [tok remains]= strtok(remains, ':');
-                    switch(tok)
-                        case 'design name'
-                            line.design_name = strtok(remains, ':');
-                        case 'target'
-                            line.target = strtok(remains, ':');
-                        case 'ID'
-                            line.id = str2num(strtok(remains, ':'));
-                        case 'subround'
-                            line.subround = str2num(strtok(remains, ':'));
-                    end
-                case 'sequence'
-                    line.sequence = strtok(remains, ':');
-                case 'chemical'
-                    if(isfield(line, 'added_salt'))
-                        line.added_salt = [line.added_salt , ' ', remains(2:end)];
-                    else
-                        line.added_salt = remains(2:end);
-                    end
+    ignore_flag = false;
+    if(isempty(structure.data_annotations))
+        warndlg('This RDAT file has not any data annotations for analysis.', 'Warning!');
+        handles.rdat_str = [];
+    else
+        for i = 1:length(structure.data_annotations)
+            data = strrep(structure.data_annotations{i}, '_', ' ');
+            line.design_name = '';
+            line.target = '';
+            line.id = 0;
+            line.subround = 0;
+            line.added_salt = [];
+            for j = 1:length(data)
+                [tok remains]= strtok(data{j}, ':');
+                switch(tok)
+                    case 'EteRNA'
+                        [tok remains]= strtok(remains, ':');
+                        switch(tok)
+                            case 'design name'
+                                line.design_name = strtok(remains, ':');
+                            case 'target'
+                                line.target = strtok(remains, ':');
+                            case 'ID'
+                                line.id = str2num(strtok(remains, ':'));
+                            case 'subround'
+                                line.subround = str2num(strtok(remains, ':'));
+                        end
+                    case 'sequence'
+                        line.sequence = strtok(remains, ':');
+                    case 'chemical'
+                        if(isempty(line.added_salt))
+                            line.added_salt = [line.added_salt , ' chemical:', remains(2:end)];
+                        else
+                            line.added_salt = ['chemical:', remains(2:end)];
+                        end
+                end
+            end
+
+            idx = search_Str(design_names, line.design_name);
+            if(isempty(idx))
+                design_names{end+1} = line.design_name;
+                target_names{end+1} = line.target;
+                ids(end+1) = line.id;
+                subrounds(end+1) = line.subround;
+                sequences{end+1} = line.sequence;
+                added_salts{end+1} = {line.added_salt};
+            else
+                if(strcmp(sequences{idx},line.sequence))
+                    added_salts{idx}{end+1} = line.added_salt;
+                else
+                    ignore_flag = true;
+                end
             end
         end
-        data_str{i} = line;
-%        idx = search_Str(design_names, line.design_name);
-%        if(isempty(idx))
-%             design_names = {design_names, line.design_name};
-%             target_names = {target_names, line.target};
-%             ids = [ids, line.id];
-%             subrounds = [subrounds, line.subround];
-%             sequences = {sequences, line.sequence};
-%             added_salt = {added_salt, added_salt};
-%        else
-%             
-%        end  
+
+        rdat_str.design_names = design_names;
+        rdat_str.target_names = target_names;
+        rdat_str.ids = ids;
+        rdat_str.subrounds = subrounds;
+        rdat_str.sequences = sequences;
+        rdat_str.added_salts = added_salts;
     end
-    handles.data_str = data_str;
-    try
+    
+    if(ignore_flag)
+        warndlg('A few of sequences have been ignored. Please check the RDAT file.','Warning!');
+    end
+    
+    handles.rdat_str = rdat_str;
+    try 
         for i = handles.displayComponents
             delete(i);
         end
+        handles.step = 0;
+        
+        handles.displayComponents = displaySetting('initial',handles);
     catch err
         close(handles.figure1);
     end
