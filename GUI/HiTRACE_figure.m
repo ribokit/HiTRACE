@@ -1035,7 +1035,7 @@ for i = step:handles.max
                       str = sprintf('Signal (baseline subtraction enabled) ( %d / %d )', j, which_sets(end));
                       setStatusLabel(str, handles);
                       d_r{j} = handles.d_align( : ,j + ([1:numel(data_types)] - 1)*num_sequences );
-                      handles.d_bsub{j} = baseline_subtract_v2( d_r{j} );
+                      handles.d_bsub{j} = baseline_subtract_v2( d_r{j} , 0, 0, 0, 0, 0);
                     end
                 else
                     which_sets = 1 : num_sequences; 
@@ -2294,9 +2294,9 @@ if(name)
                         line.sequence = strtok(remains, ':');
                     case 'chemical'
                         if(isempty(line.added_salt))
-                            line.added_salt = [line.added_salt , ' chemical:', remains(2:end)];
+                            line.added_salt = [line.added_salt , ' ', data{j}];
                         else
-                            line.added_salt = ['chemical:', remains(2:end)];
+                            line.added_salt = data{j};
                         end
                 end
             end
