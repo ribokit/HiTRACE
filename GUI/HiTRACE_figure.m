@@ -994,8 +994,31 @@ for i = step:handles.max
                     targetblock = { targetblock };
                 end
                 
+                for j = which_sets;
+                      d_tmp = handles.d( : ,j + ([1:numel(data_types)] - 1)*num_sequences );
+                      da_tmp = handles.da(:,j + ([1:numel(data_types)] - 1)*num_sequences );
+                      
+                      d_set = [];
+                      for k = 1:size(d_tmp,2)
+                          d_set{k}(:,1) = d_tmp(:,k);
+                          d_set{k}(:,4) = da_tmp(:,k);
+                      end
+                      % d_set = align_capillaries(d_set, 4, 1);
+                      
+                      for k = 1:size(d_tmp,2)
+                          d_tmp(:,k) = d_set{k}(:,1);
+                          da_tmp(:,k) = d_set{k}(:,4);
+                          
+                          d_tmp(:,k) =  d_tmp(:,k)/mean( abs(d_tmp(ymin:ymax,k)));
+                          da_tmp(:,k) = da_tmp(:,k)/mean( abs(da_tmp(ymin:ymax,k)));
+                      end
+                      
+                      d_align( : ,j + ([1:numel(data_types)] - 1)*num_sequences) = align_by_DP_using_ref( d_tmp(ymin:ymax,:), da_tmp(ymin:ymax,:), [], slack, shift, windowsize, 0);
+                end
+                
+                
                 setStatusLabel(str, handles);
-                d_align = align_by_DP_using_ref( handles.d(ymin:ymax,:), handles.da(ymin:ymax,:), [], slack, shift, windowsize, 0);
+%                 d_align = align_by_DP_using_ref( handles.d(ymin:ymax,:), handles.da(ymin:ymax,:), [], slack, shift, windowsize, 0);
                 
                 handles.d_align = d_align;
                 
