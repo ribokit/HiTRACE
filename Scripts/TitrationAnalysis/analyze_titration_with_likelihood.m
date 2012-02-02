@@ -146,27 +146,29 @@ end
 
 %clf; plot( param, log_L ); pause;
 
-[ log_L_max, min_idx ] = max( log_L )
-param( min_idx )
+[ log_L_max, min_idx ] = max( log_L );
+param( min_idx );
 log_L_cutoff = log_L_max - 2.0;
 
-idx = min_idx-1;
-while (idx > 0 & log_L(idx) > log_L_cutoff )
+p_low = param( min_idx );
+if ( min_idx > 1 )
+  idx = min_idx-1;
+  while (idx > 1 & log_L(idx) < log_L( idx+1) )
     idx = idx - 1;  
+  end
+  %p_low = param( idx+1 );
+  p_low = interp1( log_L( idx: min_idx ), param( [idx : min_idx] ), log_L_cutoff );
 end
-p_low = param( idx+1 );
 
-
-idx = min_idx+1;
-while (idx <= length(param) & log_L(idx) > log_L_cutoff )
+p_high = param( min_idx );
+if ( min_idx < length( param ) )
+  idx = min_idx+1;
+  while (idx < length(param) & log_L(idx) < log_L( idx-1 ) )
     idx = idx + 1;  
+  end
+  %p_high = param( idx-1 );
+  p_high = interp1( log_L( min_idx:idx ), param( [min_idx:idx] ), log_L_cutoff );
 end
-p_high = param( idx-1 );
-
-
-
-
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

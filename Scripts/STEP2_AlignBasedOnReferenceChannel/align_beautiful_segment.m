@@ -1,5 +1,8 @@
 function [d_realign,da_realign] =  align_beautiful_segment( d, da, align_pts, refcol );
 
+if ~exist( 'align_pts' )
+  align_pts = [1:size(d,1)];
+end
 if ~exist('refcol')
   refcol = 1;
 end
