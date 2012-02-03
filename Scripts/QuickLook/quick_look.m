@@ -108,6 +108,7 @@ end
 
 if PLOT_STUFF
   figure(2)
+  set(gcf, 'PaperPositionMode','auto','color','white');
   clf
   subplot(1,2,1);
   image( 0.05 * d0_signal);
@@ -201,6 +202,7 @@ end;
 
 if PLOT_STUFF
   figure(3)
+  set(gcf, 'PaperPositionMode','auto','color','white');
   clf
   
   %subplot(1,2,1);
@@ -221,6 +223,7 @@ if PLOT_STUFF
   colormap(  1 - gray(100) )
   
   figure(4)
+  set(gcf, 'PaperPositionMode','auto','color','white');
   %subplot(1,2,2);
   image( 50*da );
   axis( [ 0.5 length( reorder )+0.5 ymin ymax] );

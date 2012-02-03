@@ -8,12 +8,13 @@ numconc = size( data,2 );
 if exist( 'lane_normalization' )
   for j = 1:length( conc )
     data(:,j) = data(:,j) / lane_normalization(j);
-    pred_fit(:,j) = pred_fit(:,j) / lane_normalization(j);
+    %pred_fit(:,j) = pred_fit(:,j) / lane_normalization(j);
   end
 end
 
+figure(2)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-subplot(1,2,1);
+clf;
 colorcode = jet(numconc);
 
 plot_offset = 0.0;
@@ -22,12 +23,17 @@ for j = 1:numconc
   plot( resnum, plot_offset*(j-1) + data(:,j), '.','color',colorcode(j,:),...
 	'markerfacecolor',colorcode(j,:));
   hold on
+end
+plot( resnum, sigma_at_each_residue,'color', [0.5 0.5 0.5] );
+for j = 1:numconc
   plot( resnum, plot_offset*(j-1) + pred_fit(:,j), '-','color',colorcode(j,:));
 end
-plot( resnum, sigma_at_each_residue,'k' );
 xlabel('Residue number');
 ylabel('Peak intensity');
 
+for m = 1:length( conc ); legends{m} = num2str( conc(m) ); end;
+legends{ length( conc ) + 1 } = 'fitted stdev';
+legend( legends );
 
 % outliers?
 vals =  max( pred_fit' );
@@ -42,7 +48,8 @@ xlim( [min(resnum)-1,  max(resnum)+1] );
 %set(gca,'ylim',[0 (numconc+1)*plot_offset])
 hold off
 
-subplot(1,2,2);
+figure(3)
+%subplot(1,2,2);
 colorcode = jet(numres);
 plot_offset = mean(mean(data));
 for i = 1:numres
@@ -58,7 +65,7 @@ end
 ylim2 = [0 (numres+1)*plot_offset+max(max(data))];
 if ( size( pred_fit, 1 )== 1  ) ylim2 = [min( data) max(data) ]; end;
 set(gca,'ylim',ylim2,'xlim',[ min(conc) max(conc) ])
-
+set(gca,'linew',2,'fontsize',14,'fontw','bold');
 xlabel('[M^{2+} (mM)]');
 ylabel('Peak intensity');
 
