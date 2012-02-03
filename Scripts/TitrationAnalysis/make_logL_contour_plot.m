@@ -5,7 +5,7 @@ if ~exist( 'param2_name' ); param2_name = 'n_{Hill}'; end;
   
 cont_levels = [0:2:20, 25, 30, 35, 40:20:200];
 contours = max(max(logLout)) - cont_levels;
-fprintf( ['Making contours lower than max log-likelihood point by: ', num2str(cont_levels )] );
+fprintf( ['Making contours lower than max log-likelihood point by: ', num2str(cont_levels ),'\n'] );
 
 if ~exist( 'p1_best' ) | ~exist( 'p2_best' ); p1_best = []; p2_best = []; end;
 
