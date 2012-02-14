@@ -113,7 +113,7 @@ if PLOT_STUFF
   subplot(1,2,1);
   image( 0.05 * d0_signal);
   
-  h=title( [dirnames{1}]);
+  h=title( 'Signal (channel 1)');
   set( h,'interpreter','none' );
   
   axis( [ 0.5 length( reorder )+0.5 ymin ymax] );
@@ -186,14 +186,14 @@ for i = 1:length( reorder);
     fprintf( 'WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!\n')
   end
 
-   if NORMALIZE
-     %d(:,i) = d(:,i)/mean( data_align{reorder(i)}(1500:2500,3) );
-     d(:,i) =  d(:,i)/mean( abs(d(ymin:ymax,i)));
-     da(:,i) = da(:,i)/mean( abs(da(ymin:ymax,i)));
-   else
-     d(:,i) = d(:,i)/100;
-     da(:,i) = da(:,i)/50;
-   end
+%    if NORMALIZE
+%      %d(:,i) = d(:,i)/mean( data_align{reorder(i)}(1500:2500,3) );
+%      d(:,i) =  d(:,i)/mean( abs(d(ymin:ymax,i)));
+%      da(:,i) = da(:,i)/mean( abs(da(ymin:ymax,i)));
+%    else
+%      d(:,i) = d(:,i)/100;
+%      da(:,i) = da(:,i)/50;
+%    end
   
 end;
 

@@ -1003,7 +1003,7 @@ for i = step:handles.max
                           d_set{k}(:,1) = d_tmp(:,k);
                           d_set{k}(:,4) = da_tmp(:,k);
                       end
-                      % d_set = align_capillaries(d_set, 4, 1);
+                      d_set = align_capillaries(d_set, 4, 1);
                       
                       for k = 1:size(d_tmp,2)
                           d_tmp(:,k) = d_set{k}(:,1);
