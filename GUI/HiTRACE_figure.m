@@ -173,12 +173,12 @@ switch(mode)
         component = [];
     case 'profile'
         h1 = axes('position', [0.5 0.2 0.2 0.7]);
-        image( 50 * handles.d);
+        image( handles.d);
         axis( [ 0.5 size(handles.da,2)+0.5 handles.settings.ymin handles.settings.ymax] );
         title( 'Signal')
         
         h2 = axes('position', [0.75 0.2 0.2 0.7]);
-        image( 50 * handles.da);
+        image( handles.da);
         axis( [ 0.5 size(handles.da,2)+0.5 handles.settings.ymin handles.settings.ymax] );
         title( 'Reference ladder')
         
@@ -196,11 +196,11 @@ switch(mode)
         
         if(handles.settings.eternaCheck)
             index = get(handles.profileCombo,'Value');
-            image( 50 * handles.d_bsub{index});
+            image( handles.d_bsub{index});
             axis( [ 0.5 size(handles.d_bsub{index},2)+0.5 1 size( handles.d_bsub{index},1)] );        
             title( str );
         else
-            image( 50 * handles.d_bsub);
+            image( handles.d_bsub);
             axis( [ 0.5 size(handles.d_bsub,2)+0.5 handles.settings.ymin handles.settings.ymax] );        
             title( str );
         end
@@ -965,7 +965,7 @@ for i = step:handles.max
         case 1
             setStatusLabel('Loading and alignment...', handles);
             if(~skip_init)
-                [ handles.d, handles.da] = quick_look( filenames, ymin, ymax, [], [], refcol, 0);
+                [ handles.d, handles.da] = quick_look_GUI( filenames, ymin, ymax, [], [], refcol, 0);
             end
             
             if(autorange)
