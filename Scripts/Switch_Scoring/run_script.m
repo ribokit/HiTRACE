@@ -1,14 +1,15 @@
-%% Input/output
-% input
-% ADAPTIVE - Pre-computing switch score, whether using adaptive threshold
-%           or fixed threshold
+%% description
+% parameter
+%     ADAPTIVE = 0: fixed threshold
+%     ADAPTIVE = 1: adaptive threshold
 
 % output
-% FIXED_ETERNA - for checking correlation with traditional ETERNA score
-% score2 - score based option 1
-% score_edit(i, j , k) - score based edit distance and eterna score
+%     switch_score: paired-unpaired comparison based scoring
+%     score2      : alternative scoring
+%     FIXED_SCORE : for checking correlation with traditional ETERNA score
+%     score_edit(i, j , k)    : score based edit distance and eterna score
 %                  (i-th sequence, j-th weight composite, k - SHAPE/DMS)
-% score_hamming(i, j , k) - score based hamming distance and eterna score
+%     score_hamming(i, j , k) : score based hamming distance and eterna score
 %                  (i-th sequence, j-th weight composite, k - SHAPE/DMS)
 
 %% initialization
@@ -25,7 +26,7 @@ offset = 0;
 dist = 20;
 which_sets = 1:12;
 
-ADAPTIVE = 0;
+ADAPTIVE = 0; 
 
 START = 6;
 END = 6;
@@ -89,6 +90,10 @@ for j = 1:12
 end
 
 %% pre-calculation for switch score from base-pair comparison -- option 1 (adaptive/fixed threshold)
+% case 1: paired (off) - paired (on)
+% case 2: paired (off) - unpaired (on)
+% case 3: unpaired (off) - paired (on)
+% case 4: unpaired (off) - unpaired (on)
 for i = 1:12
     for a = 1:2
         str_on = all_area_pred{i}(:, (a-1) * 2 + 2);
@@ -142,6 +147,10 @@ for i = 1:12
     end
 end
 
+switch_score
+
+
+
 %% calculation switch score from EteRNA score and exp with hamming distance -- option 2
 f_shape = ETERNA_score(:,1) / 100;
 g_shape = ETERNA_score(:,2) / 100;
@@ -181,7 +190,7 @@ for j = 1:12
         w_mat = [];
         
         
-        % option 2
+        % method 2
         for k = 0:63       
             weight = dec2bin(k,6);
             
@@ -195,10 +204,13 @@ for j = 1:12
             w_mat = [w_mat w'];
         end
         
-        % option 1
+        % method 1
         score2(j,a) = geomean([f g switch_score(j,a)/100]) * 100;
     end
 end
+
+score2
+%score_hamming
 
 %% calculation switch score from EteRNA score and exp with edit distance --option 3
 for j = 1:12
@@ -244,3 +256,5 @@ for j = 1:12
         end
     end
 end
+
+%score_edit
