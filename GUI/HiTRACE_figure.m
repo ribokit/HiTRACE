@@ -22,7 +22,7 @@ function varargout = HiTRACE_figure(varargin)
 
 % Edit the above text to modify the response to help HiTRACE_figure
 
-% Last Modified by GUIDE v2.5 25-Jan-2012 18:49:31
+% Last Modified by GUIDE v2.5 03-Apr-2012 18:41:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -97,6 +97,7 @@ handles.filenames = {};
 handles.sequence = [];
 handles.sequenceFile = [];
 handles.structure = [];
+handles.alt_structure = [];
 handles.mutposFile = [];
 handles.xsel = [];
 
@@ -917,6 +918,7 @@ dpAlign = handles.fineTune.dpAlign;
 mutposFile = handles.mutposFile;
 sequence = handles.sequence;
 structure = handles.structure;
+alt_structure = handles.alt_structure;
 
 typeFile = handles.typeFile;
 
@@ -954,9 +956,23 @@ if eternaCheck
     handles.data_types = data_types;
     guidata(hObject, handles);
     
+    if(~isfield(handles,'alt_structure'))
+        handles.alt_structure = [];
+        alt_structure = handles.alt_structure;
+    end
+    
+    % TODO: add check whether each lane has structure or altered_structure
+    
     for j = which_sets  
       seqpos = length(sequence{j})-dist - [1:(length(sequence{j})-dist)] + 1 + offset;
       [ marks{j}, all_area_pred{j}, mutpos{j} ] = get_predicted_marks_SHAPE_DMS_CMCT( structure, sequence{j}, offset , seqpos, data_types );
+    end
+    
+    if(~isempty(alt_structure))
+        for j = which_sets  
+          seqpos = length(sequence{j})-dist - [1:(length(sequence{j})-dist)] + 1 + offset;
+          [ alt_marks{j}, alt_area_pred{j}, alt_mutpos{j} ] = get_predicted_marks_SHAPE_DMS_CMCT( alt_structure, sequence{j}, offset , seqpos, data_types );
+        end
     end
 end
 
@@ -1264,7 +1280,7 @@ for i = step:handles.max
 
               % To compute EteRNA score, need predicted paired/unpaired for 'perfect' design.
               % this was computed above to aid in sequence annotation, background subtraction, etc.
-              pred = handles.all_area_pred{j}( goodbins, 2 ); 
+              pred = handles.all_area_pred{j}( goodbins, data_cols ); 
               [min_SHAPE{j,a}, max_SHAPE{j,a}, threshold_SHAPE{j,a}, ETERNA_score{j,a} ] = determine_thresholds_and_ETERNA_score( data_norm, pred );
               %pause;
               end
@@ -1873,6 +1889,7 @@ set(handles.sequenceEdit, 'String', handles.sequenceFile);
 set(handles.strEdit, 'String', handles.structure);
 set(handles.guideEdit, 'String', handles.mutposFile);
 set(handles.strEdit, 'String', handles.structure);
+set(handles.altStrEdt, 'String', handles.alt_structure);
 
 function handles = setupSetting(handles)
 global skip_init;
@@ -2112,9 +2129,11 @@ eterna = get(hObject, 'Value');
 if(eterna)
     set(handles.startEdit, 'Enable', 'On');
     set(handles.endEdit, 'Enable', 'On');
+    set(handles.altStrEdt, 'Enable', 'On');
 else
     set(handles.startEdit, 'Enable', 'Off');
     set(handles.endEdit, 'Enable', 'Off');
+    set(handles.altStrEdt, 'Enable', 'Off');
 end
     
 % Hint: get(hObject,'Value') returns toggle state of eternaCheck
@@ -2279,6 +2298,10 @@ if(name)
     handles.settings.offset = structure.offset;
     handles.annotations = structure.annotations;
     
+    if(isfield(structure, 'alt_structure'))
+        handles.alt_structure = structure.alt_structure;
+    end
+    
     design_names = {};
     target_names = {};
     ids = [];
@@ -2374,4 +2397,41 @@ for i = 1:length(strs)
     if(strcmp(strs{i}, str))
         idx = [idx, i];
     end
+end
+
+
+
+function altStrEdt_Callback(hObject, eventdata, handles)
+% hObject    handle to altStrEdt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of altStrEdt as text
+%        str2double(get(hObject,'String')) returns contents of altStrEdt as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function altStrEdt_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to altStrEdt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton27.
+function pushbutton27_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton27 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+[filename pathname]= uigetfile('*.txt','Pick a alternative structure file');
+if(filename)
+    fid = fopen(strcat(pathname,filename));
+    str = textscan(fid, '%s');
+    fclose(fid);
+    set(handles.altStrEdt, 'String', str{1}{1});
 end
