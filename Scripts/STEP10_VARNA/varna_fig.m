@@ -43,7 +43,7 @@ vers=1;
 
 
 fprintf(fid,'%s\n','<HTML><HEAD><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"></HEAD><BODY>');
-fprintf(fid,'%s\n','<APPLET code="VARNA.class" codebase="http://varna.lri.fr/bin" archive="VARNA.jar" width="1200" height="1200">');
+fprintf(fid,'%s\n','<APPLET code="VARNA.class" codebase="http://rmdb.stanford.edu/site_media/bin" archive="VARNA.jar" width="1200" height="1200">');
 fprintf(fid,'%s%s%s\n','<PARAM name="sequenceDBN"  value="',sequence,'"/>');
 fprintf(fid,'%s%s%s\n','<PARAM name="structureDBN" value="',structure,'"/>');
 fprintf(fid,'%s\n','<PARAM name="algorithm" value="radiate" />');

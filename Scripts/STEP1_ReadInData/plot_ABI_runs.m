@@ -13,7 +13,7 @@ data = {};
 filenames = {};
 
 if ~exist('CORRECT')  CORRECT = 0; end
-if ~exist( 'PLOTSTUFF' );  PLOTSTUFF = 1; end
+if ~exist( 'PLOT_STUFF' );  PLOT_STUFF = 1; end
 if ~exist('ymax')
   ymax=2000;
 end
@@ -44,6 +44,10 @@ end; % did the files exist?
 
 if CORRECT
   lm = load( 'leakage_matrix1.txt' );
+
+  % auto determine 
+  %lm = auto_determine_leakage_matrix( data_in );
+  
   data_correct = correct_leakage( data_in, lm );
   data_in = data_correct;
 end

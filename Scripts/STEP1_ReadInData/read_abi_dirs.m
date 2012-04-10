@@ -12,11 +12,12 @@ data_init = [];
 data_length = [];
 filenames_all = {};
 count = 0;
+CORRECT_FOR_LEAKAGE = 0;
 for j = 1:length( dirnames )
   % This script calls read_abi.m which has the actual file format.
   fprintf( 1, 'Reading in:  %s\n',dirnames{j} ); 
   
-  [data,filenames] = plot_ABI_runs( [filepath, dirnames{j}], 1, PLOT_STUFF ); 
+  [data,filenames] = plot_ABI_runs( [filepath, dirnames{j}], CORRECT_FOR_LEAKAGE, PLOT_STUFF ); 
 
   % Count number of capillaries 
   data_init(j) = count + 1;           % acl
