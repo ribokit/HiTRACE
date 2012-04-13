@@ -48,7 +48,7 @@ for j = which_sets
   all_area_pred{j}(:,alt_lane) = alt_area_pred{j}(:,alt_lane);
 end
 
-DO_ETERNA_SCORE_CALC = 0;
+DO_ETERNA_SCORE_CALC = 1;
 
 NRES = size( area_bsub{1}, 1); % NRES = 52
 
@@ -112,13 +112,10 @@ end
 % case 3: unpaired (off) - paired (on)
 % case 4: unpaired (off) - unpaired (on)
 
-% These are on 3'loop of FMN aptamer. They become 'unpaired' in switch, but 
-% actually remain protected by SHAPE upon FMN binding.
-ignore_points = [21 22 25];
-% residues 23 and 24 are also in that loop, and stay protected by SHAPE upon FMN binding.
-%  but they actually become exposed to DMS!
-
-ignore_points = [10:15 28:32];
+%ignore_points = [21 22 25];
+% These are on  FMN aptamer:
+%ignore_points = [10:15 28:32];
+ignore_points = []
 
 goodbins = (START+1):(NRES-END);
 goodbins = setdiff( goodbins, ignore_points );
