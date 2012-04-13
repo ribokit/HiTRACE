@@ -28,8 +28,12 @@ which_sets = 1:12;
 
 ADAPTIVE = 0; 
 
-START = 6;
-END = 6;
+%START = 6;
+%END = 6;
+
+START = 4;
+END = 4;
+
 ETERNA_score = [];
 
 %% prepare area_pred matrix from structure
@@ -44,48 +48,61 @@ for j = which_sets
   all_area_pred{j}(:,alt_lane) = alt_area_pred{j}(:,alt_lane);
 end
 
-%% EteRNA Score calculation
-for j = 1:12
-  for a = find(strcmp(data_types, 'SHAPE') | strcmp(data_types, 'DMS'));
+DO_ETERNA_SCORE_CALC = 0;
 
-  nres = size( area_bsub{j}, 1);
+NRES = size( area_bsub{1}, 1); % NRES = 52
 
-  goodbins = [(nres-END):-1:START+1]; % have to go backwards. Silly convention switch.
-  data_cols = [a];
-
-  % average over appropriate columns...
-  data = mean(area_bsub{j}( goodbins, data_cols ), 2)';
-
-  % normalize.
-  [data_norm, scalefactor] = SHAPE_normalize( data );
-  area_bsub_norm{j}(:,data_cols)  = area_bsub{j}(:,data_cols)/scalefactor;
-  darea_bsub_norm{j}(:,data_cols) = darea_bsub{j}(:,data_cols)/scalefactor;
-
-  % To compute EteRNA score, need predicted paired/unpaired for 'perfect' design.
-  % this was computed above to aid in sequence annotation, background subtraction, etc.
-  pred = all_area_pred{j}( goodbins, data_cols ); 
-  
-  others = 0;
-  for k = 1:40
-      if(pred(k) == 1)
-          if( data_norm(k) > 0.125)
-              others = others + 1;
+if DO_ETERNA_SCORE_CALC
+  %% EteRNA Score calculation
+  for j = 1:12
+    for a = find(strcmp(data_types, 'SHAPE') | strcmp(data_types, 'DMS'));
+      
+      nres = size( area_bsub{j}, 1);
+      
+      goodbins = [(nres-END):-1:START+1]; % have to go backwards. Silly convention switch.
+      data_cols = [a];
+      
+      % average over appropriate columns...
+      data = mean(area_bsub{j}( goodbins, data_cols ), 2)';
+      
+      % normalize.
+      [data_norm, scalefactor] = SHAPE_normalize( data );
+      area_bsub_norm{j}(:,data_cols)  = area_bsub{j}(:,data_cols)/scalefactor;
+      darea_bsub_norm{j}(:,data_cols) = darea_bsub{j}(:,data_cols)/scalefactor;
+      
+      % To compute EteRNA score, need predicted paired/unpaired for 'perfect' design.
+      % this was computed above to aid in sequence annotation, background subtraction, etc.
+      pred = all_area_pred{j}( goodbins, data_cols ); 
+      
+      scalefactor = 2.0;
+      others = 0;
+      for k = 1:40
+	if(pred(k) == 1)
+          if( scalefactor*data_norm(k) > 0.125)
+	    others = others + 1;
           end
-      else
-          if( data_norm(k) < 0.5)
-              others = others + 1;
+	else
+          if( scalefactor*data_norm(k) < 0.5)
+	    others = others + 1;
           end
+	end
       end
-  end
-  
-  % ETERNA score from fixed threshold.
-  FIXED_SCORE(j,a) = others / (52 - START - END) * 100; 
-  
-  % traditional ETERNA score.
-  [min_SHAPE{j,a}, max_SHAPE{j,a}, threshold_SHAPE{j,a}, ETERNA_score(j,a), d_bin{j}(:,a)] = determine_thresholds_binarization_and_ETERNA_score( data_norm, pred );
-  
-  
-  %pause;
+      
+      subplot(2,1,1);
+      plot( data_norm*scalefactor, 'rx-' ); hold on
+      plot( pred,'k','linew',2 ); hold off
+      ylim([-0.5 2]);
+      %pause;
+      
+      % ETERNA score from fixed threshold.
+      FIXED_SCORE(j,a) = others / (NRES - START - END) * 100; 
+      
+      % traditional ETERNA score.
+      [min_SHAPE{j,a}, max_SHAPE{j,a}, threshold_SHAPE{j,a}, ETERNA_score(j,a), d_bin{j}(:,a)] = determine_thresholds_binarization_and_ETERNA_score( data_norm, pred );
+      subplot(2,1,1); ylim([-0.5 2]);
+      
+      %pause;
+    end
   end
 end
 
@@ -94,57 +111,120 @@ end
 % case 2: paired (off) - unpaired (on)
 % case 3: unpaired (off) - paired (on)
 % case 4: unpaired (off) - unpaired (on)
+
+% These are on 3'loop of FMN aptamer. They become 'unpaired' in switch, but 
+% actually remain protected by SHAPE upon FMN binding.
+ignore_points = [21 22 25];
+% residues 23 and 24 are also in that loop, and stay protected by SHAPE upon FMN binding.
+%  but they actually become exposed to DMS!
+
+ignore_points = [10:15 28:32];
+
+goodbins = (START+1):(NRES-END);
+goodbins = setdiff( goodbins, ignore_points );
+
 for i = 1:12
-    for a = 1:2
-        str_on = all_area_pred{i}(:, (a-1) * 2 + 2);
-        str_off = all_area_pred{i}(:, (a-1) * 2 + 1);
+  fprintf( 'Sequence %d\n',i);
+  clf;
+
+  % this keeps track of whether a switch occurred at the right place or not.
+  % according to SHAPE (a=1) or DMS (a=2).
+  s = zeros( NRES, 2 );
+  for a = 1:2
+
+    subplot(2,1,a);
+    str_on = all_area_pred{i}(:, (a-1) * 2 + 2);
+    str_off = all_area_pred{i}(:, (a-1) * 2 + 1);
+    
+    % Max/Min to avoid 'noisy' points.
+    d_on_norm  = min( max( area_bsub_norm{i}(:, (a-1) * 2 + 2), 0), 2.0);
+    d_off_norm = min( max( area_bsub_norm{i}(:, (a-1) * 2 + 1), 0), 2.0 );
+    
+    d_on_norm  = SHAPE_normalize( d_on_norm );
+    d_off_norm = SHAPE_normalize( d_off_norm );
+    d_on_norm = d_on_norm * mean( d_off_norm( goodbins ) ) / mean( d_on_norm( goodbins ) );
         
-        d_on_norm = area_bsub_norm{i}(:, (a-1) * 2 + 2);
-        d_off_norm = area_bsub_norm{i}(:, (a-1) * 2 + 1);
+    if(ADAPTIVE)
+      % Adaptive threshold calculation
+      threshold = mean([threshold_SHAPE{i,(a-1) * 2 + 1} threshold_SHAPE{i,(a-1) * 2 + 2}]);
+      min_th = mean([min_SHAPE{i,(a-1) * 2 + 1} min_SHAPE{i,(a-1) * 2 + 2}]);
       
-        if(ADAPTIVE)
-            % Adaptive threshold calculation
-            threshold = mean([threshold_SHAPE{i,(a-1) * 2 + 1} threshold_SHAPE{i,(a-1) * 2 + 2}]);
-            min_th = mean([min_SHAPE{i,(a-1) * 2 + 1} min_SHAPE{i,(a-1) * 2 + 2}]);
-
-        else
-            % fixed threshold
-            threshold = 0.5;
-            min_th = 0;
-        end
-
-        s = [];
-
-        for j = 1:52
-            if(str_on(j) == str_off(j)) % case 1,4
-                if(abs(d_on_norm(j)-d_off_norm(j)) < threshold)
-                    s(j) = 1;
-                else
-                    s(j) = 0;
-                end
-            elseif(str_on(j) > str_off(j)) % case 2
-                dif = d_on_norm(j) - d_off_norm(j);
-                if(dif > threshold)
-                    s(j) = 1;
-                elseif ( dif < min_th)
-                    s(j) = 0;
-                else
-                    s(j) = 2* dif;
-                end
-            else % case 3
-                dif = d_on_norm(j) - d_off_norm(j);
-                if(dif < -threshold)
-                    s(j) = 1;
-                elseif ( dif > min_th)
-                    s(j) = 0;
-                else
-                    s(j) = -2* dif;
-                end
-            end
-        end
-
-        switch_score(i,a) = sum(s((START+1):(52-END)) / length(s((START+1):(52-END)))) * 100;
+      threshold = threshold_is_a_change;
+      threshold = threshold_not_a_change;
+    else
+      % fixed threshold -- like above, give the design the 'benefit of the doubt'.
+      threshold_is_a_change = 0.25;
+      threshold_not_a_change = 0.5;
+      min_th = 0;
     end
+    
+    s_tot = 0; n_tot = 0;	
+
+    % Keep track of which data points really switch
+    switch_bin = 0;    
+    for j = goodbins
+      switch_bin(j) = 1;     
+      if(str_on(j) == str_off(j)) % case 1,4
+	switch_bin(j) = 0;
+	if(abs(d_on_norm(j)-d_off_norm(j)) < threshold_not_a_change )
+	  s(j,a) = 1;
+	else
+	  s(j,a) = 0;
+	end
+      elseif(str_on(j) > str_off(j)) % case 2
+	dif = d_on_norm(j) - d_off_norm(j);
+	if(dif > threshold_is_a_change)
+	  s(j,a) = 1;
+	elseif ( dif < min_th)
+	  s(j,a) = 0;
+	else
+	  s(j,a) = dif/threshold_is_a_change;
+	end
+      else % case 3
+	dif = d_on_norm(j) - d_off_norm(j);
+	if(dif < -threshold_is_a_change)
+	  s(j,a) = 1;
+	elseif ( dif > min_th)
+	  s(j,a) = 0;
+	else
+	  s(j,a) = -dif/threshold_is_a_change;
+	end
+      end
+    end
+
+    % only save switch calls at switch positions!
+    not_switch_points = find( ~switch_bin );
+    s(not_switch_points,a) = 0;
+    
+    if (a==1)
+      switch_bin_SHAPE = switch_bin; % placed where we are evaluating whether switch occurred.
+    end
+    
+    switch_score(i,a) = 100 * sum( s( find(switch_bin),a ) )/ sum( switch_bin ) ;
+    fprintf( 1, 'Switch score %d: %8.1f\n ', a, switch_score(i,a) );
+    
+    plot( str_on,  'k', 'linew', 2 ); hold on;
+    plot( str_off, 'b', 'linew', 2 ); 
+    plot( d_on_norm, 'kx-' );
+    plot( d_off_norm, 'bx-' );
+    
+    plot_points = find( switch_bin );
+    plot( plot_points, s( plot_points,a ), 'go','markerfacecolor','g' );
+    hold off
+    ylim([-0.5 3]);
+
+  end
+
+  %plot_points = find( switch_bin_SHAPE );
+  %plot( plot_points, s( plot_points,1 ), 'ko','markerfacec','k' );hold on
+  %plot( plot_points, s( plot_points,2 ), 'bx','markerfacec','b' );hold off
+
+  s_combine = max(s,[],2); % Let either SHAPE or DMS give evidence of switch.  
+  switch_score_combined = 100 * sum( s_combine( find(switch_bin_SHAPE) ) )/sum( switch_bin_SHAPE );
+  fprintf( 1, 'Switch score SHAPE/DMS: %8.1f\n ', switch_score_combined );
+
+  fprintf( '\n');
+  pause
 end
 
 switch_score
@@ -157,7 +237,7 @@ g_shape = ETERNA_score(:,2) / 100;
 f_dms = ETERNA_score(:,3) / 100;
 g_dms = ETERNA_score(:,4) / 100;
 for j = 1:12
-    for a = 1:2
+  for a = 1:2
         ideal_on_str = [];
         ideal_off_str = [];
 
