@@ -36,6 +36,11 @@ ADAPTIVE = 0;
 START = 5;
 END = 5;
 
+% These nucleotides are in the FMN aptamer region -- they go from paired to 'unpaired' but
+% really can get protected as they structure around the FMN molecule. We should ignore the data 
+% there in computing the switch score. -- Rhiju
+ignore_points = [10:15 28:32];
+
 ETERNA_score = [];
 
 %% prepare area_pred matrix from structure
@@ -116,12 +121,8 @@ end
 % case 3: unpaired (off) - paired (on)
 % case 4: unpaired (off) - unpaired (on)
 
+% remove nucleotide from FMN-binding region for consideration in switch score.
 goodbins = (START+1):(NRES-END);
-
-% These nucleotides are in the FMN aptamer region -- they go from paired to 'unpaired' but
-% really can get protected as they structure around the FMN molecule. We should ignore the data 
-% there in computing the switch score. -- Rhiju
-ignore_points = [10:15 28:32];
 for m = 1:length( ignore_points)
   goodbins = setdiff( goodbins, find(seqpos == ignore_points(m)) );
 end
@@ -226,14 +227,14 @@ for i = 1:12
 
   % Let either SHAPE or DMS give evidence of switch.  
   s_combine = max(s,[],2); 
-  switch_score_combined = 100 * sum( s_combine( find(switch_bin_SHAPE) ) )/sum( switch_bin_SHAPE );
-  fprintf( 1, 'Switch score SHAPE/DMS: %8.1f\n ', switch_score_combined );
+  switch_score_combined(i) = 100 * sum( s_combine( find(switch_bin_SHAPE) ) )/sum( switch_bin_SHAPE );
+  fprintf( 1, 'Switch score SHAPE/DMS: %8.1f\n ', switch_score_combined(i) );
 
   fprintf( '\n');
   pause
 end
 
-switch_score
+switch_score_combined
 
 
 % I didn't optimize the following -- Rhiju
