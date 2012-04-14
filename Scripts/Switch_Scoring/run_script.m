@@ -19,6 +19,7 @@ alt_structure = '.....((((......((((....)))).....))))...........................
 structure = '..........................(((((((............)))))))....................';
 
 load 'data.mat';
+load 'area_peak.mat';
 
 alt_lane = [2 4];
 
@@ -31,8 +32,9 @@ ADAPTIVE = 0;
 %START = 6;
 %END = 6;
 
-START = 4;
-END = 4;
+% I included an additional point near the 3' end to get a better read on the switch score. -- Rhiju
+START = 5;
+END = 5;
 
 ETERNA_score = [];
 
@@ -74,15 +76,17 @@ if DO_ETERNA_SCORE_CALC
       % this was computed above to aid in sequence annotation, background subtraction, etc.
       pred = all_area_pred{j}( goodbins, data_cols ); 
       
+      %  I optimized this scaling to match the previous EteRNA score with adaptive thresholds -- Rhiju
       scalefactor = 2.0;
+
       others = 0;
       for k = 1:40
 	if(pred(k) == 1)
-          if( scalefactor*data_norm(k) > 0.125)
+          if( data_norm(k) > 0.125/scalefactor)
 	    others = others + 1;
           end
 	else
-          if( scalefactor*data_norm(k) < 0.5)
+          if( data_norm(k) < 0.5/scalefactor)
 	    others = others + 1;
           end
 	end
@@ -112,13 +116,15 @@ end
 % case 3: unpaired (off) - paired (on)
 % case 4: unpaired (off) - unpaired (on)
 
-%ignore_points = [21 22 25];
-% These are on  FMN aptamer:
-%ignore_points = [10:15 28:32];
-ignore_points = []
-
 goodbins = (START+1):(NRES-END);
-goodbins = setdiff( goodbins, ignore_points );
+
+% These nucleotides are in the FMN aptamer region -- they go from paired to 'unpaired' but
+% really can get protected as they structure around the FMN molecule. We should ignore the data 
+% there in computing the switch score. -- Rhiju
+ignore_points = [10:15 28:32];
+for m = 1:length( ignore_points)
+  goodbins = setdiff( goodbins, find(seqpos == ignore_points(m)) );
+end
 
 for i = 1:12
   fprintf( 'Sequence %d\n',i);
@@ -133,12 +139,12 @@ for i = 1:12
     str_on = all_area_pred{i}(:, (a-1) * 2 + 2);
     str_off = all_area_pred{i}(:, (a-1) * 2 + 1);
     
-    % Max/Min to avoid 'noisy' points.
-    d_on_norm  = min( max( area_bsub_norm{i}(:, (a-1) * 2 + 2), 0), 2.0);
-    d_off_norm = min( max( area_bsub_norm{i}(:, (a-1) * 2 + 1), 0), 2.0 );
+    % Max/Min to avoid 'noisy' points. -- Rhiju
+    % Also note that we use area_peak instead of area_bsub -- the backsub adds noise to the difference comparison. -- Rhiju
+    d_on_norm  = min( max( SHAPE_normalize(area_peak{i}(:, (a-1) * 2 + 2)), 0), 2.0);
+    d_off_norm = min( max( SHAPE_normalize(area_peak{i}(:, (a-1) * 2 + 1)), 0), 2.0 );
     
-    d_on_norm  = SHAPE_normalize( d_on_norm );
-    d_off_norm = SHAPE_normalize( d_off_norm );
+    % One more normalization to try to bring the data close to each other.
     d_on_norm = d_on_norm * mean( d_off_norm( goodbins ) ) / mean( d_on_norm( goodbins ) );
         
     if(ADAPTIVE)
@@ -146,11 +152,12 @@ for i = 1:12
       threshold = mean([threshold_SHAPE{i,(a-1) * 2 + 1} threshold_SHAPE{i,(a-1) * 2 + 2}]);
       min_th = mean([min_SHAPE{i,(a-1) * 2 + 1} min_SHAPE{i,(a-1) * 2 + 2}]);
       
-      threshold = threshold_is_a_change;
-      threshold = threshold_not_a_change;
+      threshold_is_a_change = threshold;
+      threshold_not_a_change = threshol;
     else
-      % fixed threshold -- like above, give the design the 'benefit of the doubt'.
-      threshold_is_a_change = 0.25;
+      % fixed threshold -- like above, give the design the 'benefit of the doubt' by using different thresholds when looking for a change  -- Rhiju
+      %  compared to when looking for fixed.
+      threshold_is_a_change = 0.125;
       threshold_not_a_change = 0.5;
       min_th = 0;
     end
@@ -158,6 +165,7 @@ for i = 1:12
     s_tot = 0; n_tot = 0;	
 
     % Keep track of which data points really switch
+    % In the end, I just focused on the places that *should* switch. -- Rhiju
     switch_bin = 0;    
     for j = goodbins
       switch_bin(j) = 1;     
@@ -216,7 +224,8 @@ for i = 1:12
   %plot( plot_points, s( plot_points,1 ), 'ko','markerfacec','k' );hold on
   %plot( plot_points, s( plot_points,2 ), 'bx','markerfacec','b' );hold off
 
-  s_combine = max(s,[],2); % Let either SHAPE or DMS give evidence of switch.  
+  % Let either SHAPE or DMS give evidence of switch.  
+  s_combine = max(s,[],2); 
   switch_score_combined = 100 * sum( s_combine( find(switch_bin_SHAPE) ) )/sum( switch_bin_SHAPE );
   fprintf( 1, 'Switch score SHAPE/DMS: %8.1f\n ', switch_score_combined );
 
@@ -227,6 +236,7 @@ end
 switch_score
 
 
+% I didn't optimize the following -- Rhiju
 
 %% calculation switch score from EteRNA score and exp with hamming distance -- option 2
 f_shape = ETERNA_score(:,1) / 100;
