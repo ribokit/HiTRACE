@@ -158,7 +158,7 @@ for i = 1:16
     else
       % fixed threshold -- like above, give the design the 'benefit of the doubt' by using different thresholds when looking for a change  -- Rhiju
       %  compared to when looking for fixed.
-      threshold_is_a_change = 0.125;
+      threshold_is_a_change = 0.2;
       threshold_not_a_change = 0.5;
       min_th = 0;
     end
