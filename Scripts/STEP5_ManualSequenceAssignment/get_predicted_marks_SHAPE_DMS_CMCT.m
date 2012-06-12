@@ -15,7 +15,7 @@ mutpos = [];
 
 MUTPOS_OFFSET = 99999990;
 
-if ~isempty('seqpos')
+if isempty('seqpos')
     seqpos = length(sequence)-20 - [1:(length(sequence)-20)] + 1 + offset;
 end
 

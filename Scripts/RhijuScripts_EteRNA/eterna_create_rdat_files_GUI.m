@@ -65,7 +65,9 @@ for i = 1:length( sequence)
 	  ['EteRNA:score:switch_score:', num2str(EteRNA_switch(i),'%6.1f')],...
       ['modifier:',data_type{j}],...
 		   };		    
-      if length( added_salt{m}{j} > 0 ); data_annotations{count} = [ data_annotations{count}, added_salt{m}{j} ]; end;
+      if ( ~isempty(added_salt) && length(added_salt{m}{j} > 0 ) )
+          data_annotations{count} = [ data_annotations{count}, added_salt{m}{j} ]; 
+      end
       data_annotations{count} = [ data_annotations{count}, ['sequence:',sequence{i}] ];
       
       mutpos( count ) = NaN;
