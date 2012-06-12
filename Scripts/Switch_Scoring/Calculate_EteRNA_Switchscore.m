@@ -1,5 +1,7 @@
+clear all;
+
 %% script path (HiTRACE_HOME/Scripts)
-addpath(genpath(strcat('..')));
+addpath(genpath(strcat('../')));
 
 %% pick your own workspace filename;
 uiload;
@@ -147,6 +149,6 @@ for j = which_sets
 
   s_combine = max(s,[],2); 
   switch_score_combined(j) = 100 * sum( s_combine( find(switch_bin_SHAPE) ) )/sum( switch_bin_SHAPE );
-  fprintf( 1, 'Switch score SHAPE/DMS: %8.1f\n ', switch_score_combined(j) )
+  fprintf( 1, 'Switch score SHAPE/DMS: %8.1f\n ', switch_score_combined(j) );
   %pause;
 end
