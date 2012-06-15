@@ -1,4 +1,4 @@
-function [ area_correct_bsub, darea_correct_bsub ] = overmod_and_background_correct_logL( area_peak, backgd_cols, normbins,  area_pred, area_peak_error );
+function [ area_correct_bsub, darea_correct_bsub ] = overmod_and_background_correct_logL( area_peak, backgd_cols, normbins,  area_pred, area_peak_error, overmod_specified );
 % OVERMOD_AND_BACKGROUND_CORRECT_LOGL
 %
 %  [ area_correct_bsub, darea_correct_bsub ] = overmod_and_background_correct_by_LP( area_peak, backgd_cols );
@@ -26,8 +26,11 @@ end
 if ~exist( 'area_pred' )
   area_pred = [];
 end
-if ~exist( 'area_peak_error' )
+if ~exist( 'area_peak_error' ) | isempty( area_peak_error )
   area_peak_error = abs(area_peak) * 0.2;
+end
+if ~exist( 'overmod_specified' ) 
+  overmod_specified = -1;
 end
 
 b = mean( area_peak( :, backgd_cols ), 2 );
@@ -48,10 +51,11 @@ for k = 1: size( area_peak,2 )
   area_pred_to_use = [];
   if ~isempty( area_pred ); area_pred_to_use = area_pred(:,k); end;
   if ~isempty( find( k == backgd_cols ) );  area_pred_to_use = 0 * area_peak(:,k); end; 
-  [ area_correct_bsub(:,k), alpha, beta ] = overmod_wrapper_logL( area_peak(:,k), b, normbins, area_pred_to_use );
+  [ area_correct_bsub(:,k), alpha, beta ] = overmod_wrapper_logL( area_peak(:,k), b, normbins, area_pred_to_use, overmod_specified );
   darea_correct_bsub(:,k) = alpha * sqrt( area_peak_error(:,k).^2 + ( beta * db).^2);
 
   %plot( overmod_correct, sum_abs_deviation,'k' );
   %pause;
   
 end
+fprintf(1,'\n');

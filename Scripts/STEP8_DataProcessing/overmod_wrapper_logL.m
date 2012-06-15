@@ -1,11 +1,16 @@
-function [ s_bsub,  alpha, beta, L, s_bsub_all, overmod ]  = overmod_wrapper_logL(  s, b, normbins, area_pred, PLOT_STUFF );
+function [ s_bsub,  alpha, beta, L, s_bsub_all, overmod ]  = overmod_wrapper_logL(  s, b, normbins, area_pred, overmod_specified, PLOT_STUFF );
 
 if ~exist( 'normbins' ) | isempty( normbins); normbins = [1:length(b)]; end;
 if ~exist( 'area_pred' ); area_pred = 0*b - 1; end;
+if ~exist( 'overmod_specified' ); overmod_specified = -1; end;
 if ~exist( 'PLOT_STUFF' ); PLOT_STUFF = 0; end;
 
 overmod = [0.0:0.1:4.0];
 %overmod = [0.0:0.05:2.0];
+if ( overmod_specified >= 0 )
+  overmod = [overmod_specified];
+end
+
 n = length( overmod );
 
 if abs( sum( s - b ) ) == 0.0  % signal = background?
@@ -42,9 +47,9 @@ if exist( 'matlabpool' )
   end
 else
   for i = 1:n
-    [ s, correction ] = apply_overmod_correction_EXACT( s, overmod(i) ) ;
+    [ s_correct, correction ] = apply_overmod_correction_EXACT( s, overmod(i) ) ;
     %[s_bsub_all(:,i), alpha(i), beta(i), L(i) ] =  backsub_and_norm_logL_with_cutoffs( s, b );
-    [s_bsub_all(:,i), alpha(i), beta(i), L(i) ] =  backsub_and_norm_logL( s, b, [], area_pred );
+    [s_bsub_all(:,i), alpha(i), beta(i), L(i) ] =  backsub_and_norm_logL( s_correct, b, [], area_pred );
     L(i) = L(i) - sum( log( correction ) );
   end
 end

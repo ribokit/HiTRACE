@@ -47,8 +47,8 @@ if length( area_pred ) > 0
     if area_pred(k)
       F_plus(k) = 1/0.39;
       F_minus(k) = 1/0.04;
-      x0(k) = 0.06;
-      %x0(k) = 0.0;
+      %x0(k) = 0.06; % this creates an 'offset' in all the data.
+      x0(k) = 0.0;
     else
       %F_plus(k) = 1/0.10;
       F_plus(k) = 1/0.04;
