@@ -678,8 +678,7 @@ if(name)
         comments = {'Chemical mapping data for the EteRNA design project.'};
         eterna_create_rdat_files_GUI( strcat(path,name), handles.target_names{1}, handles.structure, handles.sequence, ...
             handles.area_bsub_norm,handles.ids, handles.target_names, handles.subrounds, handles.sequence, handles.design_names , seqpos, goodbins, data_type, added_salt, ...
-            bad_lanes, handles.min_SHAPE, handles.max_SHAPE, handles.threshold_SHAPE, handles.ETERNA_score, comments, ...
-            handles.darea_bsub_norm );
+            bad_lanes, handles.min_SHAPE, handles.max_SHAPE, handles.threshold_SHAPE, handles.ETERNA_score, handles.switch_score,comments, handles.darea_bsub_norm,handles.d_align );
     else
         fullname = strcat(path, name);
         seqpos = length(handles.sequence)-handles.settings.dist - [0:(size(handles.area_peak,1)-1)] + handles.settings.offset;
@@ -968,12 +967,17 @@ if eternaCheck
       [ marks{j}, all_area_pred{j}, mutpos{j} ] = get_predicted_marks_SHAPE_DMS_CMCT( structure, sequence{j}, offset , seqpos, data_types );
     end
     
+    
     if(~isempty(alt_structure))
+        alt_lane = [2 4];
         for j = which_sets  
           seqpos = length(sequence{j})-dist - [1:(length(sequence{j})-dist)] + 1 + offset;
           [ alt_marks{j}, alt_area_pred{j}, alt_mutpos{j} ] = get_predicted_marks_SHAPE_DMS_CMCT( alt_structure, sequence{j}, offset , seqpos, data_types );
+          all_area_pred{j}(:,alt_lane) = alt_area_pred{j}(:,alt_lane);
         end
     end
+    
+    handles.all_area_pred = all_area_pred;
 end
 
 for i = step:handles.max
@@ -1128,7 +1132,7 @@ for i = step:handles.max
                 end
 
                 if dpAlign
-                    handles.d_align= align_by_DP_using_ref( handles.d_bsub(ymin:ymax, : ), handles.da(ymin:ymax,:), [], slack, shift, windowsize, 0);
+                    [handles.d_align daa]= align_by_DP_using_ref( handles.d_bsub(ymin:ymax, : ), handles.da(ymin:ymax,:), [], slack, shift, windowsize, 0);
                 else
                     handles.d_align = handles.d_bsub(ymin:ymax, : );
                 end
@@ -1240,6 +1244,8 @@ for i = step:handles.max
                 end
             end
             
+            save peak;
+            
             handles.area_peak = area_peak;
             handles.prof_fit = prof_fit;
             
@@ -1261,31 +1267,13 @@ for i = step:handles.max
             START = eternaStart; % where to start data for eterna input
             END   = eternaEnd;   % where to end data for eterna input.
             min_SHAPE = {}; max_SHAPE={};threshold_SHAPE={};ETERNA_score={};
-            area_bsub_norm  = area_bsub;
-            for j = which_sets
-              for a = find(strcmp(data_types, 'SHAPE') | strcmp(data_types, 'DMS'));
-
-              nres = size( area_bsub{j}, 1);
-
-              goodbins = [(nres-END):-1:START+1]; % have to go backwards. Silly convention switch.
-              data_cols = [a];
-
-              % average over appropriate columns...
-              data = mean(area_bsub{j}( goodbins, data_cols ), 2)';
-
-              % normalize.
-              [data_norm, scalefactor] = SHAPE_normalize( data );
-              area_bsub_norm{j}(:,data_cols)  = area_bsub{j}(:,data_cols)/scalefactor;
-              darea_bsub_norm{j}(:,data_cols) = darea_bsub{j}(:,data_cols)/scalefactor;
-
-              % To compute EteRNA score, need predicted paired/unpaired for 'perfect' design.
-              % this was computed above to aid in sequence annotation, background subtraction, etc.
-              pred = handles.all_area_pred{j}( goodbins, data_cols ); 
-              [min_SHAPE{j,a}, max_SHAPE{j,a}, threshold_SHAPE{j,a}, ETERNA_score{j,a} ] = determine_thresholds_and_ETERNA_score( data_norm, pred );
-              %pause;
-              end
-            end
+            design_names = handles.design_names;
+            ignore_points = [ 10:15  28:32]; 
+            [ switch_score, area_bsub_norm, darea_bsub_norm ] = calc_switch_score_GUI( START, END, ignore_points, sequence, seqpos, area_bsub, darea_bsub, all_area_pred, design_names );
+            [ETERNA_score, min_SHAPE, max_SHAPE, threshold_SHAPE] = calc_eterna_score_GUI( START, END, data_types, area_bsub_norm, sequence, seqpos, area_bsub, all_area_pred, design_names );
             
+            fprintf( 'Sequence %d\n',j);
+                        
             handles.area_bsub = area_bsub;
             handles.darea_bsub = darea_bsub;
             
@@ -1296,13 +1284,12 @@ for i = step:handles.max
             handles.max_SHAPE = max_SHAPE;
             handles.threshold_SHAPE = threshold_SHAPE;
             handles.ETERNA_score = ETERNA_score;
-            
+            handles.switch_score = switch_score;
             for j = handles.displayComponents
                 delete(j);
             end
             handles.displayComponents = displaySetting('score', handles);
             guidata(hObject, handles);
-            close(3);
     end
 end
 
@@ -1351,6 +1338,7 @@ numpeaks = handles.numpeaks;
 marks = handles.marks;        
 mutpos = handles.mutpos;
 prof_fit = handles.prof_fit;
+area_peak = handles.area_peak;
 
 if(handles.settings.eternaCheck)
     data_types = handles.data_types;
@@ -1367,11 +1355,12 @@ if(handles.settings.eternaCheck)
     target_names = handles.target_names;
     subrounds = handles.subrounds;
     design_names = handles.design_names;
+    alt_structure = handles.alt_structure;    
     
     all_area_pred = handles.all_area_pred;
-    uisave({'settings', 'fineTune', 'sequence', 'sequenceFile', 'typeFile', 'structure', 'mutposFile', ...
+    uisave({'settings', 'fineTune', 'sequence', 'sequenceFile', 'typeFile', 'structure', 'alt_structure','mutposFile', ...
         'filenames', 'd', 'da' , 'd_bsub', 'd_align', 'xsel', 'numpeaks', 'marks', 'mutpos', ...
-        'prof_fit','area_bsub', 'darea_bsub', 'area_bsub_norm', 'darea_bsub_norm', 'min_SHAPE', ...
+        'prof_fit','area_peak','area_bsub', 'darea_bsub', 'area_bsub_norm', 'darea_bsub_norm', 'min_SHAPE', ...
         'data_types', 'max_SHAPE', 'threshold_SHAPE', 'ETERNA_score', 'ids', 'target_names', 'subrounds', ...
         'design_names', 'all_area_pred'}, 'workspace.mat');
 else
@@ -1948,6 +1937,7 @@ handles.filenames = get(handles.fileListbox, 'String');
 handles.sequenceFile = get(handles.sequenceEdit, 'String');
 handles.typeFile = get(handles.datatypeEdit, 'String');
 handles.structure = get(handles.strEdit ,'String');
+handles.alt_structure = get(handles.altStrEdt ,'String');
 handles.mutposFile = get(handles.guideEdit, 'String');
 
 
@@ -2346,7 +2336,7 @@ if(name)
                         end
                 end
             end
-
+            
             idx = search_Str(design_names, line.design_name);
             if(isempty(idx))
                 design_names{end+1} = line.design_name;
