@@ -1,10 +1,14 @@
 function eterna_create_rdat_files_GUI( rdat_filename, target_name, structure, sequence, area_bsub, ...
     ids, target_names, subrounds, sequences, design_names , ...
-    seqpos, goodbins, data_type, added_salt, bad_lanes, min_SHAPE, max_SHAPE, threshold_SHAPE, EteRNA_score, EteRNA_switch,comments, darea_bsub );
+    seqpos, goodbins, data_type, added_salt, bad_lanes, min_SHAPE, max_SHAPE, threshold_SHAPE, EteRNA_score, EteRNA_switch,comments, darea_bsub, trace_data );
 % eterna_create_rdat_files( rdat_tag, target_name, structure, sequence, area_bsub, eterna_sequence_files, seqpos, data_type, added_salt, bad_lanes );
 
 % read eterna sequence files ... this is our reference for eterna IDs, design names, etc.
 
+
+if(isempty(trace_data))
+    trace_data = [];
+end
 % find sequence matches
 match = zeros( 1, length(sequence) );
 for i = 1:length( sequence )
@@ -87,7 +91,7 @@ output_workspace_to_rdat_file(filename,target_name,...
 			      sequence_out, offset, seqpos( goodbins ), area_out( goodbins, : ), ...
 			      mutpos, structure, ...
 			      annotations, data_annotations,...
-			      darea_out,[],[],[], comments );
+			      darea_out,trace_data,[],[], comments );
 
 
 

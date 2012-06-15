@@ -12,7 +12,7 @@ threshold_not_a_change = 0.5; % this is not actually in use.
 START = inset_from_3prime; % where to start data for eterna input
 END   = inset_from_5prime;   % where to end data for eterna input.
 
-clf;
+% clf;
 which_sets = 1:length( area_bsub );
 num_sets = length( which_sets );
 
@@ -112,67 +112,67 @@ for j = which_sets
   fprintf( 1, 'Switch score SHAPE/DMS: %8.1f\n ', switch_score_combined(j) );
   %pause;
 
-  subplot(num_sets / 2,2,j);
+%   subplot(num_sets,1,j);
   num_lanes = size( data_switch, 2);
   nres = size( data_switch, 1 );
-  image( seqpos, [1:num_lanes], data_switch'*80 );
-
+%   image( seqpos, [1:num_lanes], data_switch'*80 );
+% 
   data_to_output{j}     = data_switch;
   data_to_output_err{j} = data_switch_err;
-
-  % draw some grid lines.
-  hold on
-  for m = 1:(num_lanes+1); plot( [0.5 nres+0.5 ], [m-0.5 m-0.5], 'color', [0.1 0.1 0.1], 'linew', 0.5 ); end;
-  for m = 1:(nres+1); plot( [m-0.5 m-0.5], [0.5 num_lanes+0.5 ], 'color', [0.1 0.1 0.1], 'linew', 0.5 ); end;
-  % show sequence.
-  for m = 1:nres; text( m, 0.5, sequence{j}(m),'verticalalign','bottom','horizontalalign','center' ); end;
-
-  % show annotations of where switch should occur
-  for n = 1:nres
-    for m = 1:num_lanes
-      if ( all_area_pred{j}(n,m) > 0)
-	plot( seqpos(n), m, 'ro'); 
-      end;
-    end
-  end
-
-  % show annotations of whether switch occurred.
-  % gray square -- not evaluated (excluded position)
-  str_on  = all_area_pred{j}(:, 2);
-  str_off = all_area_pred{j}(:, 1);
-  for n = 1:nres
-    if  isempty( find(n==goodbins) )
-      plot( seqpos(n),  num_lanes+1, 's','color',[0.5 0.5 0.5],'markerfacecolor',[0.5 0.5 0.5],'clipping','off' );
-    else
-      % black square -- not a switch position
-      if ( str_on(n) == str_off(n) )
-	plot( seqpos(n),  num_lanes+1, 's','color','k','markerfacecolor','k','clipping','off' );
-      else
-	if (s_combine(n) == 0 )
-	  % red x -- no switch where there should be one
-	  plot( seqpos(n),  num_lanes+1, 'x','color','r','linew',2,'clipping','off' );	  
-	else
-	  % green circle -- OK. Strength of color indicates how strong the switch is.
-	  colorcode = 1 - ( 1 - [0, 0.5, 0] ) * s_combine(n);
-	  plot( seqpos(n),  num_lanes+1, 'o','color','k','markerfacecolor',colorcode,'clipping','off' );	  
-	end
-      end
-    end      
-  end
-  ylim([-0.5 num_lanes+0.5])
-  xlim([-0.5 nres+0.5])
-  text( nres+1, 0.5, ['Sequence ',num2str(j),'\newline', put_newlines_in_name(design_names{j}) ],'fontsize',8,'fontwe','bold','verticalalign','top' );
-  text( -0.5, 0.5, ['Switch\newlinescore: \newline',...
-		  num2str(sum( s_combine( find(switch_bin_SHAPE) ) ),'%3.1f'),'/',...
-		  num2str(sum(switch_bin_SHAPE),'%d'), '\newline',...
-		  num2str(switch_score_combined(j),'%8.1f')] ,'fontsize',8,'fontwe','bold','horizontalalign','right','verticalalign','top' );
-  hold off
-  axis off
+% 
+%   % draw some grid lines.
+%   hold on
+%   for m = 1:(num_lanes+1); plot( [0.5 nres+0.5 ], [m-0.5 m-0.5], 'color', [0.1 0.1 0.1], 'linew', 0.5 ); end;
+%   for m = 1:(nres+1); plot( [m-0.5 m-0.5], [0.5 num_lanes+0.5 ], 'color', [0.1 0.1 0.1], 'linew', 0.5 ); end;
+%   % show sequence.
+%   for m = 1:nres; text( m, 0.5, sequence{j}(m),'verticalalign','bottom','horizontalalign','center' ); end;
+% 
+%   % show annotations of where switch should occur
+%   for n = 1:nres
+%     for m = 1:num_lanes
+%       if ( all_area_pred{j}(n,m) > 0)
+% 	plot( seqpos(n), m, 'ro'); 
+%       end;
+%     end
+%   end
+% 
+%   % show annotations of whether switch occurred.
+%   % gray square -- not evaluated (excluded position)
+%   str_on  = all_area_pred{j}(:, 2);
+%   str_off = all_area_pred{j}(:, 1);
+%   for n = 1:nres
+%     if  isempty( find(n==goodbins) )
+%       plot( seqpos(n),  num_lanes+1, 's','color',[0.5 0.5 0.5],'markerfacecolor',[0.5 0.5 0.5],'clipping','off' );
+%     else
+%       % black square -- not a switch position
+%       if ( str_on(n) == str_off(n) )
+% 	plot( seqpos(n),  num_lanes+1, 's','color','k','markerfacecolor','k','clipping','off' );
+%       else
+% 	if (s_combine(n) == 0 )
+% 	  % red x -- no switch where there should be one
+% 	  plot( seqpos(n),  num_lanes+1, 'x','color','r','linew',2,'clipping','off' );	  
+% 	else
+% 	  % green circle -- OK. Strength of color indicates how strong the switch is.
+% 	  colorcode = 1 - ( 1 - [0, 0.5, 0] ) * s_combine(n);
+% 	  plot( seqpos(n),  num_lanes+1, 'o','color','k','markerfacecolor',colorcode,'clipping','off' );	  
+% 	end
+%       end
+%     end      
+%   end
+%   ylim([-0.5 num_lanes+0.5])
+%   xlim([-0.5 nres+0.5])
+%   text( nres+1, 0.5, ['Sequence ',num2str(j),'\newline', put_newlines_in_name(design_names{j}) ],'fontsize',8,'fontwe','bold','verticalalign','top' );
+%   text( -0.5, 0.5, ['Switch\newlinescore: \newline',...
+% 		  num2str(sum( s_combine( find(switch_bin_SHAPE) ) ),'%3.1f'),'/',...
+% 		  num2str(sum(switch_bin_SHAPE),'%d'), '\newline',...
+% 		  num2str(switch_score_combined(j),'%8.1f')] ,'fontsize',8,'fontwe','bold','horizontalalign','right','verticalalign','top' );
+%   hold off
+%   axis off
 end
-
-colormap( 1 - gray(100) );
-set(gcf, 'PaperPositionMode','auto','color','white');
-
+% 
+% colormap( 1 - gray(100) );
+% set(gcf, 'PaperPositionMode','auto','color','white');
+% 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

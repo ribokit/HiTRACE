@@ -1,4 +1,4 @@
-function [ min_SHAPE, max_SHAPE, threshold_SHAPE, ETERNA_score ] = determine_thresholds_and_ETERNA_score( data, pred, NEW_SETTINGS );
+function [ min_SHAPE, max_SHAPE, threshold_SHAPE, ETERNA_score, d_bin ] = determine_thresholds_and_ETERNA_score( data, pred, NEW_SETTINGS );
 
 if ~exist( 'NEW_SETTINGS' ); NEW_SETTINGS = 0; end;
 
@@ -109,19 +109,25 @@ for k = 1:length( data )
   if ( pred(k) ) % should be unpaired
     if ( data(k) > (0.25*threshold_SHAPE + 0.75*min_SHAPE ) );    
       ETERNA_score  = ETERNA_score + 1;
+      d_bin(k) = 1;
     else
       badpt = [badpt, k ];
+      d_bin(k) = 0;
     %  [k,pred(k)]
     end
   else
     if ( data(k) < threshold_SHAPE )
       ETERNA_score  = ETERNA_score + 1;
+      d_bin(k) = 0;
     else
       badpt = [badpt, k ];
+      d_bin(k) = 1;
     %  [k,pred(k)]
     end
   end
 end
+
+d_bin = d_bin';
 plot( badpt, (pred(badpt)-baseline)/scale_factor, 'x','color',[0. 0.5 0],'linewidth',2 );
 ylim([ (-0.2-baseline)/scale_factor (1.5-baseline)/scale_factor ]);
 hold off

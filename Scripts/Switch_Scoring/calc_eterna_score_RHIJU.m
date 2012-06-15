@@ -26,7 +26,7 @@ for j = which_sets
     data_image(:,3*(n-1)+1) = data_to_output{j}(:,n);
     data_image(:,3*(n-1)+2) = data_to_output{j}(:,n);
   end
-  subplot(length(which_sets),1,j);
+  subplot(length(which_sets) / 2,2,j);
   image( seqpos, [1 : 3*num_lanes], 80*data_image' );
   % draw some grid lines.
   hold on
