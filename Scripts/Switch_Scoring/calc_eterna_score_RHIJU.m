@@ -26,7 +26,15 @@ for j = which_sets
     data_image(:,3*(n-1)+1) = data_to_output{j}(:,n);
     data_image(:,3*(n-1)+2) = data_to_output{j}(:,n);
   end
-  subplot(length(which_sets) / 2,2,j);
+  
+  if ( j <= length(which_sets) / 2);
+    plot_id = 2 * j - 1;
+  else
+    plot_id = j - length(which_sets) / 2;
+    plot_id = 2 * plot_id;
+  end
+  subplot(length(which_sets) / 2,2, plot_id);
+
   image( seqpos, [1 : 3*num_lanes], 80*data_image' );
   % draw some grid lines.
   hold on
@@ -41,7 +49,13 @@ for j = which_sets
   ylim([-0.5 3*num_lanes+0.5]);
   xlim([-0.5 nres+0.5]);
   axis off
-  text( nres+1, 0.5, ['Sequence ',num2str(j),'\newline', design_names{j}],'fontsize',8,'fontwe','bold','verticalalign','top' );
+  if j == 1
+      text( nres+1, 0.5, ['Sequence ',num2str(j),'\newline', design_names{j}, num2str(j),'\newline', 'warning:badQuality'],'fontsize',8,'fontwe','bold','verticalalign','top' );
+  else
+      text( nres+1, 0.5, ['Sequence ',num2str(j),'\newline', design_names{j}],'fontsize',8,'fontwe','bold','verticalalign','top' );
+  end
+  
+  
   hold on
   
   

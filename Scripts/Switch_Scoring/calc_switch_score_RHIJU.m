@@ -112,7 +112,17 @@ for j = which_sets
   fprintf( 1, 'Switch score SHAPE/DMS: %8.1f\n ', switch_score_combined(j) );
   %pause;
 
-  subplot(num_sets / 2,2,j);
+  if ( j <= length(which_sets) / 2);
+    plot_id = 2 * j - 1;
+  else
+    plot_id = j - length(which_sets) / 2;
+    plot_id = 2 * plot_id;
+  end
+  subplot(length(which_sets) / 2,2, plot_id);
+  
+  if j == 1
+      title('warning:badQuality');
+  end
   num_lanes = size( data_switch, 2);
   nres = size( data_switch, 1 );
   image( seqpos, [1:num_lanes], data_switch'*80 );
@@ -161,7 +171,11 @@ for j = which_sets
   end
   ylim([-0.5 num_lanes+0.5])
   xlim([-0.5 nres+0.5])
-  text( nres+1, 0.5, ['Sequence ',num2str(j),'\newline', put_newlines_in_name(design_names{j}) ],'fontsize',8,'fontwe','bold','verticalalign','top' );
+  if j == 1
+      text( nres+1, 0.5, ['Sequence ',num2str(j),'\newline', design_names{j}, num2str(j),'\newline', 'warning:badQuality'],'fontsize',8,'fontwe','bold','verticalalign','top' );
+  else
+      text( nres+1, 0.5, ['Sequence ',num2str(j),'\newline', design_names{j}],'fontsize',8,'fontwe','bold','verticalalign','top' );
+  end
   text( -0.5, 0.5, ['Switch\newlinescore: \newline',...
 		  num2str(sum( s_combine( find(switch_bin_SHAPE) ) ),'%3.1f'),'/',...
 		  num2str(sum(switch_bin_SHAPE),'%d'), '\newline',...
