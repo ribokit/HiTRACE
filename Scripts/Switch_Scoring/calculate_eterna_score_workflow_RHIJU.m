@@ -1,3 +1,5 @@
+clear;
+
 load Workspace/R55_workspace.mat  
 
 which_sets = 1:length(sequence);
@@ -43,11 +45,11 @@ ignore_points = [ 10:15  28:32]; % These are the nucleotides that bind FMN direc
 [ switch_score, data_to_output, data_to_output_err ] = calc_switch_score_RHIJU( inset_from_5prime, inset_from_3prime, ignore_points, sequence, seqpos, area_bsub, darea_bsub, all_area_pred, design_names );
 fprintf( 'Hit return to continue...\n');
 pause;
-print('R55_switch_score.png', '-dpng', '-r500');
+print('R55_switch_score.png', '-dpng', '-r300');
 
 % This script figures out the EteRNA score, but uses fixed thresholds. So mix/max/threshold are returned as 0, 1, and 0.5.
 [ETERNA_score, min_SHAPE, max_SHAPE, threshold_SHAPE] = calc_eterna_score_RHIJU( inset_from_5prime, inset_from_3prime, data_types, data_to_output, sequence, seqpos, area_bsub, all_area_pred, design_names );
-print('R55_eterna_score.png', '-dpng', '-r500');
+print('R55_eterna_score.png', '-dpng', '-r300');
 
 %[name path] = uiputfile('Output.rdat', 'Save to RDAT file');
 %outfile = strcat(path,name);
@@ -56,13 +58,9 @@ nres = length( data_to_output{1} );
 goodbins = [ (nres-inset_from_5prime) : -1 : inset_from_3prime];
 outfile = 'test.rdat'
 
-for i = which_sets
-    trace_data(:,[1:6] + (i - 1) * 6) = d_bsub{i};
-end
-
 % This script has been modified so that it doesn't output min/max/threshold if  min is zero -- simpler output of RDAT file.
-eterna_create_rdat_files_GUI( outfile, target_names{1}, structure, sequence, ...
-			      data_to_output, ids, target_names, subrounds, sequence, ...
-			      design_names, seqpos, goodbins, data_types, [], [], ...
-			      min_SHAPE, max_SHAPE, threshold_SHAPE, ETERNA_score, ...
-			      switch_score,[], data_to_output_err,trace_data );
+% eterna_create_rdat_files_GUI( outfile, target_names{1}, structure, sequence, ...
+% 			      data_to_output, ids, target_names, subrounds, sequence, ...
+% 			      design_names, seqpos, goodbins, data_types, [], [], ...
+% 			      min_SHAPE, max_SHAPE, threshold_SHAPE, ETERNA_score, ...
+% 			      switch_score,[], data_to_output_err,trace_data );

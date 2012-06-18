@@ -671,14 +671,30 @@ if(name)
     if(handles.settings.eternaCheck)
         seqpos = [length(handles.sequence{1})-handles.settings.dist: -1: 1 ];
         nres = size( handles.area_bsub{1}, 1);
-        goodbins = [(nres-handles.settings.eternaEnd):-1:handles.settings.eternaStart+1];
+        goodbins = [(nres-handles.settings.eternaEnd):-1:handles.settings.eternaStart];
         data_type = handles.data_types; 
         added_salt = handles.rdat_str.added_salts;
         bad_lanes = [];
         comments = {'Chemical mapping data for the EteRNA design project.'};
-        eterna_create_rdat_files_GUI( strcat(path,name), handles.target_names{1}, handles.structure, handles.sequence, ...
-            handles.area_bsub_norm,handles.ids, handles.target_names, handles.subrounds, handles.sequence, handles.design_names , seqpos, goodbins, data_type, added_salt, ...
-            bad_lanes, handles.min_SHAPE, handles.max_SHAPE, handles.threshold_SHAPE, handles.ETERNA_score, handles.switch_score,comments, handles.darea_bsub_norm,handles.d_align );
+        
+        if(~isempty(handles.alt_structure))
+            structure = [handles.structure; handles.alt_structure];
+        else
+            structure = handles.structure;
+        end
+        
+        btn = questdlg('Contains Raw trace?', 'Raw Trace Question', 'Yes', 'No','Yes');
+        
+        if (strcmp(btn,'Yes'))
+            eterna_create_rdat_files_GUI( strcat(path,name), handles.target_names{1}, structure, handles.sequence, ...
+                handles.area_bsub_norm,handles.ids, handles.target_names, handles.subrounds, handles.sequence, handles.design_names , seqpos, goodbins, data_type, added_salt, ...
+                bad_lanes, handles.min_SHAPE, handles.max_SHAPE, handles.threshold_SHAPE, handles.ETERNA_score, handles.switch_score,comments, handles.darea_bsub_norm,handles.d_bsub,handles.xsel );
+        else
+            eterna_create_rdat_files_GUI( strcat(path,name), handles.target_names{1}, structure, handles.sequence, ...
+                handles.area_bsub_norm,handles.ids, handles.target_names, handles.subrounds, handles.sequence, handles.design_names , seqpos, goodbins, data_type, added_salt, ...
+                bad_lanes, handles.min_SHAPE, handles.max_SHAPE, handles.threshold_SHAPE, handles.ETERNA_score, handles.switch_score,comments, handles.darea_bsub_norm,[],[] );
+        end
+        
     else
         fullname = strcat(path, name);
         seqpos = length(handles.sequence)-handles.settings.dist - [0:(size(handles.area_peak,1)-1)] + handles.settings.offset;
@@ -1255,17 +1271,17 @@ for i = step:handles.max
             handles.displayComponents = displaySetting('finalresult', handles);
             guidata(hObject, handles);
         case 6
+            START = eternaStart; % where to start data for eterna input
+            END   = eternaEnd;   % where to end data for eterna input.
             backgd_sub_col = find(strcmp(data_types, 'nomod'));
-            penalize_negative_weight = 2.0;
+            fixed_overmod_correct = 1.0 * (length( sequence{1} ) - 20)/80;
             for j = which_sets
-              [ area_bsub{j}, darea_bsub{j}] = overmod_and_background_correct_logL( handles.area_peak{j}, backgd_sub_col, [4:size(handles.area_peak{j},1)-4], handles.all_area_pred{j});
+              [ area_bsub{j}, darea_bsub{j}] = overmod_and_background_correct_logL( handles.area_peak{j}, backgd_sub_col, [START:(size(handles.area_peak{j},1)-END)], handles.all_area_pred{j}, [],fixed_overmod_correct );
              % pause;
             end
 
             % Average data over Ann/DC replicates, and output to screen in nice format that can be copy/pasted into EteRNA.
             % Also, automated EteRNA scoring.
-            START = eternaStart; % where to start data for eterna input
-            END   = eternaEnd;   % where to end data for eterna input.
             min_SHAPE = {}; max_SHAPE={};threshold_SHAPE={};ETERNA_score={};
             design_names = handles.design_names;
             ignore_points = [ 10:15  28:32]; 
@@ -1417,6 +1433,10 @@ if(name)
             
             set(handles.profileCombo,'String', handles.design_names);
             set(handles.dataCombo,'String', {'MgCl2', 'NaCl'});
+            
+            if(isfield(structure, 'alt_structure'))
+                handles.alt_structure = structure.alt_structure;                
+            end
         end
         
         handles.step = 0;
@@ -2330,9 +2350,9 @@ if(name)
                         line.sequence = strtok(remains, ':');
                     case 'chemical'
                         if(isempty(line.added_salt))
-                            line.added_salt = [line.added_salt , ' ', data{j}];
-                        else
                             line.added_salt = data{j};
+                        else
+                            line.added_salt = [line.added_salt , ' ', data{j}];
                         end
                 end
             end

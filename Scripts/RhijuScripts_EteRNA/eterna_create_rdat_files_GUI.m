@@ -7,8 +7,31 @@ function eterna_create_rdat_files_GUI( rdat_filename, target_name, structure, se
 
 
 if(isempty(trace_data))
-    trace_data = [];
+    trace = [];
+else
+    for i = 1:length( sequence)
+        trace(:,[1:6] + (i - 1) * 6) = trace_data{i};
+    end    
 end
+
+if(isempty(xsel))
+    xsels = [];
+else
+    for i = 1:length( sequence)
+        xsels(:,i) = xsel{i};
+    end
+    xsels = xsels(goodbins,:);
+end
+
+
+if(size(structure,1) > 1)
+    str = structure(1,:);
+    for i = 2:size(structure,1)
+        str = [str, ' ', structure(i,:)];
+    end
+    structure = str;
+end
+
 % find sequence matches
 match = zeros( 1, length(sequence) );
 for i = 1:length( sequence )
@@ -37,11 +60,21 @@ end
 sequence_out = '';
 for m = 1:length(sequence{1}); sequence_out = [sequence_out,'X']; end;
 
-annotations = {'experimentType:StandardState','chemical:Na-HEPES:50mM(pH8.0)','temperature:24C','modifier:DMS','processing:overmodificationCorrection','processing:backgroundSubtraction'};
+if(isempty(trace_data))
+    annotations = {'experimentType:StandardState','chemical:Na-HEPES:50mM(pH8.0)','temperature:24C','processing:overmodificationCorrection','processing:backgroundSubtraction'};
+else
+    annotations = {'experimentType:StandardState','chemical:Na-HEPES:50mM(pH8.0)','temperature:24C'};
+end
 
 count = 0;
 offset = 0; % for EteRNA generally, there are no weird sequence offsets.
 mutpos = [];
+
+v = zeros(length(sequence),1);
+
+v(bad_lanes) = 1;
+bad_lanes = v;
+
 for i = 1:length( sequence)
   m = match(i);
 
@@ -50,12 +83,15 @@ for i = 1:length( sequence)
     return;
   end
   
+  
+  
   for j = 1:length( data_type )
-    if (strcmp( data_type{j}, 'SHAPE' ) || strcmp( data_type{j}, 'DMS' ))&  ~match_bad_lanes( i, j, bad_lanes )
+    if (strcmp( data_type{j}, 'SHAPE' ) || strcmp( data_type{j}, 'DMS' ))
       count = count + 1;
       area_out(:,count) = area_bsub{i}(:,j);
       darea_out(:,count) = darea_bsub{i}(:,j);
 
+      
      
       data_annotations{count} = { ...
 		    ['EteRNA:design_name:', strrep( strrep( design_names{m},' ','_' ), '%', '%%' ) ],...		    
@@ -78,20 +114,44 @@ for i = 1:length( sequence)
       data_annotations{count} = [ data_annotations{count}, ['sequence:',sequence{i}] ];
       
       mutpos( count ) = NaN;
+      
+      if(bad_lanes(i))
+        data_annotations{count} = [ data_annotations{count}, ['warning:badQuality'] ];
+      end
+    elseif(~isempty(trace_data))
+      count = count + 1;
+      area_out(:,count) = 0;
+      darea_out(:,count) = 0;
+      
+      data_annotations{count} = { ...
+		    ['EteRNA:design_name:', strrep( strrep( design_names{m},' ','_' ), '%', '%%' ) ],...		    
+            ['EteRNA:target:',strrep(target_names{m},' ','_') ],...
+	  ['EteRNA:ID:',num2str(ids(m)) ],...
+	  ['EteRNA:subround:',num2str(subrounds(m))]};
+	      data_annotations{count} = [ data_annotations{count}, ['modifier:',data_type{j}] ];
+      if ( ~isempty(added_salt) && length(added_salt{m}{j} > 0 ) )
+          data_annotations{count} = [ data_annotations{count}, added_salt{m}{j} ]; 
+      end
+      data_annotations{count} = [ data_annotations{count}, ['sequence:',sequence{i}] ];
+      
+      mutpos( count ) = NaN;
+      
+      if(bad_lanes(i))
+        data_annotations{count} = [ data_annotations{count}, ['warning:badQuality'] ];
+      end
     end
   end
 end
 
 filename = rdat_filename; %[rdat_tag,'_000',num2str(rdat_index),'.rdat'];
 
-goodbins
-size( seqpos)
-size( area_out )
+
+
 output_workspace_to_rdat_file(filename,target_name,...
 			      sequence_out, offset, seqpos( goodbins ), area_out( goodbins, : ), ...
 			      mutpos, structure, ...
 			      annotations, data_annotations,...
-			      darea_out,trace_data,[],xsel, comments );
+			      darea_out( goodbins, : ),trace,[],xsels', comments );
 
 
 

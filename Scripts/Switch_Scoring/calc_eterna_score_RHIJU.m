@@ -49,7 +49,7 @@ for j = which_sets
   ylim([-0.5 3*num_lanes+0.5]);
   xlim([-0.5 nres+0.5]);
   axis off
-  if j == 1
+  if j == 0
       text( nres+1, 0.5, ['Sequence ',num2str(j),'\newline', design_names{j}, num2str(j),'\newline', 'warning:badQuality'],'fontsize',8,'fontwe','bold','verticalalign','top' );
   else
       text( nres+1, 0.5, ['Sequence ',num2str(j),'\newline', design_names{j}],'fontsize',8,'fontwe','bold','verticalalign','top' );
