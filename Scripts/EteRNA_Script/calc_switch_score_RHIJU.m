@@ -44,8 +44,25 @@ for j = which_sets
     [d_on_norm,  d_on_norm_err  ] = get_data_norm( area_bsub{j}(:, (a-1) * 2 + 2), darea_bsub{j}(:, (a-1) * 2 + 2), goodbins );
     [d_off_norm, d_off_norm_err ] = get_data_norm( area_bsub{j}(:, (a-1) * 2 + 1), darea_bsub{j}(:, (a-1) * 2 + 1), goodbins );
 
+	% normalize filter for removing outliers
+    
+    ordered_on = sort(d_on_norm);
+    ordered_off = sort(d_off_norm);
+    
+    x25_on = ordered_on(round(0.25 * length(ordered_on)));
+    x75_on = ordered_on(round(0.75 * length(ordered_on)));
+    
+    x25_off = ordered_off(round(0.25 * length(ordered_off)));
+    x75_off = ordered_off(round(0.75 * length(ordered_off)));
+    
+    target_idx_on = find(d_on_norm <= 1.5 * (x75_on -x25_on) + x75_on);
+    target_idx_off = find(d_off_norm <= 1.5 * (x75_off -x25_off) + x75_off);
+    
+    target_idx_on = intersect(target_idx_on, goodbins);
+    target_idx_off = intersect(target_idx_off, goodbins);
+    
     % One more normalization to try to bring the data close to each other.
-    rescale_on_off = mean( d_off_norm( goodbins ) ) / mean( d_on_norm( goodbins ) );
+    rescale_on_off = mean( d_off_norm( target_idx_off ) ) / mean( d_on_norm( target_idx_on ) );
     d_on_norm     = d_on_norm * rescale_on_off;
     d_on_norm_err = d_on_norm_err * rescale_on_off;
 

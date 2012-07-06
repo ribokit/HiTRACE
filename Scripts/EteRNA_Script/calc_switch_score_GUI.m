@@ -46,17 +46,17 @@ for j = which_sets
 
     % normalize filter for removing outliers
     
-    ordered_on = sort(data_on_norm);
-    ordered_off = sort(data_off_norm);
+    ordered_on = sort(d_on_norm);
+    ordered_off = sort(d_off_norm);
+  
+    x25_on = ordered_on(round(0.25 * length(ordered_on)));
+    x75_on = ordered_on(round(0.75 * length(ordered_on)));
     
-    x25_on = data_on_norm(round(0.25 * length(ordered_on)));
-    x75_on = data_on_norm(round(0.75 * length(ordered_on)));
-    
-    x25_off = data_off_norm(round(0.25 * length(ordered_off)));
-    x75_off = data_off_norm(round(0.75 * length(ordered_off)));
-    
-    target_idx_on = find(data_on_norm <= 1.5 * (x75_on -x25_on) + x75_on);
-    target_idx_off = find(data_off_norm <= 1.5 * (x75_off -x25_off) + x75_off);
+    x25_off = ordered_off(round(0.25 * length(ordered_off)));
+    x75_off = ordered_off(round(0.75 * length(ordered_off)));
+      
+    target_idx_on = find(d_on_norm <= 1.5 * (x75_on -x25_on) + x75_on);
+    target_idx_off = find(d_off_norm <= 1.5 * (x75_off -x25_off) + x75_off);
     
     target_idx_on = intersect(target_idx_on, goodbins);
     target_idx_off = intersect(target_idx_off, goodbins);
