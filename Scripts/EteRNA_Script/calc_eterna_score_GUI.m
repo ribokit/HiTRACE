@@ -1,4 +1,4 @@
-function [ETERNA_score, min_SHAPE, max_SHAPE, threshold_SHAPE] = calc_eterna_score_RHIJU( inset_from_5prime, inset_from_3prime, data_types, data_to_output, sequence, seqpos, area_bsub, all_area_pred, design_names );
+function [ETERNA_score, min_SHAPE, max_SHAPE, threshold_SHAPE] = calc_eterna_score_GUI( inset_from_5prime, inset_from_3prime, data_types, data_to_output, sequence, seqpos, area_bsub, all_area_pred, design_names );
 
 min_SHAPE = {};
 max_SHAPE = {};

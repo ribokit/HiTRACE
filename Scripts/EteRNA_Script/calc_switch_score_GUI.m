@@ -1,4 +1,4 @@
-function [ switch_score_combined, data_to_output, data_to_output_err ] = calc_switch_score_RHIJU( inset_from_5prime, inset_from_3prime, ignore_points, sequence, seqpos, area_bsub, darea_bsub, all_area_pred, design_names );
+function [ switch_score_combined, data_to_output, data_to_output_err ] = calc_switch_score_GUI( inset_from_5prime, inset_from_3prime, ignore_points, sequence, seqpos, area_bsub, darea_bsub, all_area_pred, design_names );
 % This script is in charge of (1) normalizing the data, (2) making calls on which nucleotide 'switch' appropriately, (3) giving back 
 %  graphical display of this scoring, (4) compiling the overall 'switch score'.
 %

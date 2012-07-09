@@ -675,7 +675,6 @@ if(name)
         data_type = handles.data_types; 
         added_salt = handles.rdat_str.added_salts;
         bad_lanes = [];
-        comments = {'Chemical mapping data for the EteRNA design project.'};
         
         if(~isempty(handles.alt_structure))
             structure = [handles.structure; handles.alt_structure];
@@ -686,10 +685,15 @@ if(name)
         btn = questdlg('Contains Raw trace?', 'Raw Trace Question', 'Yes', 'No','Yes');
         
         if (strcmp(btn,'Yes'))
+            
+            comments = {'Chemical mapping data for the EteRNA design project with raw aligned traces.'};
+        
             eterna_create_rdat_files_GUI( strcat(path,name), handles.target_names{1}, structure, handles.sequence, ...
                 handles.area_bsub_norm,handles.ids, handles.target_names, handles.subrounds, handles.sequence, handles.design_names , seqpos, goodbins, data_type, added_salt, ...
                 bad_lanes, handles.min_SHAPE, handles.max_SHAPE, handles.threshold_SHAPE, handles.ETERNA_score, handles.switch_score,comments, handles.darea_bsub_norm,handles.d_bsub,handles.xsel );
         else
+            comments = {'Chemical mapping data for the EteRNA design project with background-subtracted and normalized data.'};
+            
             eterna_create_rdat_files_GUI( strcat(path,name), handles.target_names{1}, structure, handles.sequence, ...
                 handles.area_bsub_norm,handles.ids, handles.target_names, handles.subrounds, handles.sequence, handles.design_names , seqpos, goodbins, data_type, added_salt, ...
                 bad_lanes, handles.min_SHAPE, handles.max_SHAPE, handles.threshold_SHAPE, handles.ETERNA_score, handles.switch_score,comments, handles.darea_bsub_norm,[],[] );
@@ -2304,7 +2308,9 @@ if(name)
         return;
     end
     
-    handles.structure = structure.structure;
+    if(~isempty(structure.structure))
+        handles.structure = structure.structure;
+    end
     handles.settings.offset = structure.offset;
     handles.annotations = structure.annotations;
     
