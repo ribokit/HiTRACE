@@ -49,7 +49,7 @@ contrast_factor = 40/ mean(mean(abs(image_x)));
 if (JUST_PLOT_SEQUENCE )
   if isstruct(USE_GUI); axes(USE_GUI.displayComponents); end;
   make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
-	     contrast_factor, offset, period,marks,mutpos);
+	     contrast_factor, offset, period,marks,mutpos, area_pred);
   return;
 end
 
@@ -60,14 +60,14 @@ stop_sel = 0;
 if isstruct(USE_GUI)
   axes(USE_GUI.displayComponents);
   make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
-	     contrast_factor, offset, period,marks,mutpos);
+	     contrast_factor, offset, period,marks,mutpos, area_pred);
   uiwait( msgbox( 'Are you ready to interactively annotate the sequence?','Ready?','modal' ) )
 end
 
 while ~stop_sel
   if isstruct(USE_GUI); axes(USE_GUI.displayComponents);; end;
   make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
-	     contrast_factor, offset, period,marks,mutpos);
+	     contrast_factor, offset, period,marks,mutpos, area_pred);
   
   title( ['j,l -- zoom. i,k -- up/down. q -- quit. left-click -- select. \newline',...
 	  'x -- auto-assign. ',...
@@ -232,7 +232,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function make_plot( image_x, xsel, ymin, ymax, sequence, ...
-		    JUST_PLOT_SEQUENCE, contrast_factor, offset, period,marks,mutpos )
+		    JUST_PLOT_SEQUENCE, contrast_factor, offset, period,marks,mutpos,area_pred )
 
 numlanes = size( image_x, 2 ) ;
 
@@ -306,18 +306,10 @@ for i = xsel_to_plot
   
   SHOW_MARKS = 1;
   if SHOW_MARKS & ~isempty( marks );
-    signalpos = marks(: ,2 );
-    seqpos = length(sequence) - i + 1 + offset;
-    goodpoints = find( signalpos == seqpos );
-    mutres = marks( goodpoints, 1);
-    xloc = [];
-    for ( m = mutres' )
-      xloc = find( m == mutpos);
-      plot( xloc, xsel(i)+0*xloc, 'ro' );
-      %  for ( n = xloc )	  
-      %    h = rectangle( 'Position', [n-0.5, xsel(i)-0.5*xwid, 1, xwid] );
-      %    set(h,'edgecolor','r');
-      %  end
+    for j = 1:numlanes
+      if(area_pred(i,j) == 1)
+        plot( j, xsel(i), 'ro' );
+      end
     end
   end
   

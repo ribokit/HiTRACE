@@ -2363,7 +2363,7 @@ if(name)
                 end
             end
             
-            idx = search_Str(design_names, line.design_name);
+            idx = search_Str(ids, line.id);
             if(isempty(idx))
                 design_names{end+1} = line.design_name;
                 target_names{end+1} = line.target;
@@ -2407,10 +2407,10 @@ if(name)
     refreshSetting(handles);
 end
 
-function idx = search_Str(strs, str)
+function idx = search_Str(ids, id)
 idx = [];
-for i = 1:length(strs)
-    if(strcmp(strs{i}, str))
+for i = 1:length(ids)
+    if(ids(i) == id)
         idx = [idx, i];
     end
 end
