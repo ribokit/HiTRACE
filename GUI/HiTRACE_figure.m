@@ -1288,7 +1288,7 @@ for i = step:handles.max
             % Also, automated EteRNA scoring.
             min_SHAPE = {}; max_SHAPE={};threshold_SHAPE={};ETERNA_score={};
             design_names = handles.design_names;
-            ignore_points = [ 10:15  28:32]; 
+            ignore_points = [ 21:26  39:43]; 
             [ switch_score, area_bsub_norm, darea_bsub_norm ] = calc_switch_score_GUI( START, END, ignore_points, sequence, seqpos, area_bsub, darea_bsub, all_area_pred, design_names );
             [ETERNA_score, min_SHAPE, max_SHAPE, threshold_SHAPE] = calc_eterna_score_GUI( START, END, data_types, area_bsub_norm, sequence, seqpos, area_bsub, all_area_pred, design_names );
             
