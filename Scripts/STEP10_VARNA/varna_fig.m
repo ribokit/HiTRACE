@@ -35,6 +35,8 @@ if ~isempty( DATA )
 
 end
 
+
+
 %%
 %filename='VARNA/test.html';
 fid=fopen(filename,'w');
@@ -68,6 +70,13 @@ if exist( 'Z' )
 	    fprintf(fid,'%s\n','<param name="colorMapStyle" value="-0.001:#C0C0C0,0:#FFFFFF;0.1:#FFFFFF,0.8:#FF8800;1:#FF0000" />'); 
 	  else
 	    fprintf(fid,'%s\n','<param name="colorMapStyle" value="0:#FFFFFF;0.1:#FFFFFF,0.8:#FF8800;1:#FF0000" />'); 
+	  end
+   case 3 % blue to white to yellow
+	  % slight pain because of VARNA rescaling:
+	  if ( sum( Z < 0 ) > 0 )
+	    fprintf(fid,'%s\n','<param name="colorMapStyle" value="-0.001:#B0B0B0,0:#0000FF;0.5:#FFFFFF;1:#FFFF00" />'); 
+	  else
+	    fprintf(fid,'%s\n','<param name="colorMapStyle" value="0:#FFFFFF;,0.5:#2222FF;1:#0000FF" />'); 
 	  end
   end
 end

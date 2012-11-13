@@ -1,6 +1,6 @@
 clear;
 
-load Workspace/R55_workspace.mat  
+load Workspace/R51_workspace.mat  
 
 which_sets = 1:length(sequence);
 
@@ -45,11 +45,11 @@ ignore_points = [ 10:15  28:32]; % These are the nucleotides that bind FMN direc
 [ switch_score, data_to_output, data_to_output_err ] = calc_switch_score_RHIJU( inset_from_5prime, inset_from_3prime, ignore_points, sequence, seqpos, area_bsub, darea_bsub, all_area_pred, design_names );
 fprintf( 'Hit return to continue...\n');
 pause;
-print('R55_switch_score.png', '-dpng', '-r300');
+print('R51_switch_score.png', '-dpng', '-r300');
 
 % This script figures out the EteRNA score, but uses fixed thresholds. So mix/max/threshold are returned as 0, 1, and 0.5.
 [ETERNA_score, min_SHAPE, max_SHAPE, threshold_SHAPE] = calc_eterna_score_RHIJU( inset_from_5prime, inset_from_3prime, data_types, data_to_output, sequence, seqpos, area_bsub, all_area_pred, design_names );
-print('R55_eterna_score.png', '-dpng', '-r300');
+print('R51_eterna_score.png', '-dpng', '-r300');
 
 %[name path] = uiputfile('Output.rdat', 'Save to RDAT file');
 %outfile = strcat(path,name);
