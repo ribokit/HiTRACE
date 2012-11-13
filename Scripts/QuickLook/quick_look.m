@@ -120,27 +120,15 @@ if PLOT_STUFF
   set( gca, 'xtick', 1:length( reorder ), ...
 	    'xticklabel', char( labels{reorder}  )  );
   xticklabel_rotate;
-  
-  for i = 1:length( line_pos );
-    hold on
-    plot( 0.5+line_pos(i)*[1 1], [ymin ymax],'r-'); 
-  end
-  hold off
-
+  make_dividers( reorder, line_pos, ymin, ymax );
 
   %figure(3)
   subplot(1,2,2);
   image( d0_reference_ladder*2);
   title( 'Reference ladder (channel 4)')
   axis( [ 0.5 length( reorder )+0.5 ymin ymax] );
-  
-  for i = 1:length( line_pos );
-    hold on
-    plot( 0.5+line_pos(i)*[1 1], [ymin ymax],'r-'); 
-  end
-  hold off
-  
-  set( gca, 'xtick', 1:length(reorder), ...
+  make_dividers( reorder, line_pos, ymin, ymax );
+    set( gca, 'xtick', 1:length(reorder), ...
 	    'xticklabel', char( labels{reorder}  )  );
   xticklabel_rotate;
   
@@ -211,13 +199,8 @@ if PLOT_STUFF
   set( gca, 'xtick', 1:length( reorder ), ...
 	    'xticklabel', char( labels{ reorder}  )  );
   xticklabel_rotate;
-  
-  hold on
-  for i = 1:length( line_pos );
-    hold on
-    %plot( 0.5+line_pos(i)*[1 1], [ymin ymax],'r-'); 
-  end
-  hold off
+
+  make_dividers( reorder, [], ymin, ymax );
   h=title( [dirnames{1}]);
   set( h,'interpreter','none' )
   colormap(  1 - gray(100) )
@@ -232,13 +215,8 @@ if PLOT_STUFF
   xticklabel_rotate;
   axis off
   title( 'aligned reference ladders');
-  
-  hold on
-  for i = 1:length( line_pos );
-    hold on
-    plot( 0.5+line_pos(i)*[1 1], [ymin ymax],'r-'); 
-  end
-  hold off
+
+  make_dividers( reorder, [], ymin, ymax );
   title( 'Reference ladder (channel 4)')
   
   colormap(  1 -gray(100) )
@@ -247,3 +225,16 @@ if PLOT_STUFF
   
   labels = labels( reorder );
 end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function  make_dividers( reorder, line_pos, ymin, ymax );
+
+hold on
+for i = 1:length( reorder );
+  plot( 0.5+i*[1 1], [ymin ymax],'k-', 'linew',0.25); 
+end
+for i = 2:length( line_pos );
+  plot( 0.5+line_pos(i)*[1 1], [ymin ymax],'k-','linew',2); 
+end
+hold off

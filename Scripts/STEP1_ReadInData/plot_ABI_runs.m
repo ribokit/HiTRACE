@@ -12,7 +12,7 @@ function [ data, filenames ] = plot_ABI_runs( dirname, CORRECT, PLOT_STUFF )
 data = {};
 filenames = {};
 
-if ~exist('CORRECT')  CORRECT = 0; end
+if ~exist('CORRECT')  CORRECT = 1; end
 if ~exist( 'PLOT_STUFF' );  PLOT_STUFF = 1; end
 if ~exist('ymax')
   ymax=2000;
@@ -43,7 +43,7 @@ if length( data_in ) == 0;
 end; % did the files exist?
 
 if CORRECT
-  lm = load( 'leakage_matrix1.txt' );
+  lm = load( 'leakage_matrix4.txt' );
 
   % auto determine 
   %lm = auto_determine_leakage_matrix( data_in );
