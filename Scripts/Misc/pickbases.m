@@ -40,15 +40,18 @@ while (stop_pick<1)
   [xpick,ypick,button] = ginput(1);
   switch button
    case 1
-    [xpick,ypick] = grid_fix( xpick, ypick, residue_locations, count, square_width );
-    base_locations(:,count) = [xpick;ypick];
-    h(count) = rectangle('Position',...
-			 [xpick - square_width/2, ypick-square_width/2,...
-                    square_width,square_width]);
-    set(h(count),'edgecolor','r');
-    count= count+1;
-    title(['next: ', num2str(count+offset)])    
-   
+    if ( count < size( residue_locations, 1 ) ) 
+        [xpick,ypick] = grid_fix( xpick, ypick, residue_locations, count, square_width );
+        base_locations(:,count) = [xpick;ypick];
+        h(count) = rectangle('Position',...
+            [xpick - square_width/2, ypick-square_width/2,...
+            square_width,square_width]);
+        set(h(count),'edgecolor','r');
+        count= count+1;
+        title(['next: ', num2str(count+offset)])
+    else
+        fprintf( 'Cannot pick another point ... number of base locations cannot exceed number of residue locations\n' );
+    end
    case 2
     [dummy, erasesquare] = min( (base_locations(1,:) - xpick).^2 + (base_locations(2,:) - ypick).^2 );
     if ( erasesquare > 0 )

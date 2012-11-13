@@ -80,6 +80,25 @@ switch colorscheme
         end
         GREENSCALE=0.8;
         colorplot(2) = colorplot(2)*GREENSCALE;
+    case 17 % Red-green-blue [FADED]
+        if (colorvalue>0)
+            frac_color = min(colorvalue/maxplot,1);
+            if (frac_color < 0.5)
+                colorplot = [2*frac_color,1,0] ;
+            else
+                colorplot = [1,2*(1-frac_color),0] ;
+            end;
+        else
+            frac_color = min(abs(colorvalue/maxplot2),1);
+            if (frac_color < 0.5)
+                colorplot = [0,1,2*frac_color] ;
+            else
+                colorplot = [0,2*(1-frac_color),1] ;
+            end;
+        end
+        GREENSCALE=0.8;
+        colorplot(2) = colorplot(2)*GREENSCALE;
+        colorplot = 1.0 - 0.7*(1.0 - colorplot);
     case 9 % Red-green [faded]
         colorval2 = [1 0.3 0.3];
         colorval1 = [0.3 0.9 0.5];

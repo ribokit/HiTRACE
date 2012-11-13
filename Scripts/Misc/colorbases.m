@@ -9,7 +9,22 @@ if (nargin<7) maxplot = max(abs(whattoplot));end;
 if (nargin<8) maxplot2 = maxplot;end;
 if ~exist('colorscheme') colorscheme = 1;end;
     
-if ~exist( 'square_width'); square_width = 12;end;
+if ~exist( 'square_width'); 
+        square_width = 12;
+end;
+deviation = 5;
+if length( square_width ) == 1
+    square_extent = square_width/2;
+    square_width = square_width/4;
+else
+    if length( square_width ) > 2
+        deviation = square_width(3);
+    end
+    square_extent = square_width(1); 
+    square_width = square_width(2);
+end
+
+
 
 imagex_color = double(imagex);
 count = 1;
@@ -22,16 +37,14 @@ for k=whichres
     %   h=rectangle('Position', ...
     %       [x - square_width/2, y - square_width/2, square_width,square_width]);
     colorplot = getcolor(whattoplot(count),maxplot,maxplot2,colorscheme);
-    
-    deviation=5;
-    
+        
     if abs(distx)>abs(disty)
-        xthickness = square_width/2;
-        ythickness = square_width/4;
+        xthickness = square_extent;
+        ythickness = square_width;
         xdeviation = deviation*sign(distx);         ydeviation = 0;       
     else
-        xthickness = square_width/4;
-        ythickness = square_width/2;
+        xthickness = square_width;
+        ythickness = square_extent;
          xdeviation = 0; ydeviation = deviation*sign(disty);   
     end    
     
