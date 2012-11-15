@@ -16,7 +16,7 @@ clf;
 which_sets = 1:length( area_bsub );
 num_sets = length( which_sets );
 
-for j = which_sets
+for j = 16
 
   nres = size( area_bsub{j}, 1 );
   goodbins = START:(nres-END);
@@ -30,8 +30,8 @@ for j = which_sets
   
   s = zeros( nres, 2 );
   for a = 1:2
-    str_on = all_area_pred{j}(:, (a-1) * 2 + 2);
-    str_off = all_area_pred{j}(:, (a-1) * 2 + 1);
+    str_on = all_area_pred{j}(:, (a-1) * 2 + 2) > 0;
+    str_off = all_area_pred{j}(:, (a-1) * 2 + 1) > 0;
     % Max/Min to avoid 'noisy' points. -- Rhiju
     % Also note that we use area_peak instead of area_bsub -- the backsub adds noise to the difference comparison. -- Rhiju
 
@@ -41,8 +41,9 @@ for j = which_sets
     %d_on_norm  = min( max( SHAPE_normalize(area_bsub{j}(:, (a-1) * 2 + 2)), 0), 2.0);
     %d_off_norm = min( max( SHAPE_normalize(area_bsub{j}(:, (a-1) * 2 + 1)), 0), 2.0 );
 
-    [d_on_norm,  d_on_norm_err  ] = get_data_norm( area_bsub{j}(:, (a-1) * 2 + 2), darea_bsub{j}(:, (a-1) * 2 + 2), goodbins );
-    [d_off_norm, d_off_norm_err ] = get_data_norm( area_bsub{j}(:, (a-1) * 2 + 1), darea_bsub{j}(:, (a-1) * 2 + 1), goodbins );
+    [d_on_norm,  d_on_norm_err  ] = get_std_norm( area_bsub{j}(:, (a-1) * 2 + 2), darea_bsub{j}(:, (a-1) * 2 + 2), goodbins,all_area_pred{j}(:, (a-1) * 2 + 2));
+%    [d_on_norm, d_on_norm_err ] = get_data_norm( area_bsub{j}(:, (a-1) * 2 + 2), darea_bsub{j}(:, (a-1) * 2 + 2), goodbins);
+    [d_off_norm, d_off_norm_err ] = get_data_norm( area_bsub{j}(:, (a-1) * 2 + 1), darea_bsub{j}(:, (a-1) * 2 + 1), goodbins);
 
 	% normalize filter for removing outliers
     
@@ -137,7 +138,7 @@ for j = which_sets
   end
   subplot(length(which_sets) / 2,2, plot_id);
   
-  if j == 1
+  if j == 0
       title('warning:badQuality');
   end
   num_lanes = size( data_switch, 2);
@@ -158,10 +159,14 @@ for j = which_sets
   for n = 1:nres
     for m = 1:num_lanes
       if ( all_area_pred{j}(n,m) > 0)
-	plot( seqpos(n), m, 'ro'); 
+	plot( seqpos(n), m, 'ro');
+      elseif(all_area_pred{j}(n,m) <0)
+    plot(seqpos(n), m, 'rx');
       end;
     end
   end
+  
+  all_area_pred{j} = all_area_pred{j} > 0;
 
   % show annotations of whether switch occurred.
   % gray square -- not evaluated (excluded position)
@@ -188,11 +193,23 @@ for j = which_sets
   end
   ylim([-0.5 num_lanes+0.5])
   xlim([-0.5 nres+0.5])
-  if j == 1
-      text( nres+1, 0.5, ['Sequence ',num2str(j),'\newline', design_names{j},'\newline', 'warning:badQuality'],'fontsize',8,'fontwe','bold','verticalalign','top' );
-  else
-      text( nres+1, 0.5, ['Sequence ',num2str(j),'\newline', design_names{j}],'fontsize',8,'fontwe','bold','verticalalign','top' );
+  
+  added_text = '';
+  if any(j == [0])
+      added_text = [added_text, '\newline', 'warning:badQuality'];
   end
+  
+%   avg_signal = median([area_peak{j}(:,1); area_peak{j}(:,2); area_peak{j}(:,3); area_peak{j}(:,4);]);
+%   avg_background = median(area_peak{j}(:,5));
+%   
+%   ratio = avg_signal /avg_background;
+%   
+%   if( ratio < 2)
+%       added_text = [added_text, '\newline', 'warning:lowSignalToNoise'];
+%   end
+%   added_text = [added_text, '\newline', sprintf('SNR: %f',ratio)];
+    
+  text( nres+1, 0.5, ['Sequence ',num2str(j),'\newline', design_names{j}, added_text],'fontsize',8,'fontwe','bold','verticalalign','top' );
   text( -0.5, 0.5, ['Switch\newlinescore: \newline',...
 		  num2str(sum( s_combine( find(switch_bin_SHAPE) ) ),'%3.1f'),'/',...
 		  num2str(sum(switch_bin_SHAPE),'%d'), '\newline',...
@@ -205,6 +222,73 @@ colormap( 1 - gray(100) );
 set(gcf, 'PaperPositionMode','auto','color','white');
 
 
+function [d_norm, d_norm_err] = get_std_norm(d, d_err, goodbins, area_pred);
+d_norm =d;
+d_norm_err = d_err;
+
+data = d(goodbins)';
+pred = area_pred(goodbins);
+
+n = length( goodbins );
+
+% penalties for:
+% scale-factor  baseline    dev>0       dev<0      a little unpenalized slop    
+f  = [   0,           0,    ones(1,n),  ones(1,n), zeros( 1, n )           ];
+
+% Force all coefficients to be positive.
+% Force coefficient of data to be at least 0.5...
+LB(1) = 0.60 / mean( max(data,0.0) );
+%LB(1) = 0.70 / mean( max(data,0.0) );
+
+data_sort=sort(data);
+data_range = abs( data_sort( floor(n*0.1)+1) - data_sort( floor(n*0.9)+1 ) );
+%LB(1) = 0.3 / data_range
+%UB(1) = 1.3 / data_range;
+%LB(1) = 0.0;
+UB(1) = inf;
+
+% baseline
+LB(2) = -0.1;
+UB(2) =  0.1;
+
+% 'slack' variable  -- positive deviations from data.
+LB( 2 + [1:n] ) = zeros(1,n);
+UB( 2 + [1:n] ) = inf * ones(1,n);
+
+% 'slack' variable  -- negative deviations from data.
+LB( 2 + n + [1:n] ) = zeros(1,n);
+UB( 2 + n + [1:n] ) = inf * ones(1,n);
+
+% 'slop' variables -- some range is allowed.
+% for unpaired region, allow deviations up to 2-fold above 'max', and down to halfway point.
+pred_high = find(  pred );
+
+%LB( 2 + 2*n + pred_high) = -2.0;
+%UB( 2 + 2*n + pred_high) =  0.5;
+
+LB( 2 + 2*n + pred_high) =  0.0;
+UB( 2 + 2*n + pred_high) =  0.0;
+
+% for protected region, ask that we stay close to zero.
+pred_low  = find( ~pred);
+LB( 2 + 2*n + pred_low) = -0.0;
+UB( 2 + 2*n + pred_low) = +0.0;
+
+% how to transform from variables to prediction
+Aeq = [ data', ones(n,1), eye(n,n), -eye(n,n), eye(n,n) ]; 
+
+% what we're trying to match -- note that we're looking for equality
+beq = pred;
+
+options = optimset('Display','off');
+% linear program asking for equality. (The [], [] would define greater-than, less-than constraints).
+params = linprog( f, [], [], Aeq, beq, LB, UB,[],options);
+
+scale_factor =  params(1);
+baseline     =  params(2);
+
+d_norm = d_norm * scale_factor + baseline;
+d_norm_err = d_norm_err * scale_factor + baseline;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function  [d_norm, d_norm_err] = get_data_norm( d, d_err, goodbins );

@@ -41,7 +41,7 @@ for j = which_sets
     %d_on_norm  = min( max( SHAPE_normalize(area_bsub{j}(:, (a-1) * 2 + 2)), 0), 2.0);
     %d_off_norm = min( max( SHAPE_normalize(area_bsub{j}(:, (a-1) * 2 + 1)), 0), 2.0 );
 
-    [d_on_norm,  d_on_norm_err  ] = get_data_norm( area_bsub{j}(:, (a-1) * 2 + 2), darea_bsub{j}(:, (a-1) * 2 + 2), goodbins );
+    [d_on_norm,  d_on_norm_err  ] = get_std_norm( area_bsub{j}(:, (a-1) * 2 + 2), darea_bsub{j}(:, (a-1) * 2 + 2), goodbins,all_area_pred{j}(:, (a-1) * 2 + 2));
     [d_off_norm, d_off_norm_err ] = get_data_norm( area_bsub{j}(:, (a-1) * 2 + 1), darea_bsub{j}(:, (a-1) * 2 + 1), goodbins );
 
     % normalize filter for removing outliers
@@ -191,6 +191,74 @@ end
 % set(gcf, 'PaperPositionMode','auto','color','white');
 % 
 
+
+function [d_norm, d_norm_err] = get_std_norm(d, d_err, goodbins, area_pred);
+d_norm =d;
+d_norm_err = d_err;
+
+data = d(goodbins)';
+pred = area_pred(goodbins);
+
+n = length( goodbins );
+
+% penalties for:
+% scale-factor  baseline    dev>0       dev<0      a little unpenalized slop    
+f  = [   0,           0,    ones(1,n),  ones(1,n), zeros( 1, n )           ];
+
+% Force all coefficients to be positive.
+% Force coefficient of data to be at least 0.5...
+LB(1) = 0.60 / mean( max(data,0.0) );
+%LB(1) = 0.70 / mean( max(data,0.0) );
+
+data_sort=sort(data);
+data_range = abs( data_sort( floor(n*0.1)+1) - data_sort( floor(n*0.9)+1 ) );
+%LB(1) = 0.3 / data_range
+%UB(1) = 1.3 / data_range;
+%LB(1) = 0.0;
+UB(1) = inf;
+
+% baseline
+LB(2) = -0.1;
+UB(2) =  0.1;
+
+% 'slack' variable  -- positive deviations from data.
+LB( 2 + [1:n] ) = zeros(1,n);
+UB( 2 + [1:n] ) = inf * ones(1,n);
+
+% 'slack' variable  -- negative deviations from data.
+LB( 2 + n + [1:n] ) = zeros(1,n);
+UB( 2 + n + [1:n] ) = inf * ones(1,n);
+
+% 'slop' variables -- some range is allowed.
+% for unpaired region, allow deviations up to 2-fold above 'max', and down to halfway point.
+pred_high = find(  pred );
+
+%LB( 2 + 2*n + pred_high) = -2.0;
+%UB( 2 + 2*n + pred_high) =  0.5;
+
+LB( 2 + 2*n + pred_high) =  0.0;
+UB( 2 + 2*n + pred_high) =  0.0;
+
+% for protected region, ask that we stay close to zero.
+pred_low  = find( ~pred);
+LB( 2 + 2*n + pred_low) = -0.0;
+UB( 2 + 2*n + pred_low) = +0.0;
+
+% how to transform from variables to prediction
+Aeq = [ data', ones(n,1), eye(n,n), -eye(n,n), eye(n,n) ]; 
+
+% what we're trying to match -- note that we're looking for equality
+beq = pred;
+
+options = optimset('Display','off');
+% linear program asking for equality. (The [], [] would define greater-than, less-than constraints).
+params = linprog( f, [], [], Aeq, beq, LB, UB,[],options);
+
+scale_factor =  params(1);
+baseline     =  params(2);
+
+d_norm = d_norm * scale_factor + baseline;
+d_norm_err = d_norm_err * scale_factor + baseline;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function  [d_norm, d_norm_err] = get_data_norm( d, d_err, goodbins );
