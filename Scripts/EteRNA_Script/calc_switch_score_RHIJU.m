@@ -16,7 +16,7 @@ clf;
 which_sets = 1:length( area_bsub );
 num_sets = length( which_sets );
 
-for j = 16
+for j = which_sets
 
   nres = size( area_bsub{j}, 1 );
   goodbins = START:(nres-END);

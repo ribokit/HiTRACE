@@ -8,7 +8,9 @@ function [ marks, area_pred, mutpos] = get_predicted_marks_SHAPE_DMS_CMCT( struc
 % 99999996. G (ddCTP ladder)
 % 99999997. U (ddATP ladder)
 % 99999998. UV (double-pyrimidine ladder)
-% 99999999. T1 (RNAse T1 -- marks at G's)
+
+FMN_SHAPE = [0 0 0 1 0 0 0 0 0 0 0];
+FMN_DMS = [0 0 0 1 0 1 0 1 1 0 0];
 
 marks = [];
 area_pred = [];
@@ -82,20 +84,10 @@ for i = 2:length( structure )
   end
 end
 
-
-% UV -- pyrimidines.
-for i = 1:length( structure )
-  if ( sequence(i) == 'G' ) 
-    marks = [ marks; MUTPOS_OFFSET+9, i+offset ];
-  end
-end
-
-
 d_pred = zeros( length(sequence), 8 );
-for i = [1:9]
+for i = [1:8]
   d_pred( marks( find( marks(:,1) == MUTPOS_OFFSET+i ), 2 ) - offset, i ) = 1.0;
 end
-
 
 % 'ideal' predicted data -- needed for background subtraction.
 % probably should tuck into a function...
@@ -105,7 +97,19 @@ for k = 1:length( mutpos )
   area_pred(:,k) = zeros( length(seqpos),1 );
   if mutpos(k) > MUTPOS_OFFSET    
     area_pred(:,k) = d_pred( seqpos-offset, mutpos(k)-MUTPOS_OFFSET );
+    if mutpos(k) == MUTPOS_OFFSET + 1
+        reaction_target = find(structure == 'F');
+        if length(reaction_target) == length(FMN_SHAPE)
+            area_pred(seqpos(reaction_target),k) = FMN_SHAPE';
+        end
+    elseif mutpos(k) == MUTPOS_OFFSET + 2
+        reaction_target = find(structure == 'F');
+        if length(reaction_target) == length(FMN_DMS)
+            area_pred(seqpos(reaction_target),k) = FMN_DMS';
+        end
+    end
   end
+  
 end
 
 
@@ -121,7 +125,7 @@ function  mutpos = figure_out_mutpos( data_type, MUTPOS_OFFSET );
 
 mutpos = [];
 
-OK_labels = {'SHAPE','DMS','CMCT','ddTTP','ddGTP','ddCTP','ddATP','UV','T1','nomod'};
+OK_labels = {'SHAPE','DMS','CMCT','ddTTP','ddGTP','ddCTP','ddATP','UV','nomod'};
 
 for i = 1:length( data_type )
 
