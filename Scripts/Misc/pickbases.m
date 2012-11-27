@@ -1,4 +1,17 @@
 function base_locations = pickbases(imagex,offset,residue_locations, base_locations,square_width);
+% base_locations = pickbases(imagex,offset,residue_locations, base_locations,square_width);
+%
+% imagex            = RGB image [M1 x M2 x 3 matrix] read in from, say a tif file with 
+%                      the 'imread' command.
+% offset            = integer to add to 1, 2, ... N to get the actual positions on your image
+% residue_locations = 2 x N matrix with the (x,y) positions of each 'sequence' position 
+%                      on the image. Use 'pickpoints' to get this.
+% base_locations    = 2 x N matrix with the (x,y) positions of each 'base stub' position 
+%                      on the image. The script will try to align these vertically or
+%                      horizontally with residue_locations. Initially you can set this to the empty set [].
+% squarewidth       = [default 24] how big to make squares.
+
+
 figure(1); subplot(1,1,1); hold off; image(imagex); hold on
 [xsize,ysize,zsize]=size(imagex);
 axis([0 ysize 0 xsize]); zoomedin = 0;
@@ -40,7 +53,7 @@ while (stop_pick<1)
   [xpick,ypick,button] = ginput(1);
   switch button
    case 1
-    if ( count < size( residue_locations, 1 ) ) 
+    if ( count <= size( residue_locations, 2 ) ) 
         [xpick,ypick] = grid_fix( xpick, ypick, residue_locations, count, square_width );
         base_locations(:,count) = [xpick;ypick];
         h(count) = rectangle('Position',...

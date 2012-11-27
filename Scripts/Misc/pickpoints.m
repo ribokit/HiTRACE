@@ -1,4 +1,15 @@
 function residue_locations = pickpoints(imagex,offset,residue_locations,square_width,GRIDSIZE)
+% residue_locations = pickpoints(imagex,offset,residue_locations,square_width,GRIDSIZE)
+%
+% imagex            = RGB image [M1 x M2 x 3 matrix] read in from, say a tif file with 
+%                      the 'imread' command.
+% offset            = integer to add to 1, 2, ... N to get the actual positions on your image
+% residue_locations = 2 x N matrix with the (x,y) positions of each 'sequence' position 
+%                      on the image. Initially you can set this to the empty set [].
+% squarewidth       = [default 24] how big to make squares.
+% GRIDSIZE          = [default 1] 'snap' squares to grid with this pixel resolution. 
+%
+%
 
 figure(1); subplot(1,1,1); hold off; image(imagex); hold on
 [xsize,ysize,zsize]=size(imagex);

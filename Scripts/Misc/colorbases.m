@@ -1,5 +1,32 @@
 function imagex_color = colorbases(imagex,offset,base_locations, residue_locations, whichres,whattoplot,maxplot,maxplot2,colorscheme,makelegend,square_width,maxlabel,minlabel)
-%hold off; image(imagex); hold on; axis equal; 
+%
+% imagex_color = colorbases(imagex,offset,base_locations, residue_locations, whichres,whattoplot,maxplot,maxplot2,colorscheme,makelegend,square_width,maxlabel,minlabel)
+%
+% imagex            = RGB image [M1 x M2 x 3 matrix] read in from, say a tif file with 
+%                      the 'imread' command.
+% offset            = integer to add to 1, 2, ... N to get the actual positions on your image
+% residue_locations = 2 x N matrix with the (x,y) positions of each 'base stub' position 
+%                      on the image. Can be selected with 'pickbases'
+% residue_locations = 2 x N matrix with the (x,y) positions of each letter 
+%                      on the image. Can be selected with 'pickpoints'
+% whichres          = sequence positions of the input data.
+% whattoplot        = the input data (you may want to add or subtract a 
+%                      constant so that the 'baseline' value is 0]. 
+% maxplot           = [default 1.0] value at which colors should saturate in the positive
+%                      direction
+% maxplot2          = [default 1.0] value at which color should saturate in the negative direction 
+% colorscheme       = [default 1] integer reflecting coloring -- type 'help getcolor'
+%                      for list
+% makelegend        = [default 1] 0 or 1 -- make a legend of the colors!
+% squarewidth       = [default 24] how big to make squares.
+% minlabel          = text or number that corresponds to maxplot2
+% maxlabel          = text or number that corresponds to maxplot
+%
+% A useful command:
+% hold off; image(imagex); hold on; axis equal; 
+% 
+% (C) R. Das, 2004-2012
+
 [xsize,ysize,zsize]=size(imagex);
 axis([0 ysize 0 xsize]); zoomedin = 0;
 

@@ -1,4 +1,29 @@
 function  colorplot = getcolor(colorvalue, maxplot,maxplot2,colorscheme);
+%
+% colorplot = getcolor(colorvalue, maxplot,maxplot2,colorscheme);
+%
+% colorvalue = some numerical value that you want to convert to an (R,G,B)
+%                color
+% maxplot    = maximum value in positive direction.
+% maxplot2   = maxmium value in negative direction.
+% colorscheme = one of the following integers:
+%
+%            ( 1) red-white-blue
+%            ( 2) cyan-green-yellow
+%            ( 3) blue-gray-yellow
+%            (-3) blue-gray-yellow [faded]
+%            ( 4) Magenta-lightblue-cyan
+%            ( 5) Red-gray-cyan
+%            ( 6) Red-gray-cyan
+%            ( 7) Red-green-blue
+%            (17) Red-green-blue [FADED]
+%            ( 9) Red-green [faded]
+%            ( 8) Red-orange-white
+%            (10) Green-white-red
+%            (11) blue-white-red      
+%
+% (C) R. Das, 2008-2012
+%
 
 if ~exist('colorscheme') colorscheme = 1; end;
 
