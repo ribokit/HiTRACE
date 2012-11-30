@@ -32,6 +32,7 @@ if (nargin<6) maxplot = max(abs(whattoplot));end;
 if (nargin<7) maxplot2 = maxplot;end;
 if ~exist('colorscheme') colorscheme = 1;end;
 if ~exist( 'boxsize') boxsize = 24; end;
+if size( whichres, 1) > 1; whichres = whichres'; end;
 
 square_width = boxsize;
 imagex_color = double(imagex);

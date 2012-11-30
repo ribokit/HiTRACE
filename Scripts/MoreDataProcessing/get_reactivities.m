@@ -1,8 +1,8 @@
 function [ normalized_reactivity,area_peak_corrected,attenuation_corrected,reactionProb] = get_reactivities( saturated_array,diluted_array,sd_cutoff, bkg_col, ref_peak)
-%Fully automated reactivity referencing workflow, starting from
-%measurements of area_peak.  See "unsaturate" for more details on
-%saturated_array, unsaturated_array, and sd_cutoff.
-
+% Fully automated reactivity referencing workflow, starting from
+% measurements of area_peak.  See "unsaturate" for more details on
+% saturated_array, unsaturated_array, and sd_cutoff.
+% 
 % bkg_col contains references to the nomod lanes.  Input reactionProbs of lanes
 % corresponding to a single nomod.  Nomod is the first lane of the reactionProb.
 % e.g. for nomods in lanes 1, 5, and 10, bkg_col = [1:4;5:9;10:12]  Enter

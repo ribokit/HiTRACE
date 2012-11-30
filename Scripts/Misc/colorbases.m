@@ -35,6 +35,7 @@ numres = length(base_locations);
 if (nargin<7) maxplot = max(abs(whattoplot));end;
 if (nargin<8) maxplot2 = maxplot;end;
 if ~exist('colorscheme') colorscheme = 1;end;
+if size( whichres, 1) > 1; whichres = whichres'; end;
     
 if ~exist( 'square_width'); 
         square_width = 12;
