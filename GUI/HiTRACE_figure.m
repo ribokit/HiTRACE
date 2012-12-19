@@ -174,7 +174,7 @@ switch(mode)
         component = [];
     case 'profile'
         h1 = axes('position', [0.5 0.2 0.2 0.7]);
-        image( handles.d);
+        image( real(sqrt(handles.d)));
         axis( [ 0.5 size(handles.da,2)+0.5 handles.settings.ymin handles.settings.ymax] );
         title( 'Signal')
         
@@ -216,7 +216,7 @@ switch(mode)
         
         h1 = axes('Position', [0.5 0.2 0.45 0.7]);
         
-        image( 50 * handles.d_align);
+        image( handles.d_align);
         axis( [ 0.5 size(handles.d_align,2)+0.5 1 size( handles.d_align,1)] )
         title( str );
         
@@ -674,7 +674,7 @@ if(name)
         goodbins = [(nres-handles.settings.eternaEnd):-1:handles.settings.eternaStart];
         data_type = handles.data_types; 
         added_salt = handles.rdat_str.added_salts;
-        bad_lanes = [];
+        bad_lanes = [14];
         
         if(~isempty(handles.alt_structure))
             structure = [handles.structure; handles.alt_structure];
@@ -1053,13 +1053,11 @@ for i = step:handles.max
                           da_tmp(:,k) = da_tmp(:,k)/mean( abs(da_tmp(ymin:ymax,k)));
                       end
                       
-                      d_align( : ,j + ([1:numel(data_types)] - 1)*num_sequences) = align_by_DP_using_ref( d_tmp(ymin:ymax,:), da_tmp(ymin:ymax,:), [], slack, shift, windowsize, 0);
+                      [d_align( : ,j + ([1:numel(data_types)] - 1)*num_sequences), d_ref(: ,j + ([1:numel(data_types)] - 1)*num_sequences)] = align_by_DP_using_ref( d_tmp(ymin:ymax,:), da_tmp(ymin:ymax,:), [], slack, shift, windowsize, 0);
                 end
-                
                 
                 setStatusLabel(str, handles);
 %                 d_align = align_by_DP_using_ref( handles.d(ymin:ymax,:), handles.da(ymin:ymax,:), [], slack, shift, windowsize, 0);
-                
                 handles.d_align = d_align;
                 
                 for j = handles.displayComponents
@@ -1067,6 +1065,15 @@ for i = step:handles.max
                 end
                 
                 handles.displayComponents = displaySetting('dpalign', handles);
+                
+                btn = questdlg('Do you want to align signal manually?', 'Manual Alignment', 'Yes', 'No','Yes');
+                if (strcmp(btn,'Yes'))
+                    f = figure;
+                    d_align = align_userinput_saveanchorlines(d_align * 30, 1,1,[], axes());
+                    close(f);
+                end
+                save('ref.mat', 'd_ref');
+                handles.d_align = d_align;
             else
                 if(baseline)
                     str = 'Signal (baseline subtraction enabled)';
@@ -1113,12 +1120,12 @@ for i = step:handles.max
                     if(verLessThan('matlab', '7.10.0'))
                         for j = which_sets;
                           setStatusLabel(sprintf('Auto assign annotation... ( %d / %d )',j,which_sets(end)), handles);
-                          xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
+                          xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), all_area_pred{j}, peak_spacing, [], 0 );
                         end
                     else
                         setStatusLabel('Auto assign annotation parallely...', handles);
                         parfor j = which_sets;
-                          xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), seqpos, offset, all_area_pred{j}, peak_spacing, [], 0 );
+                          xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), all_area_pred{j}, peak_spacing, [], 0 );
                         end
                     end
            
@@ -1288,7 +1295,7 @@ for i = step:handles.max
             % Also, automated EteRNA scoring.
             min_SHAPE = {}; max_SHAPE={};threshold_SHAPE={};ETERNA_score={};
             design_names = handles.design_names;
-            ignore_points = [ 21:26  39:43]; 
+            ignore_points = [ ]; 
             [ switch_score, area_bsub_norm, darea_bsub_norm ] = calc_switch_score_GUI( START, END, ignore_points, sequence, seqpos, area_bsub, darea_bsub, all_area_pred, design_names );
             [ETERNA_score, min_SHAPE, max_SHAPE, threshold_SHAPE] = calc_eterna_score_GUI( START, END, data_types, area_bsub_norm, sequence, seqpos, area_bsub, all_area_pred, design_names );
             
