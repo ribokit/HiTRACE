@@ -1,22 +1,59 @@
-function [xsel, D] = auto_assign_sequence( image_x,sequence, seqpos, offset, area_pred, ideal_spacing, input_bounds, PLOT_STUFF );
+function [xsel, D, msg] = auto_assign_sequence( image_x,sequence, area_pred, ideal_spacing, input_bounds, PLOT_STUFF );
 % AUTO_ASSIGN_SEQUENCE: (still experimental) automatic assignment of bands, given expected locations of marks
 %
 %
 % (C) R. Das, 2010-2011
 %
 if ~exist( 'PLOT_STUFF' ); PLOT_STUFF = 1; end;
-if ~exist( 'ideal_spacing' ); ideal_spacing = 12; end;
 if ~exist( 'input_bounds' ) input_bounds = []; end;
-num_lanes = size( image_x, 2 );
+[num_pixels, num_lanes] = size( image_x );
 nres = length( sequence );
+msg = [];
+exist_talepeak = true;
 
+FALSEPEAK_CUT = 8;
+gee = zeros(1,num_lanes);
+spread = floor(num_pixels / (size( area_pred, 1 )-1) )/2;
 for i = 1:num_lanes
-  %peaks = localMaximum( image_x(:,i) );
-  %vals = image_x( peaks, i );
-  %[vals_norm, scalefactor ] = SHAPE_normalize( vals );
-  scalefactor = mean( image_x(:,i) );
-  image_x(:,i) = image_x(:,i)/scalefactor/2;
+    %peaks = localMaximum( image_x(:,i) );
+    %vals = image_x( peaks, i );
+    %[vals_norm, scalefactor ] = SHAPE_normalize( vals );
+    scalefactor = mean( image_x(:,i) );
+    image_x(:,i) = image_x(:,i)/scalefactor/2;
+    
+    peaks = localMaximum( image_x(:,i), spread );
+    peaks = peaks(image_x(peaks,i) > median(image_x(peaks,i))/2);
+    tmp = find(image_x(peaks,i) == max(image_x(peaks(end-5:end),i))) - 1;
+    if (image_x(peaks(tmp),i) < FALSEPEAK_CUT/12 && num_pixels > 10000)
+        gee(i) = num_pixels;
+        msg = ['a tale peak is not found'];
+        exist_talepeak = false;
+    else
+        gee(i) = peaks(tmp);
+    end
 end
+
+if (max(gee) < num_pixels)
+    talepeakrange = (1:num_pixels) > (max(gee)+1);
+    %image_x(talepeakrange,:) = []; num_pixels = max(gee)+1;
+    image_x(talepeakrange,:) = 0;
+end
+
+if ~( exist('ideal_spacing','var') && ~isempty(ideal_spacing) ), ideal_spacing = floor(num_pixels / (size( area_pred, 1 )-1) ); end;
+
+n = num_lanes - 1;
+falsepeaks = find(image_x(peaks(1:tmp),n) > FALSEPEAK_CUT);
+falsepeaks((peaks(falsepeaks) < 0.25*num_pixels) | (peaks(falsepeaks) > 0.8*num_pixels)) = [];
+if ~isempty(falsepeaks)
+    falsepeakindex = peaks(falsepeaks(end));
+    falsepeakrange = intersect(find(image_x(:,n) > FALSEPEAK_CUT/6), falsepeakindex-30:falsepeakindex+30);
+    if ~isempty(msg)
+        msg = [msg ' & '];
+    end
+    msg = [msg 'detected false peak at (' num2str(min(falsepeakrange)) '~' num2str(max(falsepeakrange)) ') in baseline signal'];
+    image_x(falsepeakrange,:) = 0;
+end
+
 
 if PLOT_STUFF
   %after normalization
@@ -36,9 +73,12 @@ s = area_pred;
 
 s(1,:)      = 10;
 s(nres,:)   =  5;
-s(nres+1,:) = 10;
-s( find( s == 0.0 ) ) = 0.1;
-sequence_at_bands = [sequence( end:-1:1 ), 'X'];
+sequence_at_bands = sequence( end:-1:1 );
+if exist_talepeak
+    s(nres+1,:) = 10;
+    sequence_at_bands = [sequence_at_bands, 'X'];
+end
+s( s == 0.0 ) = 0.01;
 
 if PLOT_STUFF
   subplot(1,2,2);
@@ -47,4 +87,9 @@ if PLOT_STUFF
 end
 
 [xsel_fit, D]  = solve_xsel_by_DP( image_x, s, sequence_at_bands, ideal_spacing, input_bounds );
-xsel = xsel_fit(1:end-1);
+
+xsel = xsel_fit(1:end);
+if exist_talepeak
+    xsel(end) = [];
+end
+
