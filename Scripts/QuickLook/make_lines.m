@@ -1,7 +1,7 @@
 function make_lines(line_pos,colorcode,linewidth);
 
 if ~exist('colorcode')
-  colorcode='r';
+  colorcode='k';
 end
 if ~exist('linewidth')
   linewidth=1;

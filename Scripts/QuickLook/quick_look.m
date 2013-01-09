@@ -49,6 +49,8 @@ if ~iscell( dirnames )
     [dirnames] = textread(dirnames,'%s');
   end
 end
+tag = dirnames{1};
+if tag(end) == '/'; tag = tag(1:end-1); end;
 
 line_pos = [ 0 ];
 filepath = '';
@@ -107,7 +109,8 @@ if ~exist('labels') | length( labels ) == 0
 end
 
 if PLOT_STUFF
-  figure(2)
+  h = figure(2);
+  set(h,'Position',[50,50,600,800]);
   set(gcf, 'PaperPositionMode','auto','color','white');
   clf
   subplot(1,2,1);
@@ -133,6 +136,7 @@ if PLOT_STUFF
   xticklabel_rotate;
   
   colormap( 1- gray(100));
+  print( '-depsc2',[tag,'_Figure2.eps']);
 end
 
 
@@ -189,7 +193,8 @@ end;
 %save da.mat da;
 
 if PLOT_STUFF
-  figure(3)
+  h = figure(3);
+  set(h,'Position',[100,100,600,800]);
   set(gcf, 'PaperPositionMode','auto','color','white');
   clf
   
@@ -204,8 +209,12 @@ if PLOT_STUFF
   h=title( [dirnames{1}]);
   set( h,'interpreter','none' )
   colormap(  1 - gray(100) )
+
+  print( '-depsc2',[tag,'_Figure3.eps']);
+
   
-  figure(4)
+  h = figure(4);
+  set(h,'Position',[150,150,600,800]);
   set(gcf, 'PaperPositionMode','auto','color','white');
   %subplot(1,2,2);
   image( 50*da );
@@ -221,11 +230,16 @@ if PLOT_STUFF
   
   colormap(  1 -gray(100) )
   
+  figure(2)
   figure(3)
   
   labels = labels( reorder );
 end
 
+if PLOT_STUFF
+  fprintf( ['\nCreated: ',tag,'_Figure2.eps\n'] );
+  fprintf( ['Created: ',tag,'_Figure3.eps\n'] );
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function  make_dividers( reorder, line_pos, ymin, ymax );

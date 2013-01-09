@@ -69,7 +69,8 @@ colorcode = [0 0 1; 0 0.5 0; 1 0.5 0; 1 0 0];
 
 
 if PLOT_STUFF
-  figure(1)
+  h = figure(1);
+  set(h,'Position',[10,10,600,800]);
   set(gcf, 'PaperPositionMode','auto','color','white');
   clf;
   for k = 1:count

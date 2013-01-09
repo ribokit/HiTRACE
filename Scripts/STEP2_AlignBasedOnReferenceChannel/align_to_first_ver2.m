@@ -40,7 +40,7 @@ data_align = zeros(numpts_d_ref,num_capillaries); % sryoon
 
 numpts = length(d1); % sryoon
 %shifts = [(-numpts+1):(numpts-1)]; % sryoon
-max_shift = 1000;
+max_shift = 200;
 shifts = [-max_shift:max_shift]; % rhiju
 scales = [0.95:0.005:1.05]; % sryoon
 
