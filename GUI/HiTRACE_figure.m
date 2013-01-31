@@ -1120,12 +1120,12 @@ for i = step:handles.max
                     if(verLessThan('matlab', '7.10.0'))
                         for j = which_sets;
                           setStatusLabel(sprintf('Auto assign annotation... ( %d / %d )',j,which_sets(end)), handles);
-                          xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), all_area_pred{j}, peak_spacing, [], 0 );
+                          xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), all_area_pred{j}, data_types, peak_spacing, [], 0 );
                         end
                     else
                         setStatusLabel('Auto assign annotation parallely...', handles);
                         parfor j = which_sets;
-                          xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), all_area_pred{j}, peak_spacing, [], 0 );
+                          xsel{j} = auto_assign_sequence( handles.d_bsub{j}, sequence{j}(1:end-dist), all_area_pred{j}, data_types,peak_spacing, [], 0 );
                         end
                     end
            
