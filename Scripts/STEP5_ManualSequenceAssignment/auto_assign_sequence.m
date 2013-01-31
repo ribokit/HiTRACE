@@ -1,11 +1,12 @@
-function [xsel, D, msg] = auto_assign_sequence( image_x,sequence, area_pred, ideal_spacing, input_bounds, PLOT_STUFF );
+function [xsel, D, msg] = auto_assign_sequence( image_x, sequence, seqpos, offset, area_pred, data_types, ideal_spacing, input_bounds, PLOT_STUFF )
 % AUTO_ASSIGN_SEQUENCE: (still experimental) automatic assignment of bands, given expected locations of marks
 %
 %
 % (C) R. Das, 2010-2011
 %
-if ~exist( 'PLOT_STUFF' ); PLOT_STUFF = 1; end;
-if ~exist( 'input_bounds' ) input_bounds = []; end;
+if ~exist('PLOT_STUFF','var'), PLOT_STUFF = 1; end
+if ~exist('input_bounds','var'), input_bounds = []; end
+
 [num_pixels, num_lanes] = size( image_x );
 nres = length( sequence );
 msg = [];
@@ -24,9 +25,10 @@ for i = 1:num_lanes
     peaks = localMaximum( image_x(:,i), spread );
     peaks = peaks(image_x(peaks,i) > median(image_x(peaks,i))/2);
     tmp = find(image_x(peaks,i) == max(image_x(peaks(end-5:end),i))) - 1;
+    tmp = tmp(1);
     if (image_x(peaks(tmp),i) < FALSEPEAK_CUT/12 && num_pixels > 10000)
         gee(i) = num_pixels;
-        msg = ['a tale peak is not found'];
+        msg = 'a tale peak is not found';
         exist_talepeak = false;
     else
         gee(i) = peaks(tmp);
@@ -86,10 +88,9 @@ if PLOT_STUFF
   colormap( 1 - gray(100) );
 end
 
-[xsel_fit, D]  = solve_xsel_by_DP( image_x, s, sequence_at_bands, ideal_spacing, input_bounds );
+[xsel_fit, D] = solve_xsel_by_DP( image_x, s, data_types, sequence_at_bands, ideal_spacing, input_bounds );
 
 xsel = xsel_fit(1:end);
 if exist_talepeak
     xsel(end) = [];
 end
-

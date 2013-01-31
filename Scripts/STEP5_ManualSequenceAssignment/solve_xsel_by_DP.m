@@ -1,4 +1,4 @@
-function [ xsel_fit, D, msg ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds )
+function [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, data_types, sequence_at_bands, ideal_spacing, input_bounds )
 % [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds );
 
 START_POS = 0;
@@ -12,7 +12,6 @@ width = ideal_spacing/6.0; % gaussian width.
 N = size( alpha_ideal, 1 );
 [num_pixels, num_lanes] = size( I_data );
 x = (1:num_pixels)';
-msg = [];
 
 % Define a model for peak separations
 MIN_SEP = round(ideal_spacing/2);
@@ -51,23 +50,28 @@ end
 
 % Set up a 'peak bonus'
 PEAK_SPREAD = 1;
-PEAK_WEIGHT = 1.0;
+PEAK_WEIGHT = 1;
 
 ok_points = (PEAK_SPREAD+1):(num_pixels-PEAK_SPREAD);
 peak_shifts = -PEAK_SPREAD:PEAK_SPREAD;
 peak_scores = ones(1,num_lanes);
-peak_scores(end-1) = 0;
-peak_scores(end) = (num_lanes - 2) / 2;
+for i = 1:num_lanes
+    if strcmp(data_types{i},'nomod')
+        peak_scores(i) = 0;
+    elseif ( strcmp(data_types{i},'ddTTP') || strcmp(data_types{i},'ddGTP') ...
+            || strcmp(data_types{i},'ddATP') || strcmp(data_types{i},'ddCTP') || strcmp(data_types{i},'ddUTP') )
+        peak_scores(i) = (num_lanes - 2) / 1.5;
+    end
+end
 peak_scores = peak_scores ./ length(peak_shifts);
 peak_bonus_matrix = zeros( num_pixels, num_lanes );
 
 for n = 1:num_lanes
 
-    peaks = localMaximum( I_data(:,n), ideal_spacing/2 );
-    peaks = peaks(I_data(peaks,n) > mean(I_data(peaks,n)/2));
-    peaks = intersect( peaks,  ok_points );
+    %peaks = localMaximum( I_data(:,n), ideal_spacing/2 ); peaks = peaks(I_data(peaks,n) > mean(I_data(peaks,n)/2));
+    peaks = getpeaks( I_data(:,n), 'THRESHOLD', min([ mean(I_data(:,n)), median(I_data(:,n)), max(I_data(:,n))*0.05 ]) );
+    peaks = intersect( peaks, ok_points );
     
-    peaks_mat{n} = peaks';
     for k = peak_shifts
         peak_bonus_matrix( peaks+k, n ) = peak_bonus_matrix( peaks+k, n ) - peak_scores(n);
     end
@@ -80,7 +84,7 @@ n_fft_row = 2*num_pixels - 1;
 gaussian_fft =  fftn( ideal_gaussian, [n_fft_row num_lanes] );
 I_data_fft = fftn( I_data, [n_fft_row num_lanes]);
 f = real( ifft2( gaussian_fft .* I_data_fft ) );
-f = f( xmid + [0:num_pixels-1], : );
+f = f( xmid + (0:num_pixels-1), : );
 
 %figure; hold on; plot(I_data(:,1),'r');plot(I_data(:,2),'g');plot(I_data(:,3),'b');plot(I_data(:,5),'k');plot(peak_bonus,'k');
 %figure; hold on; plot(f(:,1),'r');plot(f(:,2),'g');plot(f(:,3),'b');plot(f(:,5),'k');plot(peak_bonus,'k');
@@ -147,59 +151,12 @@ for n = 2:N
         
         %D_barrier = beta_SEP(n) * ( tmpindex - optimal_SEP(n) ).^2; % Score to maintain 'optimal' separation
         
-%         if false
-%             if n == 42 && D_datapred_peak_peakpred(i) < -1
-%                 fprintf('--i:%d\n',i);
-%                 fprintf('rawindex:%d\n',rawindex);
-%                 fprintf('prev_pos:%d\n',prev_pos);
-%                 fprintf('tmpindex:%d\n',tmpindex);
-%                 fprintf('D_overlap:%f\n',D_overlap1(n) + D_overlap2(n) * g(tmpindex) / num_lanes);
-%                 fprintf('sep:%f\n',beta_SEP(n) / num_lanes *( tmpindex - optimal_SEP(n) ).^2);
-%                 fprintf('D_bonus2:%f\n',D_datapred_peak_peakpred(i));
-%                 fprintf('D_overlap1:%f\n',D_overlap1(n));
-%                 fprintf('D_overlap2:%f\n',D_overlap2(n));
-%                 fprintf('D:%f\n',D( prev_pos, n-1 ));
-%             end
-%         end
-                
         D_test(prev_pos) = ...
             D( prev_pos, n-1 ) ...
             + (D_overlap1(n) + D_overlap2(n) * g(tmpindex)) / num_lanes ...
             + beta_SEP(n) * ( tmpindex - optimal_SEP(n) ).^2 / num_lanes ...
             + D_datapred_peak_peakpred(i);
         
-%         if false
-%             
-%             ttttt = num2cell(prev_pos);
-%             for tttt = 2:length(prev_pos)-1
-%                 ttttt{tttt} = '';
-%             end
-%             
-%             if n == 39 && rawindex == 507
-%                 figure;
-%                 colormap([0.7 0.5 0.5; 0.5 0.5 0.7; 0.9 0.8 0.1; 0.6 0.7 0.7; 0.9 0.5 0.5; 0.55 0.55 0.55; 0.3 0.3 0.3]);
-%                 subplot(1,4,1), barsh = barh([zeros(length(tmpindex),5), D(prev_pos,n-1), zeros(length(tmpindex),1)],'stacked'); set(gca,'YDir','reverse','XTickLabel',[],'YTickLabel',ttttt);
-%                 axesh = get(barsh(1), 'Parent'); set(axesh, 'Xlim', [min(D(prev_pos,n-1))-2 max(D(prev_pos,n-1))+2]);
-%                 subplot(1,4,2), barh([(D_overlap1(n) + D_overlap2(n) * g(tmpindex)) * 40, beta_SEP(n) * ( tmpindex - optimal_SEP(n) ).^2 / num_lanes,zeros(length(tmpindex),5)],'stacked'); set(gca,'YDir','reverse','XTickLabel',[],'YTickLabel',[]);
-%                 subplot(1,4,3), barh(repmat([0,0,2 / num_lanes * f(rawindex,:) * alpha_ideal(n,:)', -PEAK_WEIGHT * peak_bonus(rawindex), -num_lanes * peak_bonus_matrix(rawindex,:) * alpha_ideal(n,:)',0,0] ...
-%                     ,length(tmpindex),1),'stacked'); set(gca,'YDir','reverse','XTickLabel',[],'YTickLabel',[]);
-%                 subplot(1,4,4), barsh = barh([zeros(length(tmpindex),6), D_test(prev_pos)'],'stacked'); set(gca,'YDir','reverse','XTickLabel',[],'YTickLabel',ttttt);
-%                 axesh = get(barsh(1), 'Parent'); set(axesh, 'Xlim', [min(D_test(prev_pos))-2 max(D_test(prev_pos))+2]);
-%             end
-%             
-%             if n == 49 && rawindex == 843
-%                 figure;
-%                 colormap([0.7 0.5 0.5; 0.5 0.5 0.7; 0.9 0.8 0.1; 0.6 0.7 0.7; 0.9 0.5 0.5; 0.55 0.55 0.55; 0.3 0.3 0.3]);
-%                 subplot(1,4,1), barsh = barh([zeros(length(tmpindex),5), D(prev_pos,n-1), zeros(length(tmpindex),1)],'stacked'); set(gca,'YDir','reverse','XTickLabel',[],'YTickLabel',ttttt);
-%                 axesh = get(barsh(1), 'Parent'); set(axesh, 'Xlim', [min(D(prev_pos,n-1))-2 max(D(prev_pos,n-1))+2]);
-%                 subplot(1,4,2), barh([(D_overlap1(n) + D_overlap2(n) * g(tmpindex)) * 40, beta_SEP(n) * ( tmpindex - optimal_SEP(n) ).^2 / num_lanes,zeros(length(tmpindex),5)],'stacked'); set(gca,'YDir','reverse','XTickLabel',[],'YTickLabel',[]);
-%                 subplot(1,4,3), barh(repmat([0,0,2 / num_lanes * f(rawindex,:) * alpha_ideal(n,:)', -PEAK_WEIGHT * peak_bonus(rawindex), -num_lanes * peak_bonus_matrix(rawindex,:) * alpha_ideal(n,:)',0,0] ...
-%                     ,length(tmpindex),1),'stacked'); set(gca,'YDir','reverse','XTickLabel',[],'YTickLabel',[]);
-%                 subplot(1,4,4), barsh = barh([zeros(length(tmpindex),6), D_test(prev_pos)'],'stacked'); set(gca,'YDir','reverse','XTickLabel',[],'YTickLabel',ttttt);
-%                 axesh = get(barsh(1), 'Parent'); set(axesh, 'Xlim', [min(D_test(prev_pos))-2 max(D_test(prev_pos))+2]);
-%             end
-%         end
-    
         [ D(rawindex,n), prev_pos_best(rawindex,n) ] = min( D_test );
         
         D_test(prev_pos) = 10 * BIG_NUMBER;
@@ -222,9 +179,26 @@ end
 %figure; image( prev_pos_best )
 %figure; image( D/1000 )
 
+if false
+    %figure;image(160*(peak_bonus_matrix+0.5));colormap('hot');figure;image(f*20);colormap(1-gray(100));
+    %figure;image(50*alpha_ideal');colormap(1-gray(100));
+    %fprintf('%.3f %.3f   %.3f %.3f   %.3f %.3f\n',min(min(peak_bonus_matrix)),max(max(peak_bonus_matrix)),min(min(f)),max(max(f)),min(min(alpha_ideal)),max(max(alpha_ideal)));
+    D(:,1) = [];
+    D = D - min(min(D)) + 1;
+    %D(D>92891) = Inf;
+    D = (log(D) - 7.85) * 70;
+    %D = D - min(min(D));
+    %fprintf('%.3f\n',max(D(D<Inf)));
+    %D = ( D - 1000 ) / 80;
 
-
-
+    figure;hold on;image( D );colormap('Pink');colorbar();
+    for n = N : -1 : 1
+        plot(n-1,xsel_fit(n),'ro','MarkerSize',7,'LineWidth',2);
+    end
+    set(gca,'YDir','reverse');
+    axis tight;
+    xlim([0.5 N-0.5]);
+end
 
 
 
