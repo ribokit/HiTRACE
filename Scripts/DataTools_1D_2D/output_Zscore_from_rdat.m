@@ -1,12 +1,16 @@
-function [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_CUTOFF, APPLY_ZSCORE_CUTOFF, ONLY_A_C, print_stuff );
+function [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_CUTOFF, APPLY_ZSCORE_CUTOFF, ONLY_A_C, ignore_mut, print_stuff );
+% [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_CUTOFF, APPLY_ZSCORE_CUTOFF, ONLY_A_C, ignore_mut, print_stuff );
+%
+% (C) R. Das, 2010-2013.
+%
 
 if ~exist( 'MEAN_EXPOSURE_CUTOFF' ) MEAN_EXPOSURE_CUTOFF = 1.0; end;
 if ~exist( 'APPLY_ZSCORE_CUTOFF' ) APPLY_ZSCORE_CUTOFF = 1; end;
 if ~exist( 'ZSCORE_CUTOFF' ) ZSCORE_CUTOFF = 0.0; end;
 if ~exist( 'ONLY_A_C' ) ONLY_A_C = 0; end;
 if ~exist( 'print_stuff' ); print_stuff = 0; end
-if ~exist( 'd_nomod' ); d_nomod = []; end
-
+if ~exist( 'd_nomod' ) | length( d_nomod ) == 0; d_nomod = []; end
+if ~exist( 'ignore_mut' ); ignore_mut = []; end
 
 Z = []; mutpos = [];seqplot = [];
 if length( rdat_files ) == 0; return; end;
@@ -36,8 +40,8 @@ for i = 1:length( rdat_files )
     fprintf( 'WARNING! WARNING! NRES problem! %s\n', rdat_files{i} );
   end
 
-  [ Z, mutpos ] = get_Zscore_and_apply_filter( d, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_CUTOFF, APPLY_ZSCORE_CUTOFF, 0 );
-
+  [ Z, mutpos ] = get_Zscore_and_apply_filter( d, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_CUTOFF, APPLY_ZSCORE_CUTOFF, ONLY_A_C, ignore_mut );
+  
   % just a check
   if ~isempty(strfind( rdat_files{i}, 'P4P6'));    Z( 176-d.offset, : ) = 0.0;   end;
 
@@ -61,7 +65,7 @@ plot_and_save(Z, seqplot,  outfile, print_stuff );
 return;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [ Zscore_full, mutpos ] = get_Zscore_and_apply_filter( d, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_CUTOFF, APPLY_ZSCORE_CUTOFF, ONLY_A_C  );
+function [ Zscore_full, mutpos ] = get_Zscore_and_apply_filter( d, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_CUTOFF, APPLY_ZSCORE_CUTOFF, ONLY_A_C, ignore_mut  );
 
 Zscore = [];
 
@@ -93,7 +97,6 @@ for i = 1:size( a, 1 )
   Zscore(i,diff_ex_cols) =  ( a(i,diff_ex_cols) - mean( a(i,diff_ex_cols)) )/ std( a(i,diff_ex_cols),0,2);
 end
 
-  
 % Don't include rows that have uniformly high chemical modification --
 % mutate/map looks for 'release' of protected residues.
 for i = 1:size( a, 1 )
@@ -167,18 +170,27 @@ end
 % Convert factor
 ZSCORE_SCALING = -1.0;
 
+if length( d.mutpos ) == 0
+  d = fill_mutpos( d );
+end
+
 NRES = length(d.sequence);
 Zscore_full = zeros( NRES, NRES );
 pos1 = d.seqpos - d.offset;
 pos2 = d.mutpos - d.offset;
 
-% look for first library, as marked by MutPos. Note that first column is assuemd to be wt.
+% look for first library, as marked by MutPos. Note that first column is assumed to be wt.
 for i = 2 : length( d.mutpos )
   if (i < length( d.mutpos )) & ( isnan( d.mutpos(i+1) ) | d.mutpos(i) > d.mutpos(i+1) ); 
     break; 
   end
 end
 gp = [2:i];
+
+% Remove mutants that are inputted in "ignore_mut"
+for i = 1:length( ignore_mut )
+  gp = setdiff( gp,   find( d.mutpos == ignore_mut(i)) );
+end
 
 Zscore_full( pos1, pos2(gp) ) = Zscore(:,gp) * ZSCORE_SCALING;
 
@@ -206,4 +218,51 @@ if ( print_stuff )
   fprintf( 'Outputting to postscript file: %s\n', eps_file );
   print( eps_file, '-depsc2', '-tiff' );
 end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function  d = fill_mutpos( d );
+
+% need to figure out where mutations are based on tags like "mutation:G64C" in data_annotation
+d.mutpos = []
+for k = 1:length( d.data_annotations )
+  d.mutpos(k) = NaN;
+  data_annotation = d.data_annotations{k};
+  for m = 1:length( data_annotation )
+    c = str2cell( data_annotation{m},':' );
+    if length(c)> 0 & strcmp( c{1}, 'mutation' )
+      num = str2num( remove_AGCTU( c{2} ) );
+      if length(num)>0;  d.mutpos(k) =  num; end;
+    end
+  end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function c = str2cell(s, delim)
+
+if ~exist( 'delim' ) 
+  tabchar = sprintf( '\t' );
+  if ~isempty(strfind( s, tabchar ) ) 
+    delim = tabchar;
+  else
+    delim = ' '; 
+  end
+end;
+
+rest = s;
+i = 1;
+c = {};
+while length(rest)
+    [t, rest] = strtok(rest, delim);
+    c{i} = t;
+    i = i + 1;
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function x = remove_AGCTU( x )
+x = strrep( x, 'A', '');
+x = strrep( x, 'G', '');
+x = strrep( x, 'C', '');
+x = strrep( x, 'T', '');
+x = strrep( x, 'U', '');
 
