@@ -1,4 +1,16 @@
 function [d_realign,da_realign] =  align_beautiful_segment( d, da, align_pts, refcol );
+% ALIGN_BEAUTIFUL_SEGMENT
+%
+% [d_realign,da_realign] =  align_beautiful_segment( d, da, align_pts, refcol );
+%
+% Carries out alignment over a subset time window of the capillary data.
+%  Optimizes correlation coefficient by grid search + Fast Fourier Transform
+%  Carried out 'peakification' step to prevent extremely strong signals 
+%    from dominating
+%
+% (C) R. Das & S.R. Yoon, 2009-2011
+%
+
 
 if ~exist( 'align_pts' )
   align_pts = [1:size(d,1)];
