@@ -1,7 +1,10 @@
+function [ymin, ymax] = findTimeRange(d)
 % by kprotoss
 % find time range automatically
+% modified a little by Rhiju based on some of his data sets.
 
-function [ymin ymax] = findTimeRange(d)
+N = size(d,2);
+
 for j = 1:size(d,2);
     y = edge(d(:,j));
     y = find( y ~= 0);
@@ -10,5 +13,6 @@ for j = 1:size(d,2);
     max_list(j) = y(end);
 end
 
-ymin = round(median(min_list) - 100);
-ymax = round(median(max_list) + 100);
+% get rid of outliers...
+ymin = round( min_list( ceil( 0.25*N ) ) - 200);
+ymax = round( max_list( ceil( 0.75*N ) ) + 200);

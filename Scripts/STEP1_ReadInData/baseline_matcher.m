@@ -1,4 +1,5 @@
 function [d_sub, bd, alpha] = baseline_matcher( d , d_ref, ymin,ymax)
+% [d_sub, bd, alpha] = baseline_matcher( d , d_ref, ymin,ymax)
 
 if ( length( d_ref) == 1 )
   d_ref = d(:,d_ref);

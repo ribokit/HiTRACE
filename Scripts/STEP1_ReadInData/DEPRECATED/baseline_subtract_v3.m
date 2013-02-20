@@ -1,4 +1,9 @@
 function d_sub = baseline_subtract_v3( d, ymin, ymax );
+%
+% d_sub = baseline_subtract_v3( d, ymin, ymax );
+% 
+% Not in use...
+%
 
 %Declare boundaries
 if ~exist( 'ymin')
