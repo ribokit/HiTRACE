@@ -1,4 +1,4 @@
-function [d_out,d_ref_out, x_warp_all] = align_by_DP_using_ref_NEW( d, d_ref, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF , SHOW_ANCHOR_NODES);
+function [d_out,d_ref_out, x_warp_all] = align_by_DP_using_ref( d, d_ref, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF , SHOW_ANCHOR_NODES);
 % ALIGN_BY_DP: refine alignment by non-linear warping, optimizing correlation by dynamic programming
 %
 % [d_out,d_ref_out, x_warp_all] = align_by_DP_using_ref( d, d_ref, align_blocks_in );
@@ -28,7 +28,7 @@ d_ref_out = d_ref;
 d_out = d;
 
 for j = 1:length( align_blocks_in )
-  [d_ref_out, x_warp_all, anchor_nodes ] = align_by_DP_NEW( d_ref_out,  align_blocks_in{j}, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF );
+  [d_ref_out, x_warp_all, anchor_nodes ] = align_by_DP( d_ref_out,  align_blocks_in{j}, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF );
   d_out(:, align_blocks_in{j}) = apply_warp( d_out(:,align_blocks_in{j}), x_warp_all, 0 );
 end
 
