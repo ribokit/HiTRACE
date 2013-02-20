@@ -308,7 +308,7 @@ for i = xsel_to_plot
   if SHOW_MARKS & ~isempty( marks );
     for j = 1:numlanes
         if(i <= size(area_pred,1))
-          if(area_pred(i,j) == 1)
+          if(area_pred(i,j) == 1)	    
             plot( j, xsel(i), 'ro' );
           end
         end

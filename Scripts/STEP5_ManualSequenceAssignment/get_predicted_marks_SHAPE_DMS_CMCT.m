@@ -1,14 +1,43 @@
 function [ marks, area_pred, mutpos] = get_predicted_marks_SHAPE_DMS_CMCT( structure, sequence, offset,seqpos,data_type);
-% 99999990. nomod
-% 99999991. SHAPE 
-% 99999992. DMS
-% 99999993. CMCT
-% 99999994. A (ddTTP ladder)
-% 99999995. C (ddGTP ladder)
-% 99999996. G (ddCTP ladder)
-% 99999997. U (ddATP ladder)
-% 99999998. UV (double-pyrimidine ladder)
-
+% GET_PREDICTED_MARKS_SHAPE_DMS_CMCT
+%
+% [ marks, area_pred, mutpos] = get_predicted_marks_SHAPE_DMS_CMCT( structure, sequence, offset,seqpos,data_type);
+%
+% Returns information on where bands should show up, based on input 
+%  sequence, structure, and what modification/ladder reaction is in each lane.
+%
+% structure = structure in dot/bracket notation [give as '' if unknown]
+% sequence  = full sequence
+% offset    = integer to add to sequence position to get 'conventional' numbering
+% seqpos    = numbering of nucleotides which give signals in capillary trace
+% data_type = cell of tags of modification reactions in each trace, e.g., 
+%               {'SHAPE','SHAPE','ddTTP'}
+%
+%
+% Output: 
+% marks = pairs of (mutpos,seqpos) where bands should show up. This format 
+%         dates to the original use of hitrace to annotate mutate-and-map data, 
+%         where mutpos is the sequence position that was mutated. More
+%         generally mutpos contains a dummy integer that encodes the
+%         kind of reaction/ladder, as follows
+%             99999990. nomod
+%             99999991. SHAPE 
+%             99999992. DMS
+%             99999993. CMCT
+%             99999994. A (ddTTP ladder)
+%             99999995. C (ddGTP ladder)
+%             99999996. G (ddCTP ladder)
+%             99999997. U (ddATP ladder)
+%             99999998. UV (double-pyrimidine ladder)
+%         This may be deprecated in later versions of hitrace.
+% area_pred = matrix of zeros and ones corresponding to where bands will 
+%              show up.
+% mutpos = the integer 'mutpos' code for each capillary trace. This may be
+%           deprecated in later versions of hitrace.
+%
+%
+% (C) R. Das, 2010-2013.
+%
 FMN_SHAPE = [0 0 0 1 0 0 0 0 0 0 0];
 FMN_DMS = [0 0 0 1 0 1 0 1 1 0 0];
 
