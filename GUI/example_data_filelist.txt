@@ -1,4 +1,0 @@
-../TestData/063010_Ann_Medloop_L1_DMS1_Run_3100_2010-06-30_291
-../TestData/063010_Ann_Medloop_L1_DMS1_Run_3100_2010-06-30_292
-../TestData/063010_Ann_Medloop_L1_DMS1_Run_3100_2010-06-30_293
-../TestData/062310_Ann_Medloop_redoQC_Run_3100_2010-06-23_268
