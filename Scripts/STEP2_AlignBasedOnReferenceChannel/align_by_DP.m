@@ -33,7 +33,7 @@ if ~iscell( align_blocks_in ); % might be a single refcol
   end
 end
 
-if ~exist( 'penalizeStretchFactor' ); penalizeStretchFactor = 1.0; end;
+if ~exist( 'penalizeStretchFactor' ); penalizeStretchFactor = 10.0; end;
 if ~exist( 'slack' ); slack = 50; end;
 if ~exist( 'maxShift' ); maxShift = 200; end;
 if ~exist( 'windowSize' ); windowSize = 500; end;
@@ -109,13 +109,13 @@ if ( i == refcol )
   anchor_nodes = [start_nodes, final_nodes(end) ];
 else
   fprintf( '-- Aligning %d of %d --\n',i,size(d_all,2));
-  tic
+  %tic
   
   d_ref = process_profile( d_all(:,refcol) );
   d_ali = process_profile( d_all(:,     i) );
     
   [d_warp, x_warp, DP, choice, anchor_nodes] = refine_by_warping( d_ref, d_ali, penalizeStretchFactor, slack, maxShift, windowSize );    
-  toc
+  %toc
 end
 
 x_warp = x_warp';
@@ -140,9 +140,6 @@ d_ali = zeros( pad_size + num_pixels + pad_size, 1 );
 relevant_middle_pixels = pad_size + [1:num_pixels];
 d_ali( relevant_middle_pixels ) = d_ali_input;
 
-
-
-%d_ali = d_ali_input;
 num_pixels_pad  = length( d_ali );
 
 norm2_ali = sum( d_ali.*d_ali );
@@ -151,19 +148,20 @@ parts_that_count = d_ali * 0;
 parts_that_count( relevant_middle_pixels ) = 1;
 
 % Precompute all necessary correlation values.
-tic
+%tic
 start_nodes_ali_PAD_all = {};
 final_nodes_ali_PAD_all = {};
-conv_matrix_all = {};
+diff2_matrix_all = {};
 
 for n = 1: NUM_WINDOWS
 
-  fprintf( 'Correlation calculation for window: %d of %d\n',n, NUM_WINDOWS);
+  %fprintf( 'Correlation calculation for window: %d of %d\n',n, NUM_WINDOWS);
 
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Window of profile from reference signal
   start_node_ref = start_nodes_ref( n );
   final_node_ref = final_nodes_ref( n );
   
-  % Window of profile to be aligned.
   window_ref = [start_node_ref : final_node_ref];
   window_length = final_node_ref - start_node_ref + 1;
 
@@ -172,57 +170,35 @@ for n = 1: NUM_WINDOWS
 
   d_ref_sub  = d_ref_input( window_ref );
 
-
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Stretch this segment.
-  %x = [1:num_pixels_pad]';
-  x = [1:max_window_length]';
-  block_sizes = [min_window_length:1:max_window_length];
-  scales = window_length ./ block_sizes;
-
   % reference signal with different stretching scale factors
-  %d_ref_scaled =interp1( [1:window_length], d_ref_sub, ...
-  % 	    x*scales, 'linear', 0.0);
-  d_ref_scaled = zeros( max_window_length, length( scales ) );
-  parts_that_count = zeros( max_window_length, length( scales ) );
-  for m = 1: length( block_sizes )
-    incr = (window_length-1)/(block_sizes(m)-1);
-    d_ref_scaled( [1:block_sizes(m)], m ) = interp1( [1:window_length], d_ref_sub, [1:incr:window_length]  );
-    parts_that_count( [1:block_sizes(m)], m ) = 1.0;
-    scales(m) = incr;
-  end
+  block_sizes = [min_window_length:1:max_window_length];
+  [d_ref_scaled, parts_that_count, scales] = get_d_ref_scaled( block_sizes, window_length, d_ref_sub );
   
-  
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Carve out a window of the profile-alignment that hopefully
   % encapsulates a segment corresponding to the window of the reference
   % add pad_size because of zero padding at beginning of alignment reference.
   start_node_ali = pad_size + (start_node_ref - max_shift);
-  final_node_ali = pad_size + min( final_node_ref + max_shift, num_pixels + pad_size  );
+  final_node_ali = pad_size + (final_node_ref + max_shift);
   num_pixels_ali_window = final_node_ali - start_node_ali + 1;
-
-  % this is an expanded 'bite' of the alignment profile that could potentially match 
-  % the window of the profile that we are aligning. 
   d_ali_window = d_ali( [start_node_ali:final_node_ali] );
     
   % Do convolution calculation. Need zero padding! 
-  % do the padding explicitly (fft should do it, but I think it might be symmetric?)
-  n_fft_row = max( length( d_ali_window ), max_window_length ) * 2;
+  n_fft_row = max( length( d_ali_window ), max_window_length );
   n_fft_col = length( scales );
 
-  d_ref_scaled =  pad_matrix( d_ref_scaled, n_fft_row );
-  d_ali_window = pad_matrix( d_ali_window, n_fft_row );
+  % do the padding explicitly (fft should do it, but I think it might be symmetric?)
+  d_ref_scaled     = pad_matrix( d_ref_scaled, n_fft_row );
+  d_ali_window     = pad_matrix( d_ali_window, n_fft_row );
   parts_that_count = pad_matrix( parts_that_count, n_fft_row );
    
-  % Following approximates:  -1 * [profile1 - profile2 ] ^2 
-  conv_matrix = 2 * real(ifft2(fftn( d_ali_window, [n_fft_row n_fft_col]) ...
-			       .* fftn(d_ref_scaled(end:-1:1,:), [n_fft_row n_fft_col])));
-  norm2_over_window = real(ifft2(fftn( d_ali_window.^2, [n_fft_row n_fft_col]) ...
-				 .* fftn( parts_that_count(end:-1:1,:), [n_fft_row n_fft_col])));
-  
-  conv_matrix = conv_matrix - norm2_over_window;% - norm2_ref;
+  % Following approximates:  [profile1 - profile2 ] ^2 
+  diff2_matrix = get_diff2_matrix( d_ali_window, d_ref_scaled, parts_that_count, n_fft_row, n_fft_col );
 
   % should also scale intensities -- otherwise stretched windows will give a bonus -- they hit more pixels.
-  conv_matrix = conv_matrix * diag(scales) ;
+  diff2_matrix = diff2_matrix * diag( 1./scales ) ;
 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %  Start nodes and final nodes -- note that this retains max_shift offset!
@@ -233,55 +209,53 @@ for n = 1: NUM_WINDOWS
   start_nodes_ali = start_nodes_ali( goodpoints_start );
   
   start_nodes_ali_all{ n } = start_nodes_ali;
-  conv_matrix_all{ n } = conv_matrix( goodpoints_start, :);
+  diff2_matrix_all{ n } = diff2_matrix( goodpoints_start, :);
 
   [xgrid,ygrid] = meshgrid( block_sizes, start_nodes_ali );
   final_nodes_ali = xgrid + ygrid - 1;
 
-  % Disallow ending points that are outside the window. Wait this should not happen?
-  %badpoints = find( final_nodes_ali >= min( final_node_ali + pad_size, length( d_ali ) ) );
+  % Disallow ending points that are outside the window. 
   badpoints = find( abs( final_nodes_ali  - (final_node_ref + max_shift) ) > max_shift );
   final_nodes_ali( badpoints ) = NaN;
-  
   final_nodes_ali_all{ n } = final_nodes_ali;
 
+  % plots to check crazy fft convolutions above
   if ( n == 0 ) %>= NUM_WINDOWS-2 )
     check_scale = 1.0;
-    d_ref_scaled_show = d_ref_scaled(:,find( scales == check_scale) );
+    k = find( scales == check_scale);
+    d_ref_scaled_show = d_ref_scaled(:,k );
     subplot(5,1,1); plot( d_ref_scaled_show ) ;  title( 'd_ref_scaled [REF] -- scale 1.0')
     xlim([0 n_fft_row])    
     subplot(5,1,2); plot( d_ali_window ); title( 'd-ali-window')
     xlim([0 n_fft_row])
-    subplot(5,1,3); plot( conv_matrix(:,find( scales == check_scale ) ) );
+    subplot(5,1,3); plot( diff2_matrix(:,k) );
     xlim([0 n_fft_row])
     subplot(5,1,4); plot( norm2_over_window(:,find( scales == 1.0) ) );
     xlim([0 n_fft_row])
     subplot(5,1,3); 
-    %plot( conv( [d_ali_window' zeros(1,2*max_shift)], d_ref_scaled_show  ), 'r' ); hold on
-    %d_ali_pad = [d_ali_window' zeros(1,2*max_shift)]';
-    %d_ref_scaled_pad = [ d_ref_scaled_show' zeros( 1, length(d_ali_pad) - size(d_ref_scaled,1)) ]';
     for m = 1: length( d_ali_window )
-      conv_test( m ) = sum( circshift(d_ref_scaled_show,+m) .* d_ali_window );
+      diff2_test( m ) = sum( (circshift(d_ref_scaled_show,m) - circshift( parts_that_count(:,k),m ).*d_ali_window).^2 );
     end
     
     hold on
-    plot( 2*conv_test * check_scale,'r' ); 
-    plot( goodpoints_start, 2*conv_test( goodpoints_start ) * check_scale,'g' ); 
+    plot( diff2_test * check_scale,'r' ); 
+    plot( goodpoints_start, diff2_test( goodpoints_start ) * (1/check_scale),'g' ); 
     hold off
 
     subplot(5,1,5);
-    plot( max( conv_matrix' ) );
-    [dummy, idx_j] = max( conv_matrix );
-    [blah,idx ]=  max( dummy );
+    plot( min( diff2_matrix' ) );
+    [dummy, idx_j] = min( diff2_matrix( goodpoints_start,:) );
+    [minval,idx ]=  min( dummy )
+    
     %start_nodes_ali( idx_j( idx ) )
-    %image( 0.05 * conv_matrix( 1:1000,:)'  );
+    %image( 0.05 * diff2_matrix( 1:1000,:)'  );
     %plot( d_ref_scaled )
 
     pause;
   end
 
 end
-toc
+%toc
 
 % with the conventions I chose, easier to work backward, last
 % window to first.
@@ -290,10 +264,10 @@ choice          = zeros( num_pixels_pad, NUM_WINDOWS );
 best_block_stretch = zeros( num_pixels_pad, NUM_WINDOWS );
 
 % stretch penalty. Need to make it comparable to scale of profile convolution score
-PENALIZE_STRETCH = penalizeStretchFactor * ( std( d_ref_input ) / slack )^2 * window_size;
+PENALIZE_STRETCH = penalizeStretchFactor * ( std( d_ref_input ) )^2 * ( slack/window_size)^2;
 
 DP_matrix( :, NUM_WINDOWS+1) = 0.0;
-tic
+%tic
 for n = NUM_WINDOWS:-1:1 
 
 
@@ -301,7 +275,7 @@ for n = NUM_WINDOWS:-1:1
 
   start_nodes = start_nodes_ali_all{ n };
   final_nodes = final_nodes_ali_all{ n };
-  conv_matrix = conv_matrix_all{n};
+  diff2_matrix = diff2_matrix_all{n};
 
   for k = 1:length( start_nodes )
 
@@ -312,16 +286,16 @@ for n = NUM_WINDOWS:-1:1
     if length( goodpoints ) > 0
       
       prev_score = DP_matrix( final_nodes(k, goodpoints)+1, n+1)';
-      convolution_score = conv_matrix( k, goodpoints );
+      convolution_score = diff2_matrix( k, goodpoints );
       % New -- prevent warping if there's not much information.
       stretch_score = 0 * prev_score;
       potential_block_stretches = ( final_nodes(k, goodpoints) - start_nodes(k) ) - ( final_nodes_ref(n) - start_nodes_ref(n) );
       if ( n < NUM_WINDOWS )
-	%stretch_score = -1.0 * PENALIZE_STRETCH * abs(potential_block_stretches - best_block_stretch( final_nodes(k, goodpoints)+1, n+1 )');
-	stretch_score = -1.0 * PENALIZE_STRETCH * (potential_block_stretches - best_block_stretch( final_nodes(k, goodpoints)+1, n+1 )').^2;
+	%stretch_score = PENALIZE_STRETCH * abs(potential_block_stretches - best_block_stretch( final_nodes(k, goodpoints)+1, n+1 )');
+	stretch_score = PENALIZE_STRETCH * (potential_block_stretches - best_block_stretch( final_nodes(k, goodpoints)+1, n+1 )').^2;
       end
       
-      [y, i ]  = max( prev_score + convolution_score + stretch_score );      
+      [y, i ]  = min( prev_score + convolution_score + stretch_score );      
       DP_matrix( start_nodes(k) , n) = y;      
       choice( start_nodes(k), n) = final_nodes( k, goodpoints(i) );
       best_block_stretch( start_nodes(k), n ) = potential_block_stretches( i );
@@ -334,20 +308,20 @@ for n = NUM_WINDOWS:-1:1
     clf; 
     plot( DP_matrix(:,n) ); 
     gp = find( ~isnan( DP_matrix(:,n) ) );
-    [dummy,idx] = max( DP_matrix( gp, n ) );
+    [dummy,idx] = min( DP_matrix( gp, n ) );
     gp( idx )
     %pause; 
   end;
 
 end
-toc
+%toc
 
 %clf
 %plot( DP_matrix )
 %pause;
 
 % Backtrack.
-[y, node] = max( DP_matrix(:,1) );
+[y, node] = min( DP_matrix(:,1) );
 
 start_nodes = [];
 final_nodes = [];
@@ -402,6 +376,21 @@ end
 function  d =  pad_matrix( d, n_fft_row );
 d = [d; zeros( n_fft_row - size(d,1), size(d,2) ) ];
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function d = process_profile( d );
+
+d = quick_norm( smooth(d) );
+
+% put on scale of 0 to 100.
+d = 20 * (max( d, 0) );
+
+% remove baseline.
+d = d - mode( round(smooth(d)) );
+  
+% get interquartile range, and use it to cap outliers.  
+d = cap_outliers( d );
+  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function  d =  cap_outliers( d )
 d_sort = sort( d );
@@ -412,19 +401,30 @@ cutoff = 10*(q3-q1)  + q3;
 d( find( d > cutoff ) ) = cutoff;
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function d = process_profile( d );
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function   [d_ref_scaled, parts_that_count, scales] = get_d_ref_scaled( block_sizes, window_length, d_ref_sub );
+max_window_length = max( block_sizes );
 
-d = quick_norm(d);
+d_ref_scaled = zeros( max_window_length, length( block_sizes ) );
+parts_that_count = zeros( max_window_length, length( block_sizes ) );
+interp_vectors = zeros( max_window_length,  length( block_sizes ) );
 
-% put on scale of 0 to 100.
-d = 100 * (max( d, 0) );
+for m = 1: length( block_sizes )
+  incr = (window_length-1)/(block_sizes(m)-1);
+  interp_vectors( [1:block_sizes(m)], m) = [1:incr:window_length]';
+  parts_that_count( [1:block_sizes(m)], m ) = 1.0;
+  scales(m) = 1 / incr;
+end
+d_ref_scaled = interp1( [1:window_length], d_ref_sub, interp_vectors, 'linear', 0.0 );
 
-% remove baseline.
-d = d - mode( round(smooth(d)) );
-  
-% get interquartile range, and use it to cap outliers.  
-d = cap_outliers( d );
-  
-%d_ref = baseline_subtract_v2( max(d_all(:,refcol),0) ).^0.33;
-%d_ali = baseline_subtract_v2( max(d_all(:,i),0) ).^0.33;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function   diff2_matrix = get_diff2_matrix( d_ali_window, d_ref_scaled, parts_that_count, n_fft_row, n_fft_col );
+
+dot_product_matrix = real(ifft2(fftn( d_ali_window, [n_fft_row n_fft_col]) ...
+				.* fftn(d_ref_scaled(end:-1:1,:), [n_fft_row n_fft_col])));
+norm2_over_window  = real(ifft2(fftn( d_ali_window.^2, [n_fft_row n_fft_col]) ...
+				.* fftn( parts_that_count(end:-1:1,:), [n_fft_row n_fft_col])));
+norm2_ref = repmat( sum( d_ref_scaled.^2 ), n_fft_row, 1);
+
+diff2_matrix = norm2_over_window - 2 * dot_product_matrix + norm2_ref;
+

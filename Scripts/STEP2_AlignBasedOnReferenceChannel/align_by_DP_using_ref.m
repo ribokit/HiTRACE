@@ -13,14 +13,15 @@ if ~iscell( align_blocks_in ); % might be a single refcol
   align_blocks_in = { [refcol, 1:(refcol-1), (refcol+1):size(d,2) ] };
 end
 
-if ~exist( 'penalizeStretchFactor' ); penalizeStretchFactor = 1.0; end;
+
+if ~exist( 'penalizeStretchFactor' ); penalizeStretchFactor = 10.0; end;
 if ~exist( 'slack' ); slack = 50; end;
 if ~exist( 'maxShift' ); maxShift = 200; end;
 if ~exist( 'windowSize' ); windowSize = 500; end;
 if ~exist( 'PLOT_STUFF' ); PLOT_STUFF = 1; end;
 
 if ~exist( 'PLOT_STUFF' ) PLOT_STUFF = 1; end;
-if ~exist( 'SHOW_ANCHOR_NODES' ) SHOW_ANCHOR_NODES = 0; end;
+if ~exist( 'SHOW_ANCHOR_NODES' ) SHOW_ANCHOR_NODES = 1; end;
 
 if ( size( d, 1) ~= size( d_ref, 1 )  |  size( d, 2) ~= size( d_ref, 2 ) ); fprintf( 'd and d_ref are not the same size!' ); end;
 
