@@ -13,10 +13,11 @@ if ~iscell( align_blocks_in ); % might be a single refcol
   align_blocks_in = { [refcol, 1:(refcol-1), (refcol+1):size(d,2) ] };
 end
 
-if ~exist( 'penalizeStretchFactor' ); penalizeStretchFactor = 10.0; end;
-if ~exist( 'slack' ) | slack == 0 | isempty( slack); slack = 20; end;
-if ~exist( 'maxShift' ) | maxShift == 0 | isempty( maxShift );  maxShift = 150; end;
-if ~exist( 'windowSize' )  | windowSize == 0 | isempty( windowSize ); windowSize = 100; end;
+if ~exist( 'penalizeStretchFactor' ); penalizeStretchFactor = 1.0; end;
+if ~exist( 'slack' ); slack = 50; end;
+if ~exist( 'maxShift' ); maxShift = 200; end;
+if ~exist( 'windowSize' ); windowSize = 500; end;
+if ~exist( 'PLOT_STUFF' ); PLOT_STUFF = 1; end;
 
 if ~exist( 'PLOT_STUFF' ) PLOT_STUFF = 1; end;
 if ~exist( 'SHOW_ANCHOR_NODES' ) SHOW_ANCHOR_NODES = 0; end;
