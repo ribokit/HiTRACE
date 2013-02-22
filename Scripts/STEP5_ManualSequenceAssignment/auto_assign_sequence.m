@@ -1,4 +1,4 @@
-function [xsel, D, msg] = auto_assign_sequence( image_x, sequence, seqpos, offset, area_pred, data_types, ideal_spacing, input_bounds, PLOT_STUFF )
+function [xsel, D, msg] = auto_assign_sequence( image_x, sequence, seqpos, offset, area_pred, ideal_spacing, input_bounds, PLOT_STUFF, data_types )
 % AUTO_ASSIGN_SEQUENCE: (still experimental) automatic assignment of bands, given expected locations of marks
 %
 %
@@ -6,6 +6,7 @@ function [xsel, D, msg] = auto_assign_sequence( image_x, sequence, seqpos, offse
 %
 if ~exist('PLOT_STUFF','var'), PLOT_STUFF = 1; end
 if ~exist('input_bounds','var'), input_bounds = []; end
+if ~exist( 'data_types', 'var' ), data_types = []; end;
 
 [num_pixels, num_lanes] = size( image_x );
 nres = length( sequence );
@@ -88,7 +89,7 @@ if PLOT_STUFF
   colormap( 1 - gray(100) );
 end
 
-[xsel_fit, D] = solve_xsel_by_DP( image_x, s, data_types, sequence_at_bands, ideal_spacing, input_bounds );
+[xsel_fit, D] = solve_xsel_by_DP( image_x, s, sequence_at_bands, ideal_spacing, input_bounds, data_types );
 
 xsel = xsel_fit(1:end);
 if exist_talepeak

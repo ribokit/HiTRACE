@@ -1,5 +1,5 @@
-function [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, data_types, sequence_at_bands, ideal_spacing, input_bounds )
-% [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds );
+function [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds, data_types )
+% [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds, data_types );
 
 START_POS = 0;
 if length( input_bounds ) >= 1; START_POS = round(input_bounds(1)); end;
@@ -55,14 +55,17 @@ PEAK_WEIGHT = 1;
 ok_points = (PEAK_SPREAD+1):(num_pixels-PEAK_SPREAD);
 peak_shifts = -PEAK_SPREAD:PEAK_SPREAD;
 peak_scores = ones(1,num_lanes);
-for i = 1:num_lanes
+if length( data_types ) > 0
+  for i = 1:num_lanes
     if strcmp(data_types{i},'nomod')
-        peak_scores(i) = 0;
+      peak_scores(i) = 0;
     elseif ( strcmp(data_types{i},'ddTTP') || strcmp(data_types{i},'ddGTP') ...
-            || strcmp(data_types{i},'ddATP') || strcmp(data_types{i},'ddCTP') || strcmp(data_types{i},'ddUTP') )
-        peak_scores(i) = (num_lanes - 2) / 1.5;
+	     || strcmp(data_types{i},'ddATP') || strcmp(data_types{i},'ddCTP') || strcmp(data_types{i},'ddUTP') )
+      peak_scores(i) = (num_lanes - 2) / 1.5;
     end
+  end
 end
+
 peak_scores = peak_scores ./ length(peak_shifts);
 peak_bonus_matrix = zeros( num_pixels, num_lanes );
 
