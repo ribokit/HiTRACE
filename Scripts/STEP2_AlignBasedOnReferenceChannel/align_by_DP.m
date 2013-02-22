@@ -57,6 +57,7 @@ if PLOT_STUFF
   subplot(1,2,1);
   scalefactor = 40 / mean(mean(d_all));
   image( scalefactor * d_all )
+  show_anchor_nodes( anchor_nodes );
   %make_lines( [0:size(d_out,2)], 'k', 0.25 );
   
   subplot(1,2,2);
@@ -428,3 +429,11 @@ norm2_ref = repmat( sum( d_ref_scaled.^2 ), n_fft_row, 1);
 
 diff2_matrix = norm2_over_window - 2 * dot_product_matrix + norm2_ref;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function show_anchor_nodes( anchor_nodes );
+
+for i = 1:size( anchor_nodes, 1 )
+  hold on
+  plot( [1:size(anchor_nodes,2)], anchor_nodes(i,:), 'r-' );
+end
+hold off;

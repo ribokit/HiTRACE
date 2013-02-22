@@ -1,6 +1,21 @@
 function [ min_SHAPE, max_SHAPE, threshold_SHAPE, ETERNA_score, d_bin ] = determine_thresholds_and_ETERNA_score( data, pred, NEW_SETTINGS );
+% DETERMINE_THRESHOLDS_AND_ETERNA_SCORE
+%
+% [ min_SHAPE, max_SHAPE, threshold_SHAPE, ETERNA_score, d_bin ] = determine_thresholds_and_ETERNA_score( data, pred, NEW_SETTINGS );
+%
+% Used to 'score' EteRNA data sets against expected reactivities for the
+%  target structure.
+%
+% (C) R. Das, 2010-2013.
+
+min_SHAPE = 0.0;
+max_SHAPE = 0.0;
+threshold_SHAPE = 0.0;
+ETERNA_score = 0.0;
+d_bin = 0;
 
 if ~exist( 'NEW_SETTINGS' ); NEW_SETTINGS = 0; end;
+if isempty( find( ~isnan( data ) ) ); return; end;
 
 figure(3)
 clf;
@@ -76,6 +91,8 @@ params = linprog( f, [], [], Aeq, beq, LB, UB,[],options);
 subplot(2,1,1);
 plot( pred, 'k','linewidth',2 );
 hold on;
+if length(params) == 0;  return;end;
+  
 plot( params(1)*data + params(2), 'kx-' ); 
 plot( params(1)*data + params(2) + params( 2+2*n+[1:n])', 'rx-' ); 
 hold off;

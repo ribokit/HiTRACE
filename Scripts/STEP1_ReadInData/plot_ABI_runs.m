@@ -37,13 +37,18 @@ for k = 1:length( datafiles );
   data_in{ count } =  d;
 end
 
+%clf; plot( data_in{1}(:,1),'r' ); pause;
+
 if length( data_in ) == 0; 
   fprintf( 'WARNING!!! Could not read .ab1 files from: %s\n', dirname );
   return; 
 end; % did the files exist?
 
+
 if CORRECT
-  lm = load( 'leakage_matrix4.txt' );
+  
+  %lm = load( 'leakage_matrix4.txt' );
+  lm = load( 'leakage_matrix1.txt' );
 
   % auto determine 
   %lm = auto_determine_leakage_matrix( data_in );
@@ -51,6 +56,7 @@ if CORRECT
   data_correct = correct_leakage( data_in, lm );
   data_in = data_correct;
 end
+
 
 
 %how_many_cols = figure_out_cols( filenames );

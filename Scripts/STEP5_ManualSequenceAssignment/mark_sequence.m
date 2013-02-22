@@ -5,7 +5,7 @@ function [xsel] = mark_sequence( image_x, xsel, sequence, ...
 %
 %  [xsel] = mark_sequence( image_x, xsel, sequence, ...
 %				 JUST_PLOT_SEQUENCE, offset, period, ...
-%				 marks,mutpos, USE_GUI);
+%				 marks,mutpos, area_pred, peak_spacing, USE_GUI);
 % Output:
 %  xsel = positions of bands across all lanes.
 %
@@ -22,6 +22,10 @@ function [xsel] = mark_sequence( image_x, xsel, sequence, ...
 %
 % (C) R. Das, 2008-2011
 % (Substantial) modification to script in SAFA (SemiAutomated Footprinting Analysis) software.
+%
+% It should be possible to dramatically accelerate this by not calling make_plot every time.
+% We should get rid of the complicated business with marks/mutpos, and stick to area_pred!
+% We should allow input of seqpos (perhaps deprecate 'period').
 %
 if ~exist('xsel');  xsel = []; end
 if ~exist('JUST_PLOT_SEQUENCE');  JUST_PLOT_SEQUENCE = 0; end

@@ -1,5 +1,7 @@
 function []=varna_fig_error(filename,sequence,DBN,DATA,err,Display)
-
+%
+%  varna_fig_error(filename,sequence,DBN,DATA,err,Display)
+%
 if ~exist( 'err' )
  err=[];
 end

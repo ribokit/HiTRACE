@@ -1,5 +1,8 @@
 function Z=hSHAPE(area_in)
-%This calculates the SHAPE reactivity for the inputted data 
+%  Z=hSHAPE(area_in)
+%
+%This calculates the SHAPE reactivity for the inputted data.
+%
 
 data_size=length(area_in);
 data_number=size(area_in,2);
@@ -32,6 +35,7 @@ Z(:,i)=buffer./(hrange(1));
 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function Q=quartiles(X)
 
 Nx = size(X,1);

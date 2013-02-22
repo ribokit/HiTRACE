@@ -1,8 +1,8 @@
-function [d,da,labels,d_noalign,da_noalign] = quick_look( dirnames, ymin, ymax, reorder, ...
+function [d,da,labels,d_noalign,da_noalign, ymin, ymax] = quick_look( dirnames, ymin, ymax, reorder, ...
 				     labels, refcol, PLOT_STUFF, reflane )
 % QUICK_LOOK  basic read-in script for ABI sequencer files for HiTRACE analysis
 %
-%  [d,da,labels,d_noalign,da_noalign] = quick_look( dirnames, ymin, ymax, reorder, labels, refcol, PLOT_STUFF )
+%  [d,da,labels,d_noalign,da_noalign,ymin,ymax] = quick_look( dirnames, ymin, ymax, reorder, labels, refcol, PLOT_STUFF )
 %
 %   quick_look() runs scripts to read in directories of .ab1 files from ABI 
 %      sequencers and align them via a reference channel, assumed by default to be 
@@ -15,17 +15,16 @@ function [d,da,labels,d_noalign,da_noalign] = quick_look( dirnames, ymin, ymax, 
 %
 %  The rest of the inputs are optional.
 %
-%     ymin = minimum time point to show (e.g., 500, only used for plotting, script returns full profiles)
-%     ymax = maximum time point to show (e.g., 3500, only used for plotting, script returns full profiles)
+%     ymin = minimum time point to show (default is auto-select, only used for plotting, script returns full profiles)
+%     ymax = maximum time point to show (default is auto-select, only used for plotting, script returns full profiles)
 %     reorder = subset of electropherograms to align and return (e.g., [1:8 12:16])
 %     labels = any user-defined labels (if you give as [], script will use filenames as labels on plots)
 %     refcol = reference channel (Default 4. Other common setting would be the green channel 1 )
 %     PLOT_STUFF = setting used by GUI interface to turn off plots.
 %
 %
-% (C) Rhiju Das, 2009-2011
+% (C) Rhiju Das, 2009-2011, 2013
 %
-if ~exist( 'ymin' ); ymin = 500;   ymax = 3500; end
 if exist( 'PLOT_STUFF' ) ~= 1;  PLOT_STUFF = 1; end;
 if ~exist( 'reflane' ); reflane = 1;end;
 
@@ -74,11 +73,6 @@ if ~exist( 'reorder' ) | length( reorder) == 0;  reorder = [ 1 : length( data_al
 if ~exist( 'refcol');  refcol = [ 4 ]; end
 
 %truncate data to the same length (this shouldn't be necessary, but happened once with a mixed-up data set from the PAN facility.
-%for i = 1:length( data_all )
-%  if (i == 1); whichpixels = [ 1 : size( data_all{reorder(i)}, 1 ) ]; end;
-%  data_all{i} = data_all{i}(whichpixels,:);
-%end
-
 for i = length(reorder)
     size_v = size(data_all{i},1);
 end
@@ -92,10 +86,11 @@ d0_reference_ladder = [];
 %  d0_reference_ladder(:,i) = baseline_subtract(data_all{reorder(i)}(:,refcol));
 %end
 for i = 1:length( reorder )  
-    if(size(data_all{reorder(i)},1) < max_size)
-        data_all{reorder(i)}(max_size, size(data_all{reorder(i)},2)) = 0;
-    end
+  if(size(data_all{reorder(i)},1) < max_size)
+    data_all{reorder(i)}(max_size, size(data_all{reorder(i)},2)) = 0;
+  end
     
+  % this is a straightforward subtraction of an offset.
   d0_signal(1:size(data_all{reorder(i)}(:,1),1),i)           = baseline_subtract(data_all{reorder(i)}(:,1));
   d0_reference_ladder(1:size(data_all{reorder(i)}(:,1),1),i) = baseline_subtract(data_all{reorder(i)}(:,refcol));
 end
@@ -106,6 +101,9 @@ da_noalign = d0_reference_ladder;
 
 if ~exist('labels') | length( labels ) == 0 
   labels = filenames_all;
+end
+if ~exist( 'ymin' ) | isempty(ymin) | ymin == 0 | ymax <= ymin
+  [ymin, ymax] = findTimeRange( d0_signal );
 end
 
 if PLOT_STUFF
@@ -210,36 +208,99 @@ if PLOT_STUFF
   set( h,'interpreter','none' )
   colormap(  1 - gray(100) )
 
-  print( '-depsc2',[tag,'_Figure3.eps']);
+  %print( '-depsc2',[tag,'_Figure3.eps']);
 
   
-  h = figure(4);
+  %h = figure(4);
+  %set(h,'Position',[150,150,600,800]);
+  %set(gcf, 'PaperPositionMode','auto','color','white');
+  %%subplot(1,2,2);
+  %image( 50*da );
+  %axis( [ 0.5 length( reorder )+0.5 ymin ymax] );
+  %set( gca, 'xtick', 1:length( reorder ), ...
+  %	    'xticklabel', char( labels{ reorder }  )  );
+  %xticklabel_rotate;
+  %axis off
+  %title( 'aligned reference ladders');
+  %
+  %make_dividers( reorder, [], ymin, ymax );
+  %title( 'Reference ladder (channel 4)')
+  %colormap(  1 -gray(100) )
+  %figure(2)
+  %figure(3)
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% STAGE 4
+% align_by_DP -- local refinement through 
+% piece-wise linear transformation.
+
+d_before_DP  = d(  [ymin:ymax], : );
+da_before_DP = da( [ymin:ymax], : );
+figure(4);
+[d, da] = align_by_DP_using_ref( d_before_DP, da_before_DP );
+
+if PLOT_STUFF
+  h = figure(4); clf;
   set(h,'Position',[150,150,600,800]);
+  set(gcf, 'PaperPositionMode','auto','color','white');
+  clf
+  
+  %subplot(1,2,1);
+  image( 50*d );
+  axis( [ 0.5 length( reorder )+0.5 1 size(d,1)] );
+  %axis( [ 0.5 length( reorder )+0.5 ymin ymax] );
+  set( gca, 'xtick', 1:length( reorder ), ...
+	    'xticklabel', char( labels{ reorder}  )  );
+  xticklabel_rotate;
+
+  make_dividers( reorder, [], 1, size( d, 1 ));
+  h=title( [dirnames{1}]);
+  set( h,'interpreter','none' )
+  colormap(  1 - gray(100) )
+
+  print( '-depsc2',[tag,'_Figure4.eps']);
+
+  
+  h = figure(5); clf;
+  set(h,'Position',[200,200,600,800]);
   set(gcf, 'PaperPositionMode','auto','color','white');
   %subplot(1,2,2);
   image( 50*da );
-  axis( [ 0.5 length( reorder )+0.5 ymin ymax] );
+  axis( [ 0.5 length( reorder )+0.5 1 size(d,1)] );
+  %xlim( [ 0.5 length( reorder )+0.5 ] );
   set( gca, 'xtick', 1:length( reorder ), ...
 	    'xticklabel', char( labels{ reorder }  )  );
   xticklabel_rotate;
   axis off
   title( 'aligned reference ladders');
 
-  make_dividers( reorder, [], ymin, ymax );
+  make_dividers( reorder, [], 1, size( d, 1 ));
   title( 'Reference ladder (channel 4)')
   
   colormap(  1 -gray(100) )
   
   figure(2)
-  figure(3)
+  figure(4)
   
-  labels = labels( reorder );
+
 end
+
+
+
 
 if PLOT_STUFF
   fprintf( ['\nCreated: ',tag,'_Figure2.eps\n'] );
-  fprintf( ['Created: ',tag,'_Figure3.eps\n'] );
+  %fprintf( ['Created: ',tag,'_Figure3.eps\n'] );
+  fprintf( ['Created: ',tag,'_Figure4.eps\n'] );
 end
+
+fprintf( 'ymin = %d\n', ymin)
+fprintf( 'ymax = %d\n', ymax)
+
+labels = labels( reorder );
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function  make_dividers( reorder, line_pos, ymin, ymax );

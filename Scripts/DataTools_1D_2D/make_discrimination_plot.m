@@ -1,4 +1,5 @@
 function make_discrimination_plot( all_TP_lengths, all_FP_lengths, L, input_label );
+% make_discrimination_plot( all_TP_lengths, all_FP_lengths, L, input_label );
 
 subplot(2,1,1)
 h_TP = hist( all_TP_lengths, L );

@@ -1,7 +1,7 @@
 function []=quick_varna(filename,sequence,structure,DATA,offset,seqpos,colorscheme);
-% VARNA_FIG: Create html file with secondary structure -- double click to get VARNA visualizer in a web browser 
+% quick_varna: Create html file with secondary structure -- double click to get VARNA visualizer in a web browser 
 %
-%  varna_fig(filename,sequence,structure,DATA,offset,seqpos);
+%  quick_varna(filename,sequence,structure,DATA,offset,seqpos,colorscheme);
 %
 % filename  = output filename [e.g., 'my_rna_in_varna.html']
 % sequence  = RNA sequence
@@ -12,7 +12,7 @@ function []=quick_varna(filename,sequence,structure,DATA,offset,seqpos,colorsche
 %                        so normalize ahead of time. Give [] if no data.
 % offset             = integer offset to get 'conventional numbering' -- first position of sequence should be this number+1.
 % seqpos             = which nucleotide numbers each datum in DATA correspond to.
-%
+% colorscheme        = some alternative ways to color the plot [default = 1, white to orange to red]
 % (C) R. Das 2012
 
 if ~exist( 'colorscheme' ); colorscheme = 1; end;

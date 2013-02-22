@@ -1,12 +1,34 @@
-function [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_CUTOFF, APPLY_ZSCORE_CUTOFF, ONLY_A_C, ignore_mut, print_stuff );
-% [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_CUTOFF, APPLY_ZSCORE_CUTOFF, ONLY_A_C, ignore_mut, print_stuff );
+function [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_OFFSET, APPLY_ZSCORE_OFFSET, ONLY_A_C, ignore_mut, print_stuff );
+% [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, rdat_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_OFFSET, APPLY_ZSCORE_OFFSET, ONLY_A_C, ignore_mut, print_stuff );
+%
+% Z = [ reactivity value -  mean reactivity at residue across mutants]/ 
+%                               standard-deviation at residue across mutants.
+%
+% Note that Z-scores are multiplied by -1.0 for output.
+%
+%  outfile    = name of an output text file
+%  rdat_files = name of mutate-and-map file in RDAT format. [or several files if adding values]
+%
+% Optional:
+%  rdat_nomod = name of mutate-and-map file, control rxn without modiifer. 
+%                Used for filtering. Give [] if you don't have one. (Default: [])
+%  MEAN_EXPOSURE_CUTOFF = cutoff on mean peak intensity -- residues with mean reactivity
+%                         above this cutoff will be considered already exposed, and not used.
+%                         note that this cutoff applies to values after 
+%                         normalizing within each mutant (Default: 1.0)
+%  ZSCORE_OFFSET = offset Z-score by this value, and only output values > 0.0. (Default: 0.0)
+%  APPLY_ZSCORE_OFFSET = apply the offset (Default: 1)
+%  ONLY_A_C = only calculate Z-scores at A or C residues (may be useful for DMS data).
+%               (Default: 0)
+%  ignore_mut  = ignore variants with mutations at the specified positions. (Default: [])
+%  print_stuff = verbose output (Default: 0)
 %
 % (C) R. Das, 2010-2013.
 %
 
 if ~exist( 'MEAN_EXPOSURE_CUTOFF' ) MEAN_EXPOSURE_CUTOFF = 1.0; end;
-if ~exist( 'APPLY_ZSCORE_CUTOFF' ) APPLY_ZSCORE_CUTOFF = 1; end;
-if ~exist( 'ZSCORE_CUTOFF' ) ZSCORE_CUTOFF = 0.0; end;
+if ~exist( 'APPLY_ZSCORE_OFFSET' ) APPLY_ZSCORE_OFFSET = 1; end;
+if ~exist( 'ZSCORE_OFFSET' ) ZSCORE_OFFSET = 0.0; end;
 if ~exist( 'ONLY_A_C' ) ONLY_A_C = 0; end;
 if ~exist( 'print_stuff' ); print_stuff = 0; end
 if ~exist( 'd_nomod' ) | length( d_nomod ) == 0; d_nomod = []; end
@@ -40,7 +62,7 @@ for i = 1:length( rdat_files )
     fprintf( 'WARNING! WARNING! NRES problem! %s\n', rdat_files{i} );
   end
 
-  [ Z, mutpos ] = get_Zscore_and_apply_filter( d, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_CUTOFF, APPLY_ZSCORE_CUTOFF, ONLY_A_C, ignore_mut );
+  [ Z, mutpos ] = get_Zscore_and_apply_filter( d, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_OFFSET, APPLY_ZSCORE_OFFSET, ONLY_A_C, ignore_mut );
   
   % just a check
   if ~isempty(strfind( rdat_files{i}, 'P4P6'));    Z( 176-d.offset, : ) = 0.0;   end;
@@ -65,7 +87,7 @@ plot_and_save(Z, seqplot,  outfile, print_stuff );
 return;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [ Zscore_full, mutpos ] = get_Zscore_and_apply_filter( d, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_CUTOFF, APPLY_ZSCORE_CUTOFF, ONLY_A_C, ignore_mut  );
+function [ Zscore_full, mutpos ] = get_Zscore_and_apply_filter( d, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_OFFSET, APPLY_ZSCORE_OFFSET, ONLY_A_C, ignore_mut  );
 
 Zscore = [];
 
@@ -115,8 +137,8 @@ if ( ONLY_A_C )
 end
 
 % Filter to make sure Z-score is above some cutoff.
-if APPLY_ZSCORE_CUTOFF
-  Zscore = max( ( Zscore - ZSCORE_CUTOFF ), 0.0 );
+if APPLY_ZSCORE_OFFSET
+  Zscore = max( ( Zscore - ZSCORE_OFFSET ), 0.0 );
 end
 
 % filter for outlier columns (typically bad RNA in that well...)

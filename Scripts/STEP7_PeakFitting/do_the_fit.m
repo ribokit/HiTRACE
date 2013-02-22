@@ -4,7 +4,7 @@ function [ areas, prof_fit, xsel_fit_all, width_peak_all ] = do_the_fit( d_align
 % [ areas, prof_fit, xsel_fit_all, width_peak_all ] = do_the_fit( d_align, xsel, areas, whichpos );
 %
 %  d_align = input matrix of traces
-%  xsel = band locations
+%  xsel = band locations for each trace.
 %
 %  Largely deprecated due to use of align_by_DP() to give precisely aligned traces. Can just use align_by_DP() instead.
 %

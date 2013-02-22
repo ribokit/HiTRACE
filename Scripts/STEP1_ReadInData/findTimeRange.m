@@ -14,5 +14,5 @@ for j = 1:size(d,2);
 end
 
 % get rid of outliers...
-ymin = round( min_list( ceil( 0.25*N ) ) - 200);
-ymax = round( max_list( ceil( 0.75*N ) ) + 200);
+ymin = round( min_list( ceil( 0.50*N ) ) - 200);
+ymax = round( max_list( ceil( 0.90*N ) ) + 200);

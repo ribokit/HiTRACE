@@ -1,4 +1,5 @@
 function []=varna_multiple(filename,sequence,DBN,DATA)
+% varna_multiple(filename,sequence,DBN,DATA)
 
 %% DATA Prep
 Z=hSHAPE(DATA);
