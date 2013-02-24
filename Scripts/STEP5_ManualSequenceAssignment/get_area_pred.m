@@ -20,7 +20,7 @@ function area_pred = get_area_pred( sequence, data_types, structure );
 
 seqpos = 1:length(sequence);
 area_pred = zeros( length(sequence), length(data_types) );
-if ~exist( 'structure' ); length( structure ) == 0;   for i = 1:length( sequence ); structure = [structure, '.']; end; end
+if ~exist( 'structure' ) | length( structure ) == 0;   for i = 1:length( sequence ); structure = [structure, '.']; end; end
 if length( structure ) ~= length( sequence ); fprintf( 'Sequence length must equal structure length!\n'); return; end;
 
 
@@ -53,7 +53,7 @@ for k = 1:length( data_types )
     end
    case 'ddATP'
     for i = 1:length( sequence )-1
-      if ( sequence(i+1) == 'T' ); area_pred(i,k) = 1.0; end;
+      if ( sequence(i+1) == 'T' | sequence(i+1) == 'U' ); area_pred(i,k) = 1.0; end;
     end
    case 'ddCTP'
     for i = 1:length( sequence )-1
