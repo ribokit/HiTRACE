@@ -1,4 +1,6 @@
-function [ marks, area_pred, mutpos] = get_predicted_marks_SHAPE_DMS_CMCT( structure, sequence, offset,seqpos,data_type);
+function [ marks, area_pred, mutpos] = get_predicted_marks_SHAPE_DMS_CMCT( structure, sequence, offset,seqpos,data_type);%
+% DEPRECATED!
+%
 % GET_PREDICTED_MARKS_SHAPE_DMS_CMCT
 %
 % [ marks, area_pred, mutpos] = get_predicted_marks_SHAPE_DMS_CMCT( structure, sequence, offset,seqpos,data_type);
@@ -38,6 +40,11 @@ function [ marks, area_pred, mutpos] = get_predicted_marks_SHAPE_DMS_CMCT( struc
 %
 % (C) R. Das, 2010-2013.
 %
+fprintf( 'WARNING! WARNING! This script is deprecated and will be removed in future releases of HiTRACE.\n')
+fprintf( 'Use annotate_sequence instead of get_predicted_marks_SHAPE_DMS_CMCT and mark_sequence.\n' )
+fprintf( 'Type: \n')
+fprintf( ' help annotate_sequence \n')
+
 FMN_SHAPE = [0 0 0 1 0 0 0 0 0 0 0];
 FMN_DMS = [0 0 0 1 0 1 0 1 1 0 0];
 

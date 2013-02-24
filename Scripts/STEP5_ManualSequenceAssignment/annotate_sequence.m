@@ -1,20 +1,27 @@
-function [xsel,seqpos,area_pred] = mark_sequence( d_align, xsel, sequence_full, ...
+function [xsel,seqpos,area_pred] = annotate_sequence( d_align, xsel, sequence_full, ...
 					offset, data_types, primer_binding_site, structure );
 % MARK_SEQUENCE - Tool for rapid manual assignment of bands in electropherograms.
 %
 %  [xsel,seqpos,area_pred] = ( d_align, xsel, sequence_full, offset, data_types, primer_binding_site, structure );
+%
+%
+% Input:
+%  d_align        = matrix of aligned electrophoretic traces.
+%  xsel           = band positions if you already have them. Give [] if not initialized yet.
+%  sequence_full  = sequence of RNA. 
+%  offset         = value that is added to sequence index to achieve 'historical'/favorite numbering. [default: 0]
+%  data_type      = cell of tags of modification reactions in each trace, e.g., 
+%               {'SHAPE','SHAPE','ddTTP'}
+% primer_binding_site = integer that gives first nucleotide of primer binding site. 
+%                         [default: one beyond the end of sequence]
+% structure       = structure in dot/bracket notation [give as '' if unknown] [default: '']
 %
 % Output:
 % xsel      = positions of bands across all lanes.
 % seqpos    = sequence numbers that go with each xsel
 % area_pred = matrix of zeros and ones that mark band locations for entire assignable sequence. 
 %
-% Input:
-%  d_align  = matrix of aligned electrophoretic traces.
-%  sequence = sequence of reverse-transcribed RNA. 
-%  offset   = value that is added to sequence index to achieve 'historical'/favorite numbering.
-%
-% (C) R. Das, 2008-2011, 2013
+% (C) R. Das, 2013
 %
 % It should be possible to dramatically accelerate this by not calling make_plot every time.
 %
@@ -23,7 +30,16 @@ function [xsel,seqpos,area_pred] = mark_sequence( d_align, xsel, sequence_full, 
 if ~exist('xsel');  xsel = []; end
 seqpos = [];
 
-if ~exist('offset');  offset = -999; end
+if length( xsel ) > 1 & ( xsel(2) > xsel(1) )
+  fprintf( 'WARNING! WARNING! WARNING!\n' )
+  fprintf( 'You are using the old style of marking, where the bands are marked from 3'' to 5'' stop positions.\n' )
+  fprintf( 'This script is switching the order!\n')
+  fprintf( 'Outputted seqpos will go from small to large values.\n')
+  fprintf( 'Outputted xsel will go from large to small values\n')
+  xsel = reverse_sort( xsel );
+end
+
+if ~exist('offset');  offset = 0; end
 if ~exist('period');  period = 1; end
 if ~exist('marks');  marks = []; end
 if ~exist('mutpos');  mutpos = []; end
