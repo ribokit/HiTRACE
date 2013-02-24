@@ -66,30 +66,12 @@ end
 
 contrast_factor = 40/ mean(mean(abs(image_x)));
 
-%  Probably should just remove this... not clear if JUST_PLOT_SEQUENCE flag is needed anymore...
-%if (JUST_PLOT_SEQUENCE )
-%  if isstruct(USE_GUI); axes(USE_GUI.displayComponents); end;
-%  make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
-%	     contrast_factor, offset, period,marks,mutpos, area_pred);
-%  return;
-%end
-
 numlanes = size(image_x,2);
 
 stop_sel = 0;
 xsel = reverse_sort( xsel );
 
-% not clear if USE_GUI is needed anymore
-%if isstruct(USE_GUI)
-%  axes(USE_GUI.displayComponents);
-%  make_plot( image_x, xsel, ymin, ymax, sequence, JUST_PLOT_SEQUENCE, ...
-%	     contrast_factor, offset, period,marks,mutpos, area_pred);
-%  uiwait( msgbox( 'Are you ready to interactively annotate the sequence?','Ready?','modal' ) )
-%end
 while ~stop_sel
-
-  % not clear if USE_GUI is needed anymore
-  %if isstruct(USE_GUI); axes(USE_GUI.displayComponents);; end;
 
   make_plot( image_x, contrast_factor, ymin, ymax, xsel, ...
 	     sequence, offset, area_pred );
