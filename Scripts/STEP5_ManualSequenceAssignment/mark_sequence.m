@@ -309,7 +309,7 @@ for i = length( xsel ):-1:1
        case {'A','a'}
 	mycolor = [0 0 1];
        case {'C','c'}
-	mycolor = [0 0.7 0];      
+	mycolor = [0 0.5 0];      
        case {'U','T','u','t'}
 	mycolor = [1 0.5 0];
        case {'G','g'}
@@ -370,6 +370,7 @@ for i = 1:length( annotation_handles )
   handles = annotation_handles{i};
 
   m = 3; % text in handle
+  if length( handles ) < m; continue; end;
   h = handles{m};
 
   y = get( h, 'Position' );
