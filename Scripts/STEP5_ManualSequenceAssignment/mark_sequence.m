@@ -1,42 +1,59 @@
-function [xsel,seqpos] = mark_sequence( image_x, xsel, sequence, ...
-					offset, primer_binding_site, ...
-					area_pred );
+function [xsel,seqpos,area_pred] = mark_sequence( image_x, xsel, sequence_full, ...
+					offset, data_types, primer_binding_site, structure );
 % MARK_SEQUENCE - Tool for rapid manual assignment of bands in electropherograms.
 %
-%  [xsel] = mark_sequence( image_x, xsel, sequence, ...
-%				 JUST_PLOT_SEQUENCE, offset, period, ...
-%				 marks,mutpos, area_pred, peak_spacing, USE_GUI);
+%  [xsel,seqpos,area_pred] = ( image_x, xsel, sequence_full, offset, data_types, primer_binding_site, structure );
+%
 % Output:
-%  xsel = positions of bands across all lanes.
+% xsel      = positions of bands across all lanes.
+% seqpos    = sequence numbers that go with each xsel
+% area_pred = matrix of zeros and ones that mark band locations for entire assignable sequence. 
 %
 % Input:
 %  image_x  = matrix of aligned electrophoretic traces.
-%  sequence = sequence of reverse-transcribed RNA. Must end at first residue before primer.
-%  JUST_PLOT_SEQUENCE = interactive annotation [default: 1] or just plot previous band assignments? [0]. 
+%  sequence = sequence of reverse-transcribed RNA. 
 %  offset   = value that is added to sequence index to achieve 'historical'/favorite numbering.
-%  period   = for labeling sequence, spacing between labels [default 1].
-%  marks    = pairs of (index, residue) that indicate where bands should show up. [optional]
-%                For example, might be [1 1; 1 4; 2 2;  99999 5]. The last pair has a 'fictional value'.
-%  mutpos   = for marks, index for each lane. For example, might be NaN, 1, 2, 999999 [should specify this
-%                 if you want marks to show up ]
 %
-% (C) R. Das, 2008-2011
-% (Substantial) modification to script in SAFA (SemiAutomated Footprinting Analysis) software.
+% (C) R. Das, 2008-2011, 2013
 %
 % It should be possible to dramatically accelerate this by not calling make_plot every time.
-% We should get rid of the complicated business with marks/mutpos, and stick to area_pred!
-% We should allow input of seqpos (perhaps deprecate 'period').
 %
+
+% initialize outputs.
 if ~exist('xsel');  xsel = []; end
+seqpos = [];
+
 if ~exist('offset');  offset = -999; end
 if ~exist('period');  period = 1; end
 if ~exist('marks');  marks = []; end
 if ~exist('mutpos');  mutpos = []; end
-if ~exist('area_pred'); area_pred = []; end
-if ~exist('USE_GUI');  USE_GUI = 0; end
+if ~exist('data_types'); data_types = []; end
+if ~exist('structure');  structure = ''; end
+
+% 
+if exist( 'primer_binding_site' ) | isempty( primer_binding_site )
+  sequence = sequence_full( 1 : (primer_binding_site-offset-1) );
+else
+  sequence = sequence_full;
+end
+
+% fill out area_pred, based on data_types.
+numlanes = size(image_x,2);
+if isempty( data_types ) % no input.
+  area_pred = zeros( length(sequence), numlanes ); 
+elseif iscell( data_types ) % input is a matrix
+  for m = length( data_types )+1 : numlanes; data_types{m} = ''; end; % pad to number of lanes. 
+  area_pred = get_area_pred( sequence, data_types, structure );
+else
+  if size( data_types, 1 ) == length( sequence )
+    area_pred = data_types;
+  else
+    fprintf( 'Problem: input area_pred/data_types does not have same size [%d] as sequence [%d]\n', size(data_types,1),  length( sequence ) );  
+    return;
+  end
+end
 
 colormap( 1 - gray(100) );
-
 ylim = get(gca,'ylim');
 ymin = ylim(1);
 ymax = ylim(2);
@@ -60,6 +77,7 @@ contrast_factor = 40/ mean(mean(abs(image_x)));
 numlanes = size(image_x,2);
 
 stop_sel = 0;
+xsel = reverse_sort( xsel );
 
 % not clear if USE_GUI is needed anymore
 %if isstruct(USE_GUI)
@@ -68,14 +86,13 @@ stop_sel = 0;
 %	     contrast_factor, offset, period,marks,mutpos, area_pred);
 %  uiwait( msgbox( 'Are you ready to interactively annotate the sequence?','Ready?','modal' ) )
 %end
-
 while ~stop_sel
 
   % not clear if USE_GUI is needed anymore
   %if isstruct(USE_GUI); axes(USE_GUI.displayComponents);; end;
 
   make_plot( image_x, contrast_factor, ymin, ymax, xsel, ...
-	     sequence, offset, primer_binding_site, area_pred );
+	     sequence, offset, area_pred );
   
   title( ['j,l -- zoom. i,k -- up/down. q -- quit. left-click -- select. \newline',...
 	  'x -- auto-assign. ',...
@@ -90,7 +107,7 @@ while ~stop_sel
   switch( button )
    case 1
     xsel = [xsel xselpick];
-    xsel = sort( xsel );
+    xsel = reverse_sort( xsel );
    case 2
     xsel = remove_pick( xsel, xselpick );
   end
@@ -107,7 +124,7 @@ while ~stop_sel
         if(name)
             a = load(strcat(path, name));
             xsel = [xsel a.xsel];
-            xsel = sort( xsel );
+            xsel = reverse_sort( xsel );
         end
    case {'q','Q','z','Z'}
     stop_sel = 1;
@@ -179,10 +196,12 @@ while ~stop_sel
     else
       input_bounds = [];
       if length( xsel ) == 2; 
-	input_bounds = xsel; 
+	input_bounds = sort(xsel); 
 	peak_spacing = ( input_bounds(2) - input_bounds(1) ) / length( sequence );
       end;
-      xsel = auto_assign_sequence( image_x, sequence, seqpos, offset, area_pred, peak_spacing, input_bounds, 0 );
+      area_pred_reverse = area_pred(end:-1:1,:); % should fix auto_assign to reverse.
+      xsel = auto_assign_sequence( image_x, sequence, seqpos, offset, area_pred_reverse, peak_spacing, input_bounds, 0 );
+      xsel = reverse_sort( xsel ); % should fix auto_assign to reverse.
     end
   end
   
@@ -202,6 +221,8 @@ end
 
 title '';
 
+seqpos = get_seqpos( sequence, offset, xsel );
+
 return
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -217,9 +238,11 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function  make_plot( image_x, contrast_factor, ymin, ymax, ...
-		     xsel, sequence, offset, primer_binding_site, area_pred );
+		     xsel, sequence, offset, area_pred );
 
 numlanes = size( image_x, 2 ) ;
+
+seqpos = get_seqpos( sequence, offset, xsel );
 
 % why not just set contrast_factor based on colormap?
 % might be much faster.
@@ -232,78 +255,60 @@ axis( [ 0.5 numlanes+0.5 ymin ymax]);
 hold on
 xsel_to_plot = find( xsel >= ymin & xsel <= ymax );
 
-SHOW_LINES = 1;
-
 for i = xsel_to_plot
-  
-  if SHOW_LINES
-    %if (~JUST_PLOT_SEQUENCE )
-    h1 = plot( [0.5 numlanes+0.5 ], [xsel(i) xsel(i)], 'color',[1 0.5 0] ); 
-    %end
-  end
-  
-  SHOW_LABELS = 1;
-  show_text = 0;
-  mycolor = [ 1 0.5 0];
-  if  SHOW_LABELS & i <= length(sequence )
-    seqchar = sequence( end- i +1 );
-    
-    txt_to_show = seqchar;
-    seqnum = length(sequence) - i + 1 + offset;
-    if  ( ~(offset == -999) ) %& JUST_PLOT_SEQUENCE)
-      txt_to_show = [seqchar,num2str( seqnum)];
-    end    
-    
-    show_text = 1;
-    if (show_text )
-      h2 = text( 0.5, xsel(i), txt_to_show );        
-      set(h2,'HorizontalAlignment','right');
-    end
-  
-    if  ( seqchar ==  'A' )
-      %mycolor = [0 0 0];
-      mycolor = [0 0 1];
-    elseif ( seqchar ==  'C' ) 
-      mycolor = [0 0.5 1];      
-    else 
-      if ( seqchar == 'U'| seqchar =='T' | seqchar == 'G' )
-	%mycolor = [0.5 0.5 0.5];
-	mycolor = [1 0 0];
-      end
-    end
-  end
 
-  SHOW_CIRCLES = 0;
-  if SHOW_CIRCLES
-    seqpos = length(sequence) - i + 1 + offset;
-    goodpoints = find( mutpos == seqpos );
-    plot( -0.5 + goodpoints, xsel(i)+0*goodpoints, 'ro' );
-  end
+  mycolor = [ 1 0 1]; % magenta for unknown.
+
+  h1 = plot( [0.5 numlanes+0.5 ], [xsel(i) xsel(i)], 'color',mycolor ); 
   
-  SHOW_MARKS = 1;
-  %if SHOW_MARKS & ~isempty( marks );
+  seq_idx = seqpos(i) - offset;
+  
+  if seq_idx < 0 |  seq_idx > length(sequence); continue; end;
+  
+  seqchar = sequence( seq_idx   );    
+  txt_to_show = seqchar;
+  seqnum = seqpos(i);
+  txt_to_show = [seqchar,num2str( seqnum)];
+  
+  h2 = text( 0.5, xsel(i), txt_to_show );        
+  set(h2,'HorizontalAlignment','right');
+  
   for j = 1:numlanes
-    if (i <= size(area_pred,1))
-      if (area_pred(i,j) == 1)	    
-	plot( j, xsel(i), 'ro' );
-      end
+    if ( area_pred(seq_idx,j) == 1)	    
+      plot( j, xsel(i), 'ro' );
     end
   end
-  %end
   
-  if (exist( 'h1' ) )
-    set(h1,'color',mycolor);
+  % eterna colors. :)
+  switch seqchar
+   case {'A','a'}
+    mycolor = [0 0 1];
+   case {'C','c'}
+    mycolor = [0 0.7 0];      
+   case {'U','T','u','t'}
+    mycolor = [1 0.5 0];
+   case {'G','g'}
+    mycolor = [1 0 0];
   end
-  if ( show_text )
-    %set(h2,'color',mycolor,'fontweight','bold');    
-    set(h2,'fontweight','bold','fontsize',6,'clipping','off');
-  end
+  
+  set(h1,'color',mycolor);
+  set(h2,'fontweight','bold','fontsize',6,'clipping','off');
+  
 
 end
-
+  
 axis off
 hold off;
 
 axis( [ 0.5 numlanes+0.5 ymin ymax]);
 
-%axis on
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function x = reverse_sort( x );
+x = sort( x );
+x = x( end:-1:1 );
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function seqpos = get_seqpos( sequence, offset, xsel );
+
+%seqpos = length( sequence ) + offset + 1 - [1:length(xsel)];
+seqpos = length( sequence ) + offset - length(xsel) + [1:length(xsel)];
