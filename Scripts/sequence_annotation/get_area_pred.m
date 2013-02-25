@@ -1,21 +1,25 @@
-function area_pred = get_area_pred( sequence, data_types, structure );
-% GET_PRED
+function area_pred = get_area_pred( sequence, data_types, offset, structure );
+% GET_AREA_PRED
 %
-% [ marks, area_pred, mutpos] = ( sequence, data_types, structure );
+% [ marks, area_pred, mutpos] = ( sequence, data_types, offset, structure );
 %
+% 
 % Returns information on where bands should show up, based on input 
 %  sequence, structure, and what modification/ladder reaction is in each lane.
 %
-% sequence  = full sequence
+% Used by ANNOTATE_SEQUENCE
+%
+% sequence   = full sequence
 % data_types = cell of tags of modification reactions in each trace, e.g., 
 %               {'SHAPE','SHAPE','ddTTP'}
-% structure = structure in dot/bracket notation [give as '' if unknown]
+% offset     = value that is added to sequence index to achieve 'historical'/favorite numbering. [default: 0]
+% structure  = structure in dot/bracket notation [give as '' if unknown]
 %
 % OUTPUT:
 % area_pred = matrix of zeros and ones corresponding to where bands will 
 %              show up.
 %
-% (C) R. Das, 2010-2013.
+% (C) R. Das, 2013.
 %
 
 seqpos = 1:length(sequence);
@@ -25,6 +29,7 @@ if length( structure ) ~= length( sequence ); fprintf( 'Sequence length must equ
 
 
 for k = 1:length( data_types )
+
   switch data_types{k}
    case 'SHAPE'
     for i = 1:length( structure )
@@ -68,6 +73,40 @@ for k = 1:length( data_types )
       if ( sequence(i+1) == 'A' ); area_pred(i,k) = 1.0; end;
     end
   end
+
+  % following is useful for mutate-and-map data sets.
+  mutpos = [];
+  if isnumeric( data_types{k} ) % may be a number reflecting the mutation position.
+    mutpos = round( data_types{k} );
+  else
+    mutpos = str2num( data_types{k} );
+  end
+  if ~isempty( mutpos ) & ~isnan( mutpos )
+    area_pred(:,k) = 0.0;
+    seqidx = mutpos - offset;
+    if ( seqidx <= length( sequence) & seqidx >= 1 )
+      area_pred(seqidx ,k) = 1.0;
+    end
+    if ~exist( 'bps' ) bps = convert_structure_to_bps( structure ); end;
+    partner_idx = find_partner( seqidx, bps );
+    if ( partner_idx >=1 & partner_idx <= length( sequence ) ) area_pred( partner_idx,k ) = 1.0; end;
+  end
+
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function partner_idx = find_partner( seqidx, bps )
 
+partner_idx = 0;
+
+for k = 1:size( bps, 1 );
+
+  if bps(k,1) == seqidx; 
+    partner_idx = bps(k,2); return;
+  end
+
+  if bps(k,2) == seqidx; 
+    partner_idx = bps(k,1); return;
+  end
+
+end

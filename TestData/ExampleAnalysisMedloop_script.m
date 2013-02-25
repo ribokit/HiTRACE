@@ -70,9 +70,9 @@ for i = 1:40; data_types{i} = 'DMS'; end;
 data_types(41:46) = { 'nomod','nomod','ddGTP','ddATP','ddCTP','ddTTP'};
 data_types(47:52) = { 'nomod','nomod','ddGTP','ddATP','ddCTP','ddTTP'};
 
-% option not taken here -- mark mutation positions
-%data_type_mutpos = [ NaN 1:35, NaN 1 2 3];
-%for i = 1:length( data_type_mutpos);   data_type{i} = num2str( data_type_mutpos( i ) ); end;
+% option not taken here -- mark mutation positions instead.
+%mutpos = [ NaN 1:35, NaN 1 2 3];
+%for i = 1:length( mutpos );   data_types{i} = mutpos(i); end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Interactive sequence annotation
