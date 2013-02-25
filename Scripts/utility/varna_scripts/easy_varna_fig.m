@@ -17,6 +17,7 @@ function easy_varna_fig( filename, sequence, structure, seqpos, offset, DATA );
 %
 % (C) R. Das 2011
 
+if size( DATA, 1 ) < size( DATA, 2); DATA = DATA'; end;
 if length( seqpos ) ~= size( DATA, 1 ); fprintf( 'WARNING! length(seqpos) is not the same size as DATA\n' ); return;end;
 
 DATA_TO_PLOT = NaN * ones( length(sequence ), 1 );

@@ -7,6 +7,7 @@
 % RNA 17:522-534.
 %
 % Updated in Jan. 2012, R. Das.
+% Updated again in Feb. 2013, R. Das to match HiTRACE v2.0
 %
 % Check out more detailed run-through of the demo in:
 %
@@ -16,8 +17,6 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Boundaries of data.
-ymin = 2200; 
-ymax = 4200;
 
 %Directories to readin.
 filenames =  { ...
@@ -27,24 +26,29 @@ filenames =  { ...
     '062310_Ann_Medloop_redoQC_Run_3100_2010-06-23_268',...
 	     };
 
-reorder = [ 1:52 ]; % or could just not specify, or give as empty set [] -- by default all profiles get read in.
-[d,da] = quick_look( filenames, ymin, ymax, reorder );
+d_align = quick_look( filenames );
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% align the data based on the reference channel. ('nonlinear warping')
-d_align  = align_by_DP_using_ref( d([ymin:ymax],:), da([ymin:ymax],:) );
+% advanced: you can specify the top and bottom of the profiles by ymin and ymax,
+%  as well as specify a subset of profiles (perhaps reordered). For example:
+%
+%ymin = 2200; 
+%ymax = 4200;  
+%reorder = [ 1:52 ]; 
+%[d_align, d_ref_align] = quick_look( filenames, ymin, ymax, reorder );
+%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % OPTIONAL: baseline subtract removes any smooth offsets in signals.
 d_align_nobsub = d_align;
-d_align = baseline_subtract_v2( d_align_nobsub );
+d_align = baseline_subtract_v2( d_align_nobsub, 1, size( d_align_nobsub,1) );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% OPTIONAL: align by warping (dynamic programming)
-%align_blocks = { [41 42 1], [1:40]};
-%d_align_before_more_alignment = d_align;
-%d_align1  = align_by_DP( d_align_before_more_alignment, align_blocks );
-%d_align = d_align1;
+% OPTIONAL: align by piecewise-linear mapping (dynamic programming)
+align_blocks = [1:40];
+d_align_before_more_alignment = d_align;
+
+d_align1  = align_by_DP_fine( d_align_before_more_alignment, align_blocks );
+d_align = d_align1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % OPTIONAL manual alignment -- kept here for completeness.
@@ -59,29 +63,25 @@ sequence = 'GGAACGACGAACCGAAAACCGAAGAAAUGAAGAAAGGUUUUCGGUACCGACCUGAAAACCAAAGAAAC
 % the value you add to the sequence position to get the 'conventional numbering' (here the numbering used in the Medloop paper)
 structure= '..........((((((((((...............))))))))))...................................';
 offset = -10;  
+primer_binding_site = length( sequence ) - 20 + 1 + offset;
 
 % What is in this data set?
+for i = 1:40; data_types{i} = 'DMS'; end;
+data_types(41:46) = { 'nomod','nomod','ddGTP','ddATP','ddCTP','ddTTP'};
+data_types(47:52) = { 'nomod','nomod','ddGTP','ddATP','ddCTP','ddTTP'};
 
 % option not taken here -- mark mutation positions
 %data_type_mutpos = [ NaN 1:35, NaN 1 2 3];
 %for i = 1:length( data_type_mutpos);   data_type{i} = num2str( data_type_mutpos( i ) ); end;
 
-for i = 1:40; data_type{i} = 'DMS'; end;
-data_type(41:46) = { 'nomod','nomod','ddGTP','ddATP','ddCTP','ddTTP'};
-data_type(47:52) = { 'nomod','nomod','ddGTP','ddATP','ddCTP','ddTTP'};
-
-seqpos = [ (length(sequence) - 20): -1 : 1] + offset;
-[ marks, area_pred, mutpos] = get_predicted_marks_SHAPE_DMS_CMCT( structure, sequence, offset , seqpos, data_type );
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Interactive sequence annotation
-xsel = []; period = 1; clf;
-sequence_actual = sequence( 1: end-20 );
-xsel = mark_sequence( d_align, xsel, sequence_actual, 0, offset, period, marks,mutpos,area_pred);
+xsel = []; clf;
+[xsel,seqpos] = annotate_sequence( d_align, xsel, sequence, offset, data_types, primer_binding_site, structure );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Fit to Gaussians
-area_peak = do_the_fit_FAST( d_align, xsel );
+area_peak = do_the_fit_fast( d_align, xsel );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Background subtraction and correction for 'overmodification', a.k.a., attenuation of longer products
@@ -95,15 +95,15 @@ errorbar( area_bsub(:,1), darea_bsub(:,1) ); ylim([-0.5 2] )
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Save as an RDAT file.
-filename = 'ExampleAnalysisMedloop.rdat';
+filename = 'ExampleAnalysisMedloop_NEW.rdat';
 name = 'Medloop';
 annotations = {'experimentType:MutateMap','chemical:Na-HEPES:50mM(pH8.0)','temperature:24C','modifier:DMS','processing:overmodificationCorrection','processing:backgroundSubtraction'};
-for i = 1:length(data_type); data_annotations{i} = { ['modifier:',data_type{i}] }; end;
+for i = 1:length(data_types); data_annotations{i} = { ['modifier:',data_types{i}] }; end;
 xsel_refine = [];
 comments = {'Created with the commands in ExampleAnalysisMedloop_script.m'};
 	    
 output_workspace_to_rdat_file( filename, name, sequence, offset, seqpos, area_bsub, ...
-			       mutpos, structure, ...
+			       [], structure, ...
 			       annotations, data_annotations, ...
 			       darea_bsub, ...
 			       d_align, xsel, xsel_refine, comments );
@@ -115,12 +115,12 @@ rdat = show_rdat( filename );
 % Averaging across data sets.
 
 rdat  = show_rdat( 'ExampleAnalysisMedloop.rdat' );
-wt_mean = mean(rdat.area_peak(:,[1 37])');
-wt_err  = std(rdat.area_peak(:,[1 37])');
+wt_mean = mean(rdat.reactivity(:,[1 37])');
+wt_err  = std(rdat.reactivity(:,[1 37])');
 
 rdat0 = show_rdat( 'ExampleAnalysisMedloop_previousDMSreplicate.rdat' );
-wt_mean0 = mean(rdat0.area_peak(:,[1 37])');
-wt_err0  = std(rdat0.area_peak(:,[1 37])');
+wt_mean0 = mean(rdat0.reactivity(:,[1 37])');
+wt_err0  = std(rdat0.reactivity(:,[1 37])');
 
 clf;
 errorbar( rdat.seqpos, wt_mean, wt_err ); hold on

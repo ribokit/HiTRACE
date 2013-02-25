@@ -68,6 +68,7 @@ else
     fprintf( 'Problem: input area_pred/data_types does not have same size [%d] as sequence [%d]\n', size(data_types,1),  length( sequence ) );  
     return;
   end
+  data_types = [];
 end
 
 ylim = get(gca,'ylim');
@@ -102,7 +103,7 @@ while ~stop_sel
   % try to do 'lazy update'
   if update_plot;     annotation_handles = make_plot( d_align, xsel, sequence, offset, area_pred, annotation_handles );   end
   if update_contrast; colormap( 1 - gray( round( 100/contrast_factor ) ) ); end;
-  if update_ylim | update_plot; do_ylim_update( annotation_handles, ymin, ymax ); end;
+  if (update_ylim | update_plot); do_ylim_update( annotation_handles, ymin, ymax ); end;
 
   update_plot = 0;
   update_contrast = 0;
@@ -118,7 +119,6 @@ while ~stop_sel
   button = get( gcf, 'SelectionType' );
   mouse_pos = get( gca, 'CurrentPoint' );
   xselpick = mouse_pos(1,2);
-
  
   if ( ~keydown ) % mousebutton pressed!
     switch( button  )
@@ -213,7 +213,8 @@ while ~stop_sel
 	  peak_spacing = ( input_bounds(2) - input_bounds(1) ) / length( sequence );
 	end;
 	area_pred_reverse = area_pred(end:-1:1,:); % should fix auto_assign to reverse.
-	xsel = auto_assign_sequence( d_align, sequence, seqpos, offset, area_pred_reverse, peak_spacing, input_bounds, 0 );
+	fprintf( 'Running auto-assign. This might take a minute.\n');
+	xsel = auto_assign_sequence( d_align, sequence, seqpos, offset, area_pred_reverse, peak_spacing, input_bounds, 0, data_types );
 	xsel = reverse_sort( xsel ); % should fix auto_assign to reverse.
       end
       update_plot = 1;
@@ -389,11 +390,12 @@ for i = 1:length( annotation_handles )
   if length( handles ) < m; continue; end;
   h = handles{m};
 
-  y = get( h, 'Position' );
+  pos = get( h, 'Position' );
+  y = pos(2);
   if ( y >= ymin & y <= ymax )
-    set( h, 'visible', 'off' );
-  else
     set( h, 'visible', 'on' );
+  else
+    set( h, 'visible', 'off' );
   end
 end
 
