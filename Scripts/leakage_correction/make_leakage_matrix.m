@@ -155,7 +155,7 @@ k=[1:4;5:8;9:12;13:16];
 
 for i=1:4;
     lm(i,:)=sum(d(peakmin:peakmax,k(i,:)))/sum(d(peakmin:peakmax,k(i,i)));
-    %sum of all fluorophores' fluorescence across one channel divided by proper fluorophore's fluorescence in that channel
+    %each fluorophores' fluorescence in one channel divided by proper fluorophore's fluorescence in that channel
 end
 %%
 d_correct=d;

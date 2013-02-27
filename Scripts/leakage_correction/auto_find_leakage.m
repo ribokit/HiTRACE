@@ -142,7 +142,7 @@ lm=ones(4,4); % initialize leakage matrix
 k=[1:4;5:8;9:12;13:16]; % used to call the lane in 16-column matrix d corresponding to each fluorophore/fluorescent channel
 
 for i=1:4;
-    lm(i,:)=sum(d(xmin:xmax,k(i,:)))/sum(d(xmin:xmax,k(i,i)));  %sum of one fluorophore's fluorescence across all channels divided by that fluorophore's fluorescence in its proper channel
+    lm(i,:)=sum(d(xmin:xmax,k(i,:)))/sum(d(xmin:xmax,k(i,i)));  %each fluorophore's fluorescence in one channel divided by the proper fluorophore's fluorescence in that channel
 end
 %%
 d_correct=d;
