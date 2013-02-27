@@ -54,9 +54,18 @@ end
 if ~exist( 'ylimit', 'var'); ylimit = []; end;
 if ~exist( 'signals_and_ref', 'var' ) | isempty( signals_and_ref ); signals_and_ref = [1 4]; end;
 if length( signals_and_ref ) < 2; fprintf( 'Must have at least 2 channels specified in signals_and_ref!\n'); return; end;
-if (~exist( 'dye_names', 'var' )  | isempty( dye_names )) & ~ischar( dye_names )
+if (~exist( 'dye_names', 'var' )  | isempty( dye_names )) 
   dye_names = {}; % signal to not apply a leakage correction -- later use FAM/ROX as default.
-end;
+end
+%if ~exist( 'dye_names', 'var' )  | ~iscell( dye_names )
+%  if length( signals_and_ref ) == 2; 
+%    dye_names = {'FAM','ROX'};
+%  elseif length( signals_and_ref ) == 3; 
+%    dye_names = {'FAM','HEX','ROX'}; 
+%  elseif length( signals_and_ref ) == 4; 
+%    dye_names = {'FAM','HEX','TAMRA','ROX'}; 
+%  end    
+%end;
 if ~ischar( dye_names ) & length( dye_names ) > 0 & length( signals_and_ref ) ~= length( dye_names) ; fprintf( 'Length of dye_names must be 0 or match length of signals_and_ref\n'); return; end;
 
 % this creates a cell that has several elements, with blank strings where dye_names were not specified.
@@ -370,8 +379,13 @@ fprintf( '\n' );
 fprintf( 'signal channel(s) = %s\n', num2str(sigchannels) )
 fprintf( 'reference channel = %d\n\n', refchannel)
 if length( dye_names_full ) > 0; 
-  fprintf( 'Applied leakage correction for color channels.\n' ); 
-else
+  fprintf( 'Applied leakage correction for color channels:\n' ); 
+  if ischar( dye_names_full );
+    fprintf( [' ',dye_names_full,'\n'] );
+  else
+    for m = 1:length( dye_names_full ) fprintf( [' ',dye_names_full{m},'\n'] ); end;
+  end
+else  
   fprintf( 'No leakage correction applied to color channels.\n' ); 
 end
 if AUTOFIND_YLIMIT;                fprintf( 'Used auto-find of ymin, ymax.\n' ); end;
@@ -397,7 +411,7 @@ hold off
 function dye_names_full = get_dye_names_full( dye_names, signals_and_ref );
 dye_names_full = {};
 if length( dye_names ) == 0; return; end;
-if ischar( dye_names ) dye_names_full = dye_names; end;
+if ischar( dye_names ); dye_names_full = dye_names; return; end;
 
 %dye_names_full = {'FAM','HEX','TAMRA','ROX'};
 

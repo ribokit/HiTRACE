@@ -60,7 +60,7 @@ if ~ischar( dye_names_full )
   end
 end
 
-% leakage correction. Will not do anything if dye_names wasn't specified.
+% leakage correction. Will not do anything if dye_names_full wasn't specified, or was filled with blanks.
 if ischar( dye_names_full )
   lm = load( dye_names_full );
 else
