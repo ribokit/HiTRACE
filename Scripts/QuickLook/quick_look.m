@@ -197,13 +197,14 @@ ymin = ylimit(1); ymax = ylimit(end);
 if PLOT_STUFF
   h = figure(2);
   set(h,'Position',[50,50,600,800]);
+  set(h,'Name','All data');
   set(gcf, 'PaperPositionMode','auto','color','white');
   clf
   subplot(1,2,1);
   image( 0.05 * d0_signal);
   
-  h=title( 'Signal (channel 1)');
-  set( h,'interpreter','none' );
+  h=title( {dirnames{1}, sprintf('Signal channel(s) %s',  num2str( sigchannels) ) });
+  set( h,'interpreter','none','fontweight','bold' );
   
   axis( [ 0.5 size( d0_signal, 2 )+0.5 ymin ymax] );
   set( gca, 'xtick', 1:size( d0_signal,2 ), ...
@@ -214,7 +215,8 @@ if PLOT_STUFF
   %figure(3)
   subplot(1,2,2);
   image( d0_reference_ladder*2);
-  title( 'Reference ladder (channel 4)')
+  h=title( sprintf('Reference channel %s', num2str( refchannel) ));
+  set( h,'interpreter','none','fontweight','bold' );   
   axis( [ 0.5 size( d0_signal, 2 )+0.5 ymin ymax] );
   make_dividers( d0_signal, subset_pos, ymin, ymax );
     set( gca, 'xtick', 1:size( d0_signal, 2), ...
@@ -276,6 +278,7 @@ end;
 
 if PLOT_STUFF
   h = figure(3);
+  set(h,'Name','Linear alignment')
   set(h,'Position',[100,100,600,800]);
   set(gcf, 'PaperPositionMode','auto','color','white');
   clf
@@ -289,29 +292,11 @@ if PLOT_STUFF
 
   make_dividers( d0_signal, [], ymin, ymax );
   h=title( [dirnames{1}]);
-  set( h,'interpreter','none' )
+  set( h,'interpreter','none','fontweight','bold' )
   colormap(  1 - gray(100) )
 
   %print( '-depsc2',[tag,'_Figure3.eps']);
 
-  
-  %h = figure(4);
-  %set(h,'Position',[150,150,600,800]);
-  %set(gcf, 'PaperPositionMode','auto','color','white');
-  %%subplot(1,2,2);
-  %image( 50*d_ref );
-  %axis( [ 0.5 size( d0_signal, 2 )+0.5 ymin ymax] );
-  %set( gca, 'xtick', 1:size( d0_signal, 2 ), ...
-  %	    'xticklabel', char( labels  )  );
-  %xticklabel_rotate;
-  %axis off
-  %title( 'aligned reference ladders');
-  %
-  %make_dividers( trace_subset, [], ymin, ymax );
-  %title( 'Reference ladder (channel 4)')
-  %colormap(  1 -gray(100) )
-  %figure(2)
-  %figure(3)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -332,6 +317,7 @@ if (LOCAL_ALIGN) [d, d_ref] = align_by_DP_using_ref( d_before_DP, d_ref_before_D
 
 if PLOT_STUFF
   h = figure(4); clf;
+  set(h,'Name','Final (signal)')
   set(h,'Position',[150,150,600,800]);
   set(gcf, 'PaperPositionMode','auto','color','white');
   clf
@@ -353,6 +339,7 @@ if PLOT_STUFF
 
   
   h = figure(5); clf;
+  set(h,'Name','Final (reference)')
   set(h,'Position',[200,200,600,800]);
   set(gcf, 'PaperPositionMode','auto','color','white');
   %subplot(1,2,2);
@@ -386,12 +373,13 @@ fprintf( '\n' );
 fprintf( 'ymin = %d\n', ymin)
 fprintf( 'ymax = %d\n\n', ymax)
 fprintf( '\n' );
-fprintf( 'signal channel(s) = %d\n', sigchannels)
+fprintf( 'signal channel(s) = %s\n', num2str(sigchannels) )
 fprintf( 'reference channel = %d\n\n', refchannel)
 if length( dye_names_full ) > 0; fprintf( 'Applied leakage correction for color channels.\n' ); end;
 if AUTOFIND_YLIMIT;                fprintf( 'Used auto-find of ymin, ymax.\n' ); end;
 if NORMALIZE;                    fprintf( 'Normalized data based on mean peak intensity.\n' ); end;
-if SMOOTH_BASELINE_SUBTRACT;     fprintf( 'Applied subtration of smooth base line.\n' ); end;
+if SMOOTH_BASELINE_SUBTRACT;     fprintf( 'Applied subtraction of smooth base line.\n' ); end;
+if LOCAL_ALIGN;                  fprintf( 'Applied local alignment based on piece-wise linear transform.\n' ); end;
 
 fprintf( '\nFor all options, type: help %s\n', mfilename );
 

@@ -4,11 +4,13 @@ function [ data, filenames ] = plot_ABI_runs( dirname, dye_names_full, PLOT_STUF
 %  [ data, filenames ] = plot_ABI_runs( dirname, dye_names_full, PLOT_STUFF )
 %
 % INPUTS:
-%  dirname    = directory with ABI files
+%  dirname    = directory with ABI files [.ab1 or .fsa format]
 %  dye_names  = [optional] names of dyes in each color channel. default = {}, which means no leakage correction.
 %  PLOT_STUFF = [optional, ignore for now] default: 1.
 %
 % OUTPUTS:
+%  data      = cell containing data matrices for all .ab1/.fsa files. One matrix for each color channel.
+%  filenames = which .ab1/.fsa files were read in.
 %
 % (C) R. Das, 2008-2011, 2013
 %
@@ -81,6 +83,7 @@ colorcode = [0 0 1; 0 0.5 0; 1 0.5 0; 1 0 0];
 
 if PLOT_STUFF
   h = figure(1);
+  set(h,'Name','Raw traces');
   set(h,'Position',[10,10,600,800]);
   set(gcf, 'PaperPositionMode','auto','color','white');
   clf;
@@ -113,7 +116,7 @@ if PLOT_STUFF
     set(gca,'xtick',[],'box','off')
   end
 end
-  
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ how_many_cols ] = figure_out_cols( filenames );
