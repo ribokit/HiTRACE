@@ -60,9 +60,8 @@ end
 %%%%%%%%%%%%%%%%%%
 % inner loop
 %%%%%%%%%%%%%%%%%%
-if exist( 'matlabpool' )
-  if matlabpool( 'size' ) == 0 ;   res = findResource; matlabpool( res.ClusterSize ); end
-  parfor j= whichpos
+if parallelization_exists()
+   parfor j= whichpos
     fprintf( 1, 'Fitting profile %d\n',j);
     [ areas(:,j), prof_fit(:,j), deviation(j) ] = do_the_fit_inner_loop( d_align(:,j), xsel(:,j)', widthpeak_start );
 end

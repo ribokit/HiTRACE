@@ -88,7 +88,7 @@ nodes = get_windows( windowSize, d_all(:,1) );
 anchor_nodes = zeros( length( nodes )+1, size( d_all, 2) );
 
 % parallelization! yea!
-if exist( 'matlabpool' )  
+if parallelization_exists()
   if matlabpool( 'size' ) == 0 ;   res = findResource; matlabpool( res.ClusterSize ); end
   %for i = which_lanes;
   parfor i = which_lanes;
