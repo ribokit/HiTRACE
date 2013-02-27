@@ -21,21 +21,11 @@ function [d_sub, bd] = baseline_subtract_v2( d, ymin,ymax, A, B, PLOT_STUFF)
 
 
 %Declare boundaries
-if ~exist( 'ymin') || ymin == 0
-  ymin = 1;
-end
-if ~exist( 'ymax') || ymax == 0
-  ymax = size(d,1);
-end
-if ~exist('A') || A == 0
-  A = 2e9;
-end
-if ~exist('B') || B == 0
-  B = 2e4;
-end
-if ~exist('PLOT_STUFF')
-  PLOT_STUFF = 1;
-end
+if ~exist( 'ymin') | ymin == 0;  ymin = 1;end
+if ~exist( 'ymax') | ymax == 0;  ymax = size(d,1); end
+if ~exist('A') | A == 0;  A = 2e9; end
+if ~exist('B') | B == 0;  B = 2e4; end
+if ~exist('PLOT_STUFF')  PLOT_STUFF = 1; end
 
 if exist('matlabpool' )
   parfor k = 1:size(d,2);
@@ -89,12 +79,14 @@ d_sub=d-bd;
 %       s 1x1 noise standard deviation
 %Output:
 %       bd Nx1 baseline
-
+% 
+% new -- filter out negativeoutlier before determining baseline
+% 
 function bd=baseline_xi(b,A,B,s)
 
-if ( ~exist('s') )
-   s = 1.0;
-end
+b = filter_negative_outliers( b );
+
+if ( ~exist('s') );   s = 1.0; end
 
 L = length(b);
 %Bs = -B/s;  As = -A/s;
@@ -153,3 +145,15 @@ while nm>10 & I<30
   % arbitrary convergence check
   nm = norm( bd0 - bd );
 end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function d = filter_negative_outliers( d )
+d_sort = sort( smooth( d ) );
+N = length( d );
+d1 = d( round( N * 0.25 ) );
+d3 = d( round( N * 0.75 ) );
+
+outlier_cutoff = d1 - 5 * abs(d3 - d1 );
+outlier_points = find( d < outlier_cutoff );
+d( outlier_points ) = outlier_cutoff;
