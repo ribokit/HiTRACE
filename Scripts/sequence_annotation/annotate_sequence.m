@@ -96,7 +96,7 @@ update_plot = 1;
 update_ylim = 1;
 update_contrast = 1;
 
-set(gcf, 'PaperPositionMode','auto','color','white');
+set(gcf, 'PaperPositionMode','auto','color','white','pointer','fullcross');
 
 while ~stop_sel
 
