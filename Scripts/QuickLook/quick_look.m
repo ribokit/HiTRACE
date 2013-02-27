@@ -34,7 +34,7 @@ function [d, d_ref, ylimit, labels] = quick_look( dirnames, ylimit, trace_subset
 %   Thanks to S. Denny & C. Cheng for input in multicolor applications
 %
 
-d = []; da = []; labels = {}; 
+d = []; d_ref = []; labels = {}; 
 
 % make backwards compatible...
 if exist( 'trace_subset', 'var' ) & length(trace_subset) == 1 & length( trace_subset ) == 1 & trace_subset > ylimit
@@ -102,10 +102,10 @@ end
 
   
 d = [];
-da = [];
+d_ref = [];
 labels = {};
 d_noalign = {};
-da_noalign = {};
+d_ref_noalign = {};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % STAGE 1
@@ -237,7 +237,7 @@ end
 data_align = align_capillaries_group( data_align_group, refcol, 1, 1);
 
 
-d = []; da= [];
+d = []; d_ref= [];
 
 count = 0;
 for m = 1:length(sigcol) % usually just channel 1.
@@ -246,7 +246,7 @@ for m = 1:length(sigcol) % usually just channel 1.
     
     count = count+1;
     d( :,count)  = baseline_subtract(data_align{trace_subset(i)}(:,sigcol(m)));
-    da(:,count) = abs(baseline_subtract(data_align{trace_subset(i)}(:,refcol)));
+    d_ref(:,count) = abs(baseline_subtract(data_align{trace_subset(i)}(:,refcol)));
     
     if(  ymax > size( d, 1 ) ) 
       fprintf( 'WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!\n')
@@ -257,11 +257,11 @@ for m = 1:length(sigcol) % usually just channel 1.
     
     if NORMALIZE
       %d(:,i) = d(:,i)/mean( data_align{trace_subset(i)}(1500:2500,3) );
-      d( :,count) =  d(:,count)/mean( abs(d(ymin:ymax,count)));
-      da(:,count) = da(:,count)/mean( abs(da(ymin:ymax,count)));
+      d( :,count)    =  d(:,count)/mean( abs(d(ymin:ymax,count)));
+      d_ref(:,count) = d_ref(:,count)/mean( abs(d_ref(ymin:ymax,count)));
     else
-      d( :,count) =  d(:,count);
-      da(:,count) = da(:,count);
+      d( :,count)    =  d(:,count);
+      d_ref(:,count) = d_ref(:,count);
     end
     
   end
@@ -292,7 +292,7 @@ if PLOT_STUFF
   %set(h,'Position',[150,150,600,800]);
   %set(gcf, 'PaperPositionMode','auto','color','white');
   %%subplot(1,2,2);
-  %image( 50*da );
+  %image( 50*d_ref );
   %axis( [ 0.5 size( d0_signal, 2 )+0.5 ymin ymax] );
   %set( gca, 'xtick', 1:size( d0_signal, 2 ), ...
   %	    'xticklabel', char( labels  )  );
@@ -311,7 +311,8 @@ end
 % STAGE 4 --  subtract off a smooth (but
 %  not necessarily constant) baseline
 figure(4);
-if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_v2( d, ymin, ymax);  end;
+if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_v2( d, ymin, ymax );  end;
+%if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_v2( d, max(ymin-200,1), min(ymax+200,size(d,1)) );  end;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -319,8 +320,8 @@ if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_v2( d, ymin, ymax);  end;
 % align_by_DP -- local refinement through 
 % piece-wise linear transformation.
 d_before_DP  = d(  [ymin:ymax], : );
-da_before_DP = da( [ymin:ymax], : );
-if (LOCAL_ALIGN) [d, da] = align_by_DP_using_ref( d_before_DP, da_before_DP ); end;
+d_ref_before_DP = d_ref( [ymin:ymax], : );
+if (LOCAL_ALIGN) [d, d_ref] = align_by_DP_using_ref( d_before_DP, d_ref_before_DP ); end;
 
 if PLOT_STUFF
   h = figure(4); clf;
@@ -348,7 +349,7 @@ if PLOT_STUFF
   set(h,'Position',[200,200,600,800]);
   set(gcf, 'PaperPositionMode','auto','color','white');
   %subplot(1,2,2);
-  image( 50*da );
+  image( 50*d_ref );
   axis( [ 0.5 size( d0_signal, 2 )+0.5 1 size(d,1)] );
   %xlim( [ 0.5 size( d0_signal, 2 )+0.5 ] );
   set( gca, 'xtick', 1:size( d0_signal, 2 ), ...
