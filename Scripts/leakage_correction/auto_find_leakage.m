@@ -1,4 +1,4 @@
-function [lm,d,data_bsub] = auto_find_leakage(dirnames,ymin,ymax,reorder, xmin,xmax, PLOT_STUFF);
+function [lm,d,data_bsub] = auto_find_leakage(dirnames,ymin,ymax,reorder, xmin,xmax, inlm, PLOT_STUFF);
 % Function to give the leakage matrix between four channels returned from
 % ABI sequencer. First load subsaturating amounts of each of four dyes into
 % four different lanes on ABI capillary sequencer. 
@@ -176,4 +176,37 @@ if PLOT_STUFF
   title('Corrected for leakage');
 end
 
+
+%%
+d_correct2=d;
+for i=1:4;
+    d_correct2(:,k(i,:))=d(:,k(i,:))*inlm^(-1);
+end
+
+%% Plot corrected gel
+if PLOT_STUFF
+  figure;
+    figure(4)
+  set(gcf, 'PaperPositionMode','auto','color','white');
+  clf
+  %subplot(1,2,1);
+  image( d_correct2);
+  
+  h=title( 'Signal (channel 1)');
+  set( h,'interpreter','none' );
+  n=4*length(reorder);
+  axis( [ 0.5 n+0.5 ymin ymax] );
+  set( gca, 'xtick', 1:n, ...
+	    'xticklabel', char( labels_real{1:n}  )  );
+  xticklabel_rotate;
+  
+  line_pos=[4 8 12];
+  for i = 1:length( line_pos );
+    hold on
+    plot( 0.5+line_pos(i)*[1 1], [ymin ymax],'r-'); 
+  end
+  hold off
+  colormap( 1- gray(200));
+  title('Corrected for leakage');
+end
 
