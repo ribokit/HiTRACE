@@ -44,9 +44,20 @@ max_shift = 200;
 shifts = [-max_shift:max_shift]; % rhiju
 scales = [0.95:0.005:1.05]; % sryoon
 
+parallelization_exists = 0;
 if exist( 'matlabpool' )  
-  if matlabpool( 'size' ) == 0 ;   res = findResource; matlabpool( res.ClusterSize ); end
-  parfor n = 1: num_capillaries   
+  parallelization_exists = 1;
+  try
+    if matlabpool( 'size' ) == 0 ;   res = findResource; matlabpool( res.ClusterSize ); end
+  catch me
+    fprintf( 'WARNING! NOT RUNNING PARALLELIZATION TOOLBOX!\n');
+    fprintf( 'Check out: http://www.mathworks.com/support/bugreports/919688\n');
+    parallelization_exists = 0;
+  end
+end
+   
+if parallelization_exists
+    parfor n = 1: num_capillaries   
     fprintf(1,'Calculating correlation...%d\n',n);
 	[data_realign(:,n), x_realign(:,n) ] = align_to_first_inner_loop( data(:,n), FULL_SIGNAL_WINDOW, scales, shifts, d1, x, minbin_ref, maxbin_ref, PLOT_STUFF );
   end
