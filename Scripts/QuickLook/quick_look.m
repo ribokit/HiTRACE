@@ -71,9 +71,9 @@ if length( dye_names ) > 0 & length( signals_and_ref ) ~= length( dye_names) ; f
 % dye_names_full = { 'FAM', '', '', 'ROX'} carries that information concisely.
 dye_names_full = get_dye_names_full( dye_names, signals_and_ref );
 
-sigcol = signals_and_ref( 1 : end-1 ); % will generalize this in a bit.
-refcol = signals_and_ref( end );
-fprintf( 'Assuming reference channel: %d\n', refcol );
+sigchannels = signals_and_ref( 1 : end-1 ); % will generalize this in a bit.
+refchannel = signals_and_ref( end );
+fprintf( 'Assuming reference channel: %d\n', refchannel );
 
 
 % Parse some of these crazy options.
@@ -125,17 +125,21 @@ end
 tag = dirnames{1};
 if tag(end) == '/'; tag = tag(1:end-1); end;
 
-line_pos = [ 0 ];
 filepath = '';
 [ data_all, filenames_all, data_set_starts, data_length ] = ...
     read_abi_dirs( filepath, dirnames, dye_names_full, PLOT_STUFF );
-if ~exist( 'trace_subset' ) | length( trace_subset) == 0;  trace_subset = [ 1 : length( data_all ) ]; end
 
 if length( data_all ) == 0 ; return; end;
 
-line_pos = data_set_starts - 1;
+subset_pos = data_set_starts - 1;
 numfiles = length( data_all );
 filenames_all;
+
+if ~exist( 'trace_subset' ) | length( trace_subset) == 0;  
+  trace_subset = [ 1 : length( data_all ) ]; 
+else
+  subset_pos = [0]; % if user asks for a subset, it will be hard to define boundaries between subsets.
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % STAGE 2
@@ -159,7 +163,7 @@ d0_reference_ladder = [];
 % If more than one color channel is specified, first fill a matrix with channel 1, then
 %  fill additional traces from channel 2, in the same order...
 count = 0;
-for m = 1:length(sigcol) % usually just channel 1.
+for m = 1:length(sigchannels) % usually just channel 1.
 
   for i = 1:length( trace_subset )  
 
@@ -171,13 +175,15 @@ for m = 1:length(sigcol) % usually just channel 1.
     
     % this is a straightforward subtraction of an offset.
     count = count+1;
-    d0_signal          (1:L,count) = baseline_subtract(data_all{ trace_subset(i) }(:,sigcol(m)));
-    d0_reference_ladder(1:L,count) = baseline_subtract(data_all{ trace_subset(i) }(:,refcol));
+    d0_signal          (1:L,count) = baseline_subtract(data_all{ trace_subset(i) }(:,sigchannels(m)));
+    d0_reference_ladder(1:L,count) = baseline_subtract(data_all{ trace_subset(i) }(:,refchannel));
 
     labels{count} = filenames_all{i};
   end
 
+  subset_pos = [subset_pos, count + subset_pos];
 end
+
 
 % If user has not  specified ymin,ymax in ylimit, figure it out.
 AUTOFIND_YLIMIT = 0;
@@ -203,14 +209,14 @@ if PLOT_STUFF
   set( gca, 'xtick', 1:size( d0_signal,2 ), ...
 	    'xticklabel', char( labels )  );
   xticklabel_rotate;
-  make_dividers( d0_signal, line_pos, ymin, ymax );
+  make_dividers( d0_signal, subset_pos, ymin, ymax );
 
   %figure(3)
   subplot(1,2,2);
   image( d0_reference_ladder*2);
   title( 'Reference ladder (channel 4)')
   axis( [ 0.5 size( d0_signal, 2 )+0.5 ymin ymax] );
-  make_dividers( d0_signal, line_pos, ymin, ymax );
+  make_dividers( d0_signal, subset_pos, ymin, ymax );
     set( gca, 'xtick', 1:size( d0_signal, 2), ...
 	    'xticklabel', char( labels  )  );
   xticklabel_rotate;
@@ -232,22 +238,22 @@ for i = 1:length(data_set_starts)
     final_index = length( data_all );
   end
   data_align_group{i} = align_capillaries( ...
-      { data_all{[start_index:final_index]} }, refcol, reflane);
+      { data_all{[start_index:final_index]} }, refchannel, reflane);
 end
 
-data_align = align_capillaries_group( data_align_group, refcol, 1, 1);
+data_align = align_capillaries_group( data_align_group, refchannel, 1, 1);
 
 
 d = []; d_ref= [];
 
 count = 0;
-for m = 1:length(sigcol) % usually just channel 1.
+for m = 1:length(sigchannels) % usually just channel 1.
 
   for i = 1:length( trace_subset); 
     
     count = count+1;
-    d( :,count)  = baseline_subtract(data_align{trace_subset(i)}(:,sigcol(m)));
-    d_ref(:,count) = abs(baseline_subtract(data_align{trace_subset(i)}(:,refcol)));
+    d( :,count)  = baseline_subtract(data_align{trace_subset(i)}(:,sigchannels(m)));
+    d_ref(:,count) = abs(baseline_subtract(data_align{trace_subset(i)}(:,refchannel)));
     
     if(  ymax > size( d, 1 ) ) 
       fprintf( 'WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!\n')
@@ -379,23 +385,25 @@ end
 fprintf( '\n' );
 fprintf( 'ymin = %d\n', ymin)
 fprintf( 'ymax = %d\n\n', ymax)
+fprintf( '\n' );
+fprintf( 'signal channel(s) = %d\n', sigchannels)
+fprintf( 'reference channel = %d\n\n', refchannel)
 if length( dye_names_full ) > 0; fprintf( 'Applied leakage correction for color channels.\n' ); end;
 if AUTOFIND_YLIMIT;                fprintf( 'Used auto-find of ymin, ymax.\n' ); end;
 if NORMALIZE;                    fprintf( 'Normalized data based on mean peak intensity.\n' ); end;
 if SMOOTH_BASELINE_SUBTRACT;     fprintf( 'Applied subtration of smooth base line.\n' ); end;
-fprintf( 'For all options, type: help %s\n', mfilename );
-labels = labels( trace_subset );
 
+fprintf( '\nFor all options, type: help %s\n', mfilename );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function  make_dividers( trace_subset, line_pos, ymin, ymax );
+function  make_dividers( trace_subset, subset_pos, ymin, ymax );
 
 hold on
 for i = 1:size( trace_subset, 2 );
   plot( 0.5+i*[1 1], [ymin ymax],'k-', 'linew',0.25); 
 end
-for i = 2:length( line_pos );
-  plot( 0.5+line_pos(i)*[1 1], [ymin ymax],'k-','linew',2); 
+for i = 2:length( subset_pos );
+  plot( 0.5+subset_pos(i)*[1 1], [ymin ymax],'k-','linew',2); 
 end
 hold off
 
