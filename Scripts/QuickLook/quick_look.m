@@ -306,17 +306,21 @@ end
 % STAGE 4 --  subtract off a smooth (but
 %  not necessarily constant) baseline
 figure(4);
-if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_v2( d, ymin, ymax );  end;
-%if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_v2( d, max(ymin-200,1), min(ymax+200,size(d,1)) );  end;
+
+
+% this appears to get thrown off by 
+if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_v2( d, max(ymin-200,1), min(ymax+200,size(d,1)) );  end;
+
+d = d(  [ymin:ymax], : );
+d_ref = d_ref( [ymin:ymax], : );
+%if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_v2( d, 1, size(d,1) );  end;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % STAGE 5
 % align_by_DP -- local refinement through 
 % piece-wise linear transformation.
-d_before_DP  = d(  [ymin:ymax], : );
-d_ref_before_DP = d_ref( [ymin:ymax], : );
-if (LOCAL_ALIGN) [d, d_ref] = align_by_DP_using_ref( d_before_DP, d_ref_before_DP ); end;
+if (LOCAL_ALIGN) [d, d_ref] = align_by_DP_using_ref( d, d_ref ); end;
 
 if PLOT_STUFF
   h = figure(4); clf;
