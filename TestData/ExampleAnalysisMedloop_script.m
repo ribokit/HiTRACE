@@ -37,18 +37,12 @@ d_align = quick_look( filenames );
 %[d_align, d_ref_align] = quick_look( filenames, ymin, ymax, reorder );
 %
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% OPTIONAL: baseline subtract removes any smooth offsets in signals.
-d_align_nobsub = d_align;
-d_align = baseline_subtract_v2( d_align_nobsub, 1, size( d_align_nobsub,1) );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % OPTIONAL: align by piecewise-linear mapping (dynamic programming)
 align_blocks = [1:40];
 d_align_before_more_alignment = d_align;
-
-d_align1  = align_by_DP_fine( d_align_before_more_alignment, align_blocks );
-d_align = d_align1;
+d_align  = align_by_DP_fine( d_align_before_more_alignment, align_blocks );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % OPTIONAL manual alignment -- kept here for completeness.

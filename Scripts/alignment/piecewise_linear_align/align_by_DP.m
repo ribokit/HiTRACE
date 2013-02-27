@@ -89,11 +89,9 @@ anchor_nodes = zeros( length( nodes )+1, size( d_all, 2) );
 
 % parallelization! yea!
 if parallelization_exists()
-  if matlabpool( 'size' ) == 0 ;   res = findResource; matlabpool( res.ClusterSize ); end
-  %for i = which_lanes;
   parfor i = which_lanes;
     [x_warp_all(:,i), anchor_nodes(:,i)]    = align_by_DP_inner_loop( i, refcol, d_all, penalizeStretchFactor, slack, maxShift, windowSize, num_pixels );
-end
+  end
 else
   for i = which_lanes;
     [x_warp_all(:,i), anchor_nodes(:,i)]    = align_by_DP_inner_loop( i, refcol, d_all, penalizeStretchFactor, slack, maxShift, windowSize, num_pixels );
