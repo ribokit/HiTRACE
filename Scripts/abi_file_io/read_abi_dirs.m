@@ -5,7 +5,8 @@ function [ data_all, filenames_all, data_set_starts, data_length ] = ...
 % INPUTS:
 %  filepath   = path to directories with ABI files.
 %  dirnames   = directory with ABI files [.ab1 or .fsa format]
-%  dye_names_full = [optional] names of dyes in each color channel. default = {}, which means no leakage correction.
+%  dye_names_full = [optional] names of dyes in each color channel. default = {}, which means no leakage correction. 
+%                   Can also specify filename with leakage matrix.
 %  PLOT_STUFF = [optional, ignore for now] default: 1.
 %
 % OUTPUTS:

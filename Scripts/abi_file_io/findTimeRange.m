@@ -31,3 +31,6 @@ end
 % get rid of outliers...
 ymin = round( min_list( ceil( 0.50*N ) ) - 200);
 ymax = round( max_list( ceil( 0.90*N ) ) + 200);
+
+ymin = max( ymin, 1 );
+ymax = min( ymax, size(d,1) );

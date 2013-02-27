@@ -6,6 +6,7 @@ function [ data, filenames ] = plot_ABI_runs( dirname, dye_names_full, PLOT_STUF
 % INPUTS:
 %  dirname    = directory with ABI files [.ab1 or .fsa format]
 %  dye_names  = [optional] names of dyes in each color channel. default = {}, which means no leakage correction.
+%                   Can also specify filename with leakage matrix.
 %  PLOT_STUFF = [optional, ignore for now] default: 1.
 %
 % OUTPUTS:
@@ -53,16 +54,18 @@ end; % did the files exist?
 
 
 % in case there are more color channels than specified in dye_names_full...
-for i = length( dye_names_full)+1 : size( d,2 )
-  dye_names_full{ i } = '';
+if ~ischar( dye_names_full )
+  for i = length( dye_names_full)+1 : size( d,2 )
+    dye_names_full{ i } = '';
+  end
 end
 
 % leakage correction. Will not do anything if dye_names wasn't specified.
-
-%lm = load( 'leakage_matrix4.txt' );
-%lm = load( 'leakage_matrix1.txt' );
-
-lm = get_leakage_matrix( dye_names_full );
+if ischar( dye_names_full )
+  lm = load( dye_names_full );
+else
+  lm = get_leakage_matrix( dye_names_full );
+end
 data_correct = correct_leakage( data_in, lm );
 data_in = data_correct;
 

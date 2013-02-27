@@ -18,7 +18,8 @@ function [d, d_ref, ylimit, labels] = quick_look( dirnames, ylimit, trace_subset
 %                                the reference ladder co-loaded in all samples. (Default: [1 4], i.e. 1 has signal, 4 has reference. )
 %     dye_names  = Names of dyes for each color channel. Input this as a cell of strings.  Example: {'FAM','ROX'}). 
 %                  Note: the number of dye names should correspond to the number of signals_and_ref. If dye names is given as {},
-%                    no leakage correction will be applied. Default [temporary]: no leakage correction.
+%                    no leakage correction will be applied. (Default: no leakage correction.)
+%                  You can also input your own leakage matrix here (give the filename as a string).
 %     moreOptions= Any of the following to turn off data processing steps: {'noPlotStuff', 'noNormalize', 
 %             'noSmoothBaselineSubtract',  'noLeakageCorrection' 'noLocalAlign'}  [Default: run al processing steps]
 %
@@ -53,17 +54,10 @@ end
 if ~exist( 'ylimit', 'var'); ylimit = []; end;
 if ~exist( 'signals_and_ref', 'var' ) | isempty( signals_and_ref ); signals_and_ref = [1 4]; end;
 if length( signals_and_ref ) < 2; fprintf( 'Must have at least 2 channels specified in signals_and_ref!\n'); return; end;
-if ~exist( 'dye_names', 'var' )  | ~iscell( dye_names )
+if (~exist( 'dye_names', 'var' )  | isempty( dye_names )) & ~ischar( dye_names )
   dye_names = {}; % signal to not apply a leakage correction -- later use FAM/ROX as default.
-  %if length( signals_and_ref ) == 2; 
-  %  dye_names = {'FAM','ROX'};
-  %elseif length( signals_and_ref ) == 3; 
-  %  dye_names = {'FAM','HEX','ROX'}; 
-  %elseif length( signals_and_ref ) == 4; 
-  %  dye_names = {'FAM','HEX','TAMRA','ROX'}; 
-  %end    
 end;
-if length( dye_names ) > 0 & length( signals_and_ref ) ~= length( dye_names) ; fprintf( 'Length of dye_names must be 0 or match length of signals_and_ref\n'); return; end;
+if ~ischar( dye_names ) & length( dye_names ) > 0 & length( signals_and_ref ) ~= length( dye_names) ; fprintf( 'Length of dye_names must be 0 or match length of signals_and_ref\n'); return; end;
 
 % this creates a cell that has several elements, with blank strings where dye_names were not specified.
 % for example, if dyenames is { 'FAM', 'ROX' } and signals_and_ref is [1 4], 
@@ -375,7 +369,11 @@ fprintf( 'ymax = %d\n\n', ymax)
 fprintf( '\n' );
 fprintf( 'signal channel(s) = %s\n', num2str(sigchannels) )
 fprintf( 'reference channel = %d\n\n', refchannel)
-if length( dye_names_full ) > 0; fprintf( 'Applied leakage correction for color channels.\n' ); end;
+if length( dye_names_full ) > 0; 
+  fprintf( 'Applied leakage correction for color channels.\n' ); 
+else
+  fprintf( 'No leakage correction applied to color channels.\n' ); 
+end
 if AUTOFIND_YLIMIT;                fprintf( 'Used auto-find of ymin, ymax.\n' ); end;
 if NORMALIZE;                    fprintf( 'Normalized data based on mean peak intensity.\n' ); end;
 if SMOOTH_BASELINE_SUBTRACT;     fprintf( 'Applied subtraction of smooth base line.\n' ); end;
@@ -399,6 +397,7 @@ hold off
 function dye_names_full = get_dye_names_full( dye_names, signals_and_ref );
 dye_names_full = {};
 if length( dye_names ) == 0; return; end;
+if ischar( dye_names ) dye_names_full = dye_names; end;
 
 %dye_names_full = {'FAM','HEX','TAMRA','ROX'};
 
