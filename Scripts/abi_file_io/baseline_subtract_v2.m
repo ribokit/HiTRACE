@@ -1,5 +1,5 @@
 function [d_sub, bd] = baseline_subtract_v2( d, ymin,ymax, A, B, PLOT_STUFF)
-% BASELINE_SUBTRACT_V2:  non-linear subtraction of a smooth baseline.
+% BASELINE_SUBTRACT_V2:  subtraction of a smooth baseline.
 %
 % [d_sub, bd] = baseline_subtract_v2( d, ymin,ymax, A, B, PLOT_STUFF)
 %

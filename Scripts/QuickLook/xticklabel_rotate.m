@@ -42,9 +42,7 @@ function hText = xticklabel_rotate(XTick,rot,varargin)
 %                           fixed font size. To fix this would require a serious resize function)
 %                       Uses current XTick by default
 %                       Uses current XTickLabel is different from XTick values (meaning has been already defined)
-%
-% modifed by R. Das (2010) to fix justification of text according to whether axis is on top or bottom.
-%
+
 % Brian FG Katz
 % bfgkatz@hotmail.com
 % 23-05-03
@@ -60,8 +58,6 @@ function hText = xticklabel_rotate(XTick,rot,varargin)
 %   Maurice Lamontagne Institute, Dept. of Fisheries and Oceans Canada
 %   email: gilbertd@dfo-mpo.gc.ca  Web: http://www.qc.dfo-mpo.gc.ca/iml/
 %   February 1998; Last revision: 24-Mar-2003
-%
-
 
 % check to see if xticklabel_rotate has already been here (no other reasdon for this to happen)
 if isempty(get(gca,'XTickLabel')),
@@ -70,13 +66,14 @@ end
 
 % if no XTickLabel AND no XTick are defined use the current XTickLabel
 if nargin < 3 & (~exist('XTick') | isempty(XTick)),
-    xTickLabels = get(gca,'XTickLabel')  ; % use current XTickLabel
-    % remove trailing spaces if exist (typical with auto generated XTickLabel)
-    temp1 = num2cell(xTickLabels,2)         ;
-    for loop = 1:length(temp1),
-        temp1{loop} = deblank(temp1{loop})  ;
-    end
-    xTickLabels = temp1                     ;
+  xTickLabels = get(gca,'XTickLabel') ;  % use current XTickLabel
+  % remove trailing spaces if exist (typical with auto generated XTickLabel)
+  %temp1 = num2cell(xTickLabels,2)         ;
+  temp1 = num2cell(char(xTickLabels),2)         ;
+  for loop = 1:length(temp1),
+    temp1{loop} = deblank(temp1{loop})  ;
+  end
+  xTickLabels = temp1                     ;
 end
 
 % if no XTick is defined use the current XTick
@@ -88,14 +85,14 @@ end
 XTick = XTick(:);
 
 if ~exist('xTickLabels'),
-	% Define the xtickLabels 
-	% If XtickLabel is passed as a cell array then use the text
-	if (length(varargin)>0) & (iscell(varargin{1})),
-        xTickLabels = varargin{1};
-        varargin = varargin(2:length(varargin));
-	else
-        xTickLabels = num2str(XTick);
-	end
+  % Define the xtickLabels 
+  % If XtickLabel is passed as a cell array then use the text
+  if (length(varargin)>0) & (iscell(varargin{1})),
+    xTickLabels = varargin{1};
+    varargin = varargin(2:length(varargin));
+  else
+    xTickLabels = num2str(XTick);
+  end
 end    
 
 if length(XTick) ~= length(xTickLabels),
@@ -121,23 +118,49 @@ xLabelString = get(hxLabel,'String');
 set(hxLabel,'Units','data');
 xLabelPosition = get(hxLabel,'Position');
 ylim = get(gca,'ylim');
-if strcmp( get(gca,'ydir'),'reverse')
-  y = xLabelPosition(2) + 0.05*(ylim(2)-ylim(1));
+
+%y = xLabelPosition(2);
+%if  strcmp(get(gca,'xaxisloc'),'bottom')
+%  if strcmp(get(gca,'ydir'),'reverse') 
+%    y = y + 0.065*(ylim(2)-ylim(1));
+%  else
+%    y = y - 0.065*(ylim(2)-ylim(1));
+% end  
+%end
+ylim =  get(gca,'ylim');
+if ( strcmp( get(gca,'xaxis'),'bottom' ) )
+  if ( strcmp( get(gca,'ydir'),'reverse') )
+    y = ylim(2);
+  else
+    y = ylim(1);
+  end
 else
-  y = xLabelPosition(2) - 0.05*(ylim(2)-ylim(1));
-end  
+  if ( strcmp( get(gca,'ydir'),'reverse') )
+    y = ylim(1); 
+  else
+    y = ylim(2);
+  end
+end
+
+
+
 %CODE below was modified following suggestions from Urs Schwarz
 y=repmat(y,size(XTick,1),1);
 % retrieve current axis' fontsize
-%fs = get(gca,'fontsize');
-fs = 10;
+fs = get(gca,'fontsize');
+%fs = 7;
 
 % Place the new xTickLabels by creating TEXT objects
 hText = text(XTick, y, xTickLabels,'fontsize',fs,'fontweight','bold');
 
 % Rotate the text objects by ROT degrees
 % set(hText,'Rotation',rot,'HorizontalAlignment','right',varargin{:})
-set(hText,'Rotation',rot,'HorizontalAlignment','left',varargin{:},'interpreter','none')
+if ( strcmp( get(gca,'xaxis'),'bottom' ) )
+  set(hText,'Rotation',rot,'HorizontalAlignment','right',varargin{:},'interpreter','none')
+else
+  set(hText,'Rotation',rot,'HorizontalAlignment','left',varargin{:},'interpreter','none')
+end  
+%set(hText,'Rotation',rot,'HorizontalAlignment','left',varargin{:},'interpreter','none')
 
 % Adjust the size of the axis to accomodate for longest label (like if they are text ones)
 % This approach keeps the top of the graph at the same place and tries to keep xlabel at the same place

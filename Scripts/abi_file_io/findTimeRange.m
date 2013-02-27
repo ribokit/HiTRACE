@@ -5,7 +5,7 @@ function [ymin, ymax] = findTimeRange(d)
 
 N = size(d,2);
 
-for j = 1:size(d,2);
+for j = 1:N;
     y = edge(d(:,j));
     y = find( y ~= 0);
 

@@ -1,18 +1,15 @@
-function [ data, filenames ] = plot_ABI_runs( dirname, CORRECT, PLOT_STUFF )
+function [ data, filenames ] = plot_ABI_runs( dirname, dye_names_full, PLOT_STUFF )
 % PLOT_ABI_RUNS: Read in .ab1 files from a directory, correct for cross-channel contamination.
 %
-%  [ data, filenames ] = plot_ABI_runs( dirname, CORRECT, PLOT_STUFF )
+%  [ data, filenames ] = plot_ABI_runs( dirname, dye_names_full, PLOT_STUFF )
 %
-%  Note: uses leakage_matrix1.txt which was calibrated for
-%   fluorophores Rhodamine Green, Alexa528, Alexa555, and Texas Red for
-%   ABI sequencers run with 'BigDye' output settings ('Z').
+%  dye_names = names of dyes in each color channel.
 %
 % (C) R. Das, 2008-2011
 
 data = {};
 filenames = {};
 
-if ~exist('CORRECT')  CORRECT = 1; end
 if ~exist( 'PLOT_STUFF' );  PLOT_STUFF = 1; end
 if ~exist('ymax')
   ymax=2000;
@@ -45,19 +42,19 @@ if length( data_in ) == 0;
 end; % did the files exist?
 
 
-if CORRECT
-  
-  %lm = load( 'leakage_matrix4.txt' );
-  lm = load( 'leakage_matrix1.txt' );
-
-  % auto determine 
-  %lm = auto_determine_leakage_matrix( data_in );
-  
-  data_correct = correct_leakage( data_in, lm );
-  data_in = data_correct;
+% in case there are more color channels than specified in dye_names_full...
+for i = length( dye_names_full)+1 : size( d,2 )
+  dye_names_full{ i } = '';
 end
 
+% leakage correction. Will not do anything if dye_names wasn't specified.
 
+%lm = load( 'leakage_matrix4.txt' );
+%lm = load( 'leakage_matrix1.txt' );
+
+lm = get_leakage_matrix( dye_names_full );
+data_correct = correct_leakage( data_in, lm );
+data_in = data_correct;
 
 %how_many_cols = figure_out_cols( filenames );
 for k = 1:count
