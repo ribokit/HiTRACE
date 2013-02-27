@@ -4,6 +4,9 @@ function d_sub = baseline_subtract( d, ymin, ymax );
 %
 % (C) R. Das 2008-2011
 
+d_sub = [];
+if nargin == 0;  help( mfilename ); return; end;
+
 %Declare boundaries
 if ~exist( 'ymin')
   ymin = 1000;

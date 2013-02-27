@@ -1,5 +1,5 @@
 function [d_out,x_warp_all, anchor_nodes] = align_by_DP_fine( d_all, align_blocks_in );
-% ALIGN_BY_DP_FINE: refine alignment by non-linear warping, optimizing correlation by dynamic programming
+% ALIGN_BY_DP_FINE: refine alignment by piece-wise-linear transform, optimizing correlation by dynamic programming
 %
 % calls ALIGN_BY_DP using parameter values that permit fine-grained realigment, as is useful
 % with mutate/map data.
@@ -19,6 +19,9 @@ function [d_out,x_warp_all, anchor_nodes] = align_by_DP_fine( d_all, align_block
 %
 % (C) R. Das, 2013
 %
+
+d_out = [];
+if nargin == 0;  help( mfilename ); return; end;
 
 penalizeStretchFactor = 1.0;
 slack = 10;

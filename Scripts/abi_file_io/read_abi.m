@@ -13,9 +13,8 @@ function data = read_abi( filename );
 %  Rhiju Das, Nov. 2008.
 %
 
-%filename = ['Das1_Run_3100_2008-11-03_455/D03_X20-Cy3-ddTTP_07.ab1'];
-%filename = ['Das1_Run_3100_2008-11-03_455/D04_X20-Cy3-ddTTP-dil_08.ab1'];
-%filename = ['Das1_Run_3100_2008-11-03_455/H03_X20-Mix-TAMRA-ddGTP-Cy3-ddTTP_15.ab1'];
+data = [];
+if nargin == 0;  help( mfilename ); return; end;
 
 [fid,message] = fopen( filename, 'r', 'b'); 
 dir.abi = fread( fid, 4, '*char' );

@@ -1,7 +1,22 @@
 function [ymin, ymax] = findTimeRange(d)
+% findTimeRange
+%
+% [ymin, ymax] = findTimeRange(d)
+%
+% Input: 
+%  d = set of traces for which we need to find edges
+%
+% Output:
+%
+%  ymin = minimum time pixel for starting edge
+%  ymax = maximum time pixel for final edge
+%
 % by kprotoss
 % find time range automatically
 % modified a little by Rhiju based on some of his data sets.
+% 
+
+if nargin == 0;  help( mfilename ); return; end;
 
 N = size(d,2);
 

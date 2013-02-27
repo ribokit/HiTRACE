@@ -1,10 +1,31 @@
 function [d_out,d_ref_out, x_warp_all] = align_by_DP_using_ref( d, d_ref, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF , SHOW_ANCHOR_NODES);
-% ALIGN_BY_DP: refine alignment by non-linear warping, optimizing correlation by dynamic programming
+% ALIGN_BY_DP_USING_REF: refine alignment by piece-wise-linear transform, optimizing correlation by dynamic programming
 %
-% [d_out,d_ref_out, x_warp_all] = align_by_DP_using_ref( d, d_ref, align_blocks_in );
+% [d_out,d_ref_out, x_warp_all] = align_by_DP_using_ref( d, d_ref, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF , SHOW_ANCHOR_NODES);
+%
+% Inputs:
+%  d     = matrix with traces to be aligned
+%  d_ref = matrix with reference traces, which will determin alignment
+%  align_blocks_in = subsets of traces for serial alignments specified as a cell of integer vectors. Example: 
+%                       specifying { [1:4], [7 5 6 8] } will first align traces 2,3, and 4 to trace 1, and
+%                         then trace 5, 6, and 8 to 7.  [Default is align all to 1]
+%  penalizeStretchFactor = higher values will produce local alignments that are more globally linear. [default: 10.0]
+%  slack = number of pixels by which each window can expand/contract [default: 10]
+%  maxShift = maximum displacement of each window boundary from its starting position [default: 100]
+%  windowSize = size of window in time pixels [default: 100]
+%  PLOT_STUFF = show data before and after alignments [default 1 (True)]
+%  SHOW_ANCHOR_NODES = show lines marking aligned pixels [default 1 (True)]
+%  
+% Outputs:
+%  d_out        = matrix with aligned traces
+%  d_ref_out    = matrix with aligned reference traces
+%  x_warp_all   = [advanced] matrix describing the local realignments
 %
 % (C) R. Das, 2011, 2013
 %
+
+d_out = [];
+if nargin == 0;  help( mfilename ); return; end;
 
 %if no 'block's are specified, align the whole thing to column 1
 if ~exist( 'align_blocks_in' ) | length( align_blocks_in) == 0;  align_blocks_in = { [1:size(d,2) ] }; end

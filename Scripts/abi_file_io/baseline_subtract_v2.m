@@ -1,5 +1,5 @@
 function [d_sub, bd] = baseline_subtract_v2( d, ymin,ymax, A, B, PLOT_STUFF)
-% BASELINE_SUBTRACT_V2:  subtraction of a smooth baseline.
+% BASELINE_SUBTRACT_V2:  subtraction of a smooth (but not necessarily constant) baseline.
 %
 % [d_sub, bd] = baseline_subtract_v2( d, ymin,ymax, A, B, PLOT_STUFF)
 %
@@ -19,6 +19,8 @@ function [d_sub, bd] = baseline_subtract_v2( d, ymin,ymax, A, B, PLOT_STUFF)
 %  used for baseline correction of chomatographic traces
 % 
 
+d_sub = []; bd = [];
+if nargin == 0;  help( mfilename ); return; end;
 
 %Declare boundaries
 if ~exist( 'ymin') | ymin == 0;  ymin = 1;end

@@ -8,12 +8,15 @@ function [ data_all, filenames_all, data_init, data_length ] = ...
 %
 % (C) R. Das 2008-2011
 
+
 data = {};
 data_all = {};
 data_init = [];
 data_length = [];
 filenames_all = {};
 count = 0;
+
+if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist( 'dye_names_full' ) dye_names_full = {}; end;
 

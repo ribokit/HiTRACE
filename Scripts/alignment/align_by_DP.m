@@ -1,5 +1,5 @@
 function [d_out,x_warp_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize,  PLOT_STUFF );
-% ALIGN_BY_DP: refine alignment by non-linear warping, optimizing correlation by dynamic programming
+% ALIGN_BY_DP: refine alignment by piece-wise-linear transform, optimizing correlation by dynamic programming
 %
 %  [d_out, x_warp_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize,  PLOT_STUFF );
 %
@@ -21,6 +21,9 @@ function [d_out,x_warp_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in,
 %
 % (C) R. Das, 2009-2011, 2013
 %
+
+d_out = [];
+if nargin == 0;  help( mfilename ); return; end;
 
 %if no 'block's are specified, align the whole thing to column 1
 if ~exist( 'align_blocks_in' ) | length( align_blocks_in) == 0;     align_blocks_in = { [1:size(d_all,2) ] }; end
