@@ -3,13 +3,21 @@ function [ data, filenames ] = plot_ABI_runs( dirname, dye_names_full, PLOT_STUF
 %
 %  [ data, filenames ] = plot_ABI_runs( dirname, dye_names_full, PLOT_STUFF )
 %
-%  dye_names = names of dyes in each color channel.
+% INPUTS:
+%  dirname    = directory with ABI files
+%  dye_names  = [optional] names of dyes in each color channel. default = {}, which means no leakage correction.
+%  PLOT_STUFF = [optional, ignore for now] default: 1.
 %
-% (C) R. Das, 2008-2011
+% OUTPUTS:
+%
+% (C) R. Das, 2008-2011, 2013
+%
 
 data = {};
 filenames = {};
+if nargin == 0;  help( mfilename ); return; end;
 
+if ~exist( 'dye_names' ) dye_names = {}; end;
 if ~exist( 'PLOT_STUFF' );  PLOT_STUFF = 1; end
 if ~exist('ymax')
   ymax=2000;
