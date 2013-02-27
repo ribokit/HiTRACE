@@ -35,6 +35,7 @@ function [d, d_ref, ylimit, labels] = quick_look( dirnames, ylimit, trace_subset
 %
 
 d = []; d_ref = []; labels = {}; 
+if nargin == 0;  ylimit = []; help( mfilename ); return; end;
 
 % make backwards compatible...
 if exist( 'trace_subset', 'var' ) & length(trace_subset) == 1 & length( trace_subset ) == 1 & trace_subset > ylimit
@@ -382,7 +383,7 @@ if length( dye_names_full ) > 0; fprintf( 'Applied leakage correction for color 
 if AUTOFIND_YLIMIT;                fprintf( 'Used auto-find of ymin, ymax.\n' ); end;
 if NORMALIZE;                    fprintf( 'Normalized data based on mean peak intensity.\n' ); end;
 if SMOOTH_BASELINE_SUBTRACT;     fprintf( 'Applied subtration of smooth base line.\n' ); end;
-
+fprintf( 'For all options, type: help %s\n', mfilename );
 labels = labels( trace_subset );
 
 
