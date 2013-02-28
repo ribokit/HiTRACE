@@ -235,18 +235,20 @@ end
 % STAGE 3
 reflane = 1; % this is a vestige of some old testing stuff.
 
+group_count = 0;
 for i = 1:length(data_set_starts)
   start_index = data_set_starts(i);
   if i < length( data_set_starts )
     final_index = data_set_starts(i+1)-1;
   else
-    if(start_index > length( data_all ))
-        break;
-    else
-        final_index = length( data_all );
-    end
+    final_index = length( data_all );
   end
-  data_align_group{i} = align_capillaries( ...
+  if(start_index > final_index)
+    continue;
+  else
+    group_count = group_count + 1;
+  end
+  data_align_group{group_count} = align_capillaries( ...
       { data_all{[start_index:final_index]} }, refchannel, reflane);
 end
 
