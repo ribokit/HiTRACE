@@ -240,7 +240,11 @@ for i = 1:length(data_set_starts)
   if i < length( data_set_starts )
     final_index = data_set_starts(i+1)-1;
   else
-    final_index = length( data_all );
+    if(start_index > length( data_all ))
+        break;
+    else
+        final_index = length( data_all );
+    end
   end
   data_align_group{i} = align_capillaries( ...
       { data_all{[start_index:final_index]} }, refchannel, reflane);
