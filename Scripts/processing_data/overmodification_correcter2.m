@@ -1,5 +1,9 @@
-function [ d_unmod, modification_ratios] = overmodification_correcter2( ...
-    d, early_res, late_res )
+function [ d_unmod, modification_ratios] = overmodification_correcter2( d, early_res, late_res )
+%
+%  [ d_unmod, modification_ratios] = overmodification_correcter2( d, early_res, late_res )
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 d_unmod = 0*d;
 modification_ratios = zeros( 1, size(d,2));

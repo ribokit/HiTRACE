@@ -1,4 +1,20 @@
 function [d_mean_final, d_err_final] = get_average_standard_state( d_mean, d_err );
+% GET_AVERAGE_STANDARD_STATE
+%
+%  [d_mean_final, d_err_final] = get_average_standard_state( d_mean, d_err );
+%
+%  combines data from replicate experiments
+%  scales up errors if scatter between data sets is higher than estimated error.
+%
+% INPUTS
+%  d_mean = cell of input reactivities
+%  d_err  = cell of input reactivity errors.
+%
+% OUTPUTS
+%  d_mean_final = final averaged value 
+%  d_err_final  = final comined error
+%
+if nargin == 0;  help( mfilename ); return; end;
 
 d_mean_final = 0 * d_mean{1};
 d_err_final  = 0 * d_mean{1};

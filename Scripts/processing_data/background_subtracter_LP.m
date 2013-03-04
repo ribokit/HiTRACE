@@ -1,4 +1,7 @@
 function area_bsub = background_subtracter_LP( area_peak, backgd_cols, normbins, area_pred );
+% area_bsub = background_subtracter_LP( area_peak, backgd_cols, normbins, area_pred );
+%
+if nargin == 0;  help( mfilename ); return; end;
 
 area_peak = quick_norm( area_peak, normbins );
 

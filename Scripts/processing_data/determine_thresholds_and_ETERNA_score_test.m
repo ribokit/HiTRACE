@@ -1,4 +1,7 @@
 function [ min_SHAPE, max_SHAPE, threshold_SHAPE, ETERNA_score ] = determine_thresholds_and_ETERNA_score_test( data, pred, NEW_SETTINGS );
+%  [ min_SHAPE, max_SHAPE, threshold_SHAPE, ETERNA_score ] = determine_thresholds_and_ETERNA_score_test( data, pred, NEW_SETTINGS );
+
+if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist( 'NEW_SETTINGS' ); NEW_SETTINGS = 0; end;
 

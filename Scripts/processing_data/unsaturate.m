@@ -1,5 +1,8 @@
 function [ area_peak_unsaturated ] = unsaturate( saturated_array, diluted_array, sd_cutoff )
-%Corrects area_peak arrays for saturating bands.  
+% UNSATURATE: Corrects area_peak arrays for saturating bands.  
+
+% [ area_peak_unsaturated ] = unsaturate( saturated_array, diluted_array, sd_cutoff )
+%
 %Saturated array is the set of arrays measured at a full concentration; 
 %diluted array is the same samples, in the same order, run at diluted version of the final sample.
 
@@ -17,6 +20,8 @@ function [ area_peak_unsaturated ] = unsaturate( saturated_array, diluted_array,
 % (c) T. Mann, 2012
 % (c) T. Mann, R. Das, 2013
 %
+
+if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist( 'sd_cutoff' ) sd_cutoff = 1.5; end;
 

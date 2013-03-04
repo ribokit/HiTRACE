@@ -1,4 +1,7 @@
 function [dsub, alpha] = background_subtracter( s, b, norm_index, M, P );
+%  [dsub, alpha] = background_subtracter( s, b, norm_index, M, P );
+%
+if nargin == 0;  help( mfilename ); return; end;
 
 % background column may be specific, rather than background profile
 if ( size(b,1) == 1 )

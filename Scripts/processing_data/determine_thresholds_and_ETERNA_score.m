@@ -8,6 +8,8 @@ function [ min_SHAPE, max_SHAPE, threshold_SHAPE, ETERNA_score, d_bin ] = determ
 %
 % (C) R. Das, 2010-2013.
 
+if nargin == 0;  help( mfilename ); return; end;
+
 min_SHAPE = 0.0;
 max_SHAPE = 0.0;
 threshold_SHAPE = 0.0;

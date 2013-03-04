@@ -1,4 +1,6 @@
 function make_image( d, d_unmod )
+%  make_image( d, d_unmod )
+
 subplot(1,2,1); 
 image( d );
 title( 'initial');

@@ -28,6 +28,8 @@ function  [x, alpha, beta, L ] = backsub_and_norm_logL( s, b, normbins, area_pre
 %   L        = minus log-likelihood value.
 %
 
+if nargin == 0;  help( mfilename ); return; end;
+
 PLOT_STUFF = 0;
 
 N = length( s );

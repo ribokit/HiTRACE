@@ -1,4 +1,8 @@
 function [ s_bsub,  alpha, beta, L, s_bsub_all, overmod ]  = overmod_wrapper_logL(  s, b, normbins, area_pred, overmod_specified, PLOT_STUFF );
+% [ s_bsub,  alpha, beta, L, s_bsub_all, overmod ]  = overmod_wrapper_logL(  s, b, normbins, area_pred, overmod_specified, PLOT_STUFF );
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist( 'normbins' ) | isempty( normbins); normbins = [1:length(b)]; end;
 if ~exist( 'area_pred' ); area_pred = 0*b - 1; end;
