@@ -1,4 +1,11 @@
 function  [ d_unmod, correction ] = apply_overmod_correction( d, modification_ratio );
+% APPLY_OVERMOD_CORRECTION: applies approximate overmodification correction
+%
+%  [ d_unmod, correction ] = apply_overmod_correction( d, modification_ratio );
+%
+% Deprecated soon.
+%
+if nargin == 0;  help( mfilename ); return; end;
 
 
 % Don't read the first few residues -- dominated by fluorescence
