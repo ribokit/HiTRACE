@@ -1,6 +1,8 @@
 function []=varna_multiple(filename,sequence,DBN,DATA)
 % varna_multiple(filename,sequence,DBN,DATA)
 
+if nargin == 0;  help( mfilename ); return; end;
+
 %% DATA Prep
 Z=hSHAPE(DATA);
 %Z=DATA;

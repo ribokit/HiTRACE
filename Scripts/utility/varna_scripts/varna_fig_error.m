@@ -2,6 +2,9 @@ function []=varna_fig_error(filename,sequence,DBN,DATA,err,Display)
 %
 %  varna_fig_error(filename,sequence,DBN,DATA,err,Display)
 %
+
+if nargin == 0;  help( mfilename ); return; end;
+
 if ~exist( 'err' )
  err=[];
 end

@@ -15,6 +15,8 @@ function []=quick_varna(filename,sequence,structure,DATA,offset,seqpos,colorsche
 % colorscheme        = some alternative ways to color the plot [default = 1, white to orange to red]
 % (C) R. Das 2012
 
+if nargin == 0;  help( mfilename ); return; end;
+
 if ~exist( 'colorscheme' ); colorscheme = 1; end;
 if ~exist( 'offset' ); offset = 1; end;
 if ~exist( 'seqpos' ); seqpos = [1:length(data)]+offset;end

@@ -18,6 +18,9 @@ function []=varna_fig(filename,sequence,structure,DATA,colorscheme,offset,specia
 %
 % (C) R. Das 2011
 % (C) C.C. VanLang, P. Cordero 2010
+
+if nargin == 0;  help( mfilename ); return; end;
+
 if ~exist( 'colorscheme' ); colorscheme = 1; end;
 
 if ~isempty( DATA )

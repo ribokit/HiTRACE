@@ -4,6 +4,8 @@ function Z=hSHAPE(area_in)
 %This calculates the SHAPE reactivity for the inputted data.
 %
 
+if nargin == 0;  help( mfilename ); return; end;
+
 data_size=length(area_in);
 data_number=size(area_in,2);
 
