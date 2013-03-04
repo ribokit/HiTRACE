@@ -1,4 +1,6 @@
 function [ normalized_reactivity,area_peak_corrected,attenuation_corrected,reactionProb] = get_reactivities( saturated_array,diluted_array,sd_cutoff, bkg_col, ref_peak)
+% [ normalized_reactivity,area_peak_corrected,attenuation_corrected,reactionProb] = get_reactivities( saturated_array,diluted_array,sd_cutoff, bkg_col, ref_peak)
+%
 % Fully automated reactivity referencing workflow, starting from
 % measurements of area_peak.  See "unsaturate" for more details on
 % saturated_array, unsaturated_array, and sd_cutoff.
@@ -17,6 +19,8 @@ function [ normalized_reactivity,area_peak_corrected,attenuation_corrected,react
 % NORMALIZED REACTIVITY VALUES ARE RETURNED 5' to 3'.
 
 % Thomas Mann, November 2012.
+
+if nargin == 0;  help( mfilename ); return; end;
 
 area_peak_corrected = [];
 attenuation_corrected = [];
@@ -55,5 +59,5 @@ for i = 1:react_cols;
     normalized_reactivity(:,i) = transpose(sequence_reversed(reactivity(:,i)));
 end;
 
-end
+
 

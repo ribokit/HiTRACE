@@ -1,4 +1,9 @@
 function  [ d_unmod, correction ] = apply_overmod_correction_EXACT( d, modification_ratio );
+% [ d_unmod, correction ] = apply_overmod_correction_EXACT( d, modification_ratio );
+%
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 if ( modification_ratio == 0.0 )
   d_unmod = d;

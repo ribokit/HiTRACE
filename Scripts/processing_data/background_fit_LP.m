@@ -1,4 +1,8 @@
 function [params,sum_abs_deviation] = background_fit_LP( s,y,b, penalize_negative_weight)
+%  [params,sum_abs_deviation] = background_fit_LP( s,y,b, penalize_negative_weight)
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist( 'penalize_negative_weight' ); penalize_negative_weight = 1.0; end;
 

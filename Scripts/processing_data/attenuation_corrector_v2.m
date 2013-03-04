@@ -1,4 +1,8 @@
 function [d_correct,modification_fractions] = attenuation_corrector_v2( d_in )
+% [d_correct,modification_fractions] = attenuation_corrector_v2( d_in )
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 for k = 1:size(d_in,2);
   

@@ -1,7 +1,7 @@
 function [ area_correct_bsub, darea_correct_bsub ] = overmod_and_background_correct_logL( area_peak, backgd_cols, normbins,  area_pred, area_peak_error, overmod_specified );
 % OVERMOD_AND_BACKGROUND_CORRECT_LOGL
 %
-%  [ area_correct_bsub, darea_correct_bsub ] = overmod_and_background_correct_by_LP( area_peak, backgd_cols );
+%  [ area_correct_bsub, darea_correct_bsub ] = overmod_and_background_correct_logL( area_peak, backgd_cols );
 %
 % Inputs:
 %  area_peak   = quantitated band intensities for one or more traces. Must include at least one 'background' 
@@ -19,6 +19,7 @@ function [ area_correct_bsub, darea_correct_bsub ] = overmod_and_background_corr
 %
 % (C) R. Das 2011.
 
+if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist( 'normbins' )
   normbins = [1:size( area_peak,1) ];
