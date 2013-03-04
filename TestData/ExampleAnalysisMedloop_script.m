@@ -28,19 +28,10 @@ filenames =  { ...
 
 d_align = quick_look( filenames );
 
-% advanced: you can specify the top and bottom of the profiles by ymin and ymax,
-%  as well as specify a subset of profiles (perhaps reordered). For example:
-%
-%ymin = 2200; 
-%ymax = 4200;  
-%reorder = [ 1:52 ]; 
-%[d_align, d_ref_align] = quick_look( filenames, ymin, ymax, reorder );
-%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % OPTIONAL: align by piecewise-linear mapping (dynamic programming)
-align_blocks = [1:40];
+align_blocks = [1:40]; % these are 'mutate/map columns'
 d_align_before_more_alignment = d_align;
 d_align  = align_by_DP_fine( d_align_before_more_alignment, align_blocks );
 
@@ -57,7 +48,7 @@ sequence = 'GGAACGACGAACCGAAAACCGAAGAAAUGAAGAAAGGUUUUCGGUACCGACCUGAAAACCAAAGAAAC
 % the value you add to the sequence position to get the 'conventional numbering' (here the numbering used in the Medloop paper)
 structure= '..........((((((((((...............))))))))))...................................';
 offset = -10;  
-primer_binding_site = length( sequence ) - 20 + 1 + offset;
+first_RT_nucleotide = length( sequence ) - 20 + offset; % primer binds to last 20 nucleotides
 
 % What is in this data set?
 for i = 1:40; data_types{i} = 'DMS'; end;
@@ -71,7 +62,7 @@ data_types(47:52) = { 'nomod','nomod','ddGTP','ddATP','ddCTP','ddTTP'};
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Interactive sequence annotation
 xsel = []; clf;
-[xsel,seqpos] = annotate_sequence( d_align, xsel, sequence, offset, data_types, primer_binding_site, structure );
+[xsel,seqpos] = annotate_sequence( d_align, xsel, sequence, offset, data_types, first_RT_nucleotide, structure );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Fit to Gaussians

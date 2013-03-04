@@ -4,7 +4,6 @@ function works = parallelization_exists();
 % works = parallelization_exists();
 %
 %
-if nargin == 0;  help( mfilename ); return; end;
 
 works = 0;
 
