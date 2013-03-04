@@ -3,13 +3,14 @@ function leakage_matrix = figure_out_leakage_correction( infile, outfile, ylimit
 % leakage_matrix = figure_out_leakage_correction( dirname, outfile, ylimit )
 %
 %   OR [to create one-by-one text files]
+%
 % leakage_vector = figure_out_leakage_correction( infile, outfile, ylimit )
 %
-%
-%
+% (C) R. Das, 2013.
+
+if nargin == 0;  help( mfilename ); return; end;
 
 leakage_matrix = [];
-if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist( 'ylimit', 'var' ) ylimit = []; end;% will try to figure this out.
 

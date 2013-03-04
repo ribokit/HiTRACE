@@ -1,4 +1,9 @@
 function make_squares( offset, mutpos, native_bp, num_xsel );
+%
+%  make_squares( offset, mutpos, native_bp, num_xsel );
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 hold on;
 

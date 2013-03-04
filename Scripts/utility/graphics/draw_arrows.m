@@ -1,5 +1,6 @@
 function draw_arrows( point_values_SHAPE, residue_locations, offset, ...
 		      colorcode, RADIUS );
+%  draw_arrows( point_values_SHAPE, residue_locations, offset,  colorcode, RADIUS );
 
 startpos = unique(point_values_SHAPE(1,:));
 for k = startpos

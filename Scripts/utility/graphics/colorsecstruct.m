@@ -1,4 +1,9 @@
 function imagex_color = colorsecstruct(imagex,offset,residue_locations, whichres,whattoplot,maxplot,COLORCODE)
+%
+% imagex_color = colorsecstruct(imagex,offset,residue_locations, whichres,whattoplot,maxplot,COLORCODE)
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist( 'COLORCODE' ) COLORCODE = 1; end;
 %subplot(1,1,1); hold off; 

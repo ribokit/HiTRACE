@@ -8,6 +8,8 @@ function [d_norm, scalefactor, cap_value ] = SHAPE_normalize( d_for_scalefactor 
 %  -- scalefactor is mean of top 10th percentile of values, but removing values above that filter.
 %
 
+if nargin == 0;  help( mfilename ); return; end;
+
 FLIPPED = 0;
 if size( d_for_scalefactor, 1) == 1
   FLIPPED = 1;

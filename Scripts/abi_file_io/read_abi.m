@@ -13,8 +13,9 @@ function data = read_abi( filename );
 %  Rhiju Das, Nov. 2008.
 %
 
-data = [];
 if nargin == 0;  help( mfilename ); return; end;
+
+data = [];
 
 [fid,message] = fopen( filename, 'r', 'b'); 
 dir.abi = fread( fid, 4, '*char' );

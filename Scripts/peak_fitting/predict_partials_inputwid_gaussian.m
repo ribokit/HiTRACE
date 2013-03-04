@@ -1,4 +1,6 @@
 function prt=predict_partials_inputwid_gaussian(pixels,f,params,dp,F)
+%  prt=predict_partials_inputwid_gaussian(pixels,f,params,dp,F)
+
 numpeaks = (length(params))/2;
 xpeak    = params(  1         : numpeaks);
 % Function assumes you are submitting log of the amplitudes!

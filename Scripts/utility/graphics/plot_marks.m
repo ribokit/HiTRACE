@@ -1,4 +1,6 @@
 function plot_marks( mutpos, seqpos, marks )
+%  plot_marks( mutpos, seqpos, marks )
+if nargin == 0;  help( mfilename ); return; end;
 
 hold on
 for j = 1: size( mutpos, 2 );

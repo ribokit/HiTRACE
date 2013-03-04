@@ -32,11 +32,10 @@ function [d, d_ref, ylimit, labels] = quick_look( dirnames, ylimit, trace_subset
 %     labels = plot labels for each trace, extracted from ABI files.
 %
 % (C) Rhiju Das, 2009-2011, 2013
-%   Thanks to S. Denny & C. Cheng for input in multicolor applications
 %
 
+if nargin == 0;  help( mfilename ); return; end;
 d = []; d_ref = []; labels = {}; 
-if nargin == 0;  ylimit = []; help( mfilename ); return; end;
 
 % make backwards compatible...
 if exist( 'trace_subset', 'var' ) & length(trace_subset) == 1 & length( trace_subset ) == 1 & trace_subset > ylimit

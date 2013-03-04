@@ -5,8 +5,9 @@ function alldata_correct = correct_leakage( alldata, leakage_matrix );
 %
 % (C) R. Das, 2008-2011
 
-alldata_correct = {};
 if nargin == 0;  help( mfilename ); return; end;
+
+alldata_correct = {};
 
 invmatrix = inv( leakage_matrix );
 for j = 1: size( alldata,2 )

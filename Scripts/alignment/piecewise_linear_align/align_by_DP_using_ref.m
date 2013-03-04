@@ -24,8 +24,9 @@ function [d_out,d_ref_out, x_transform_all] = align_by_DP_using_ref( d, d_ref, a
 % (C) R. Das, 2011, 2013
 %
 
-d_out = [];
 if nargin == 0;  help( mfilename ); return; end;
+
+d_out = [];
 
 %if no 'block's are specified, align the whole thing to column 1
 if ~exist( 'align_blocks_in' ) | length( align_blocks_in) == 0;  align_blocks_in = { [1:size(d,2) ] }; end

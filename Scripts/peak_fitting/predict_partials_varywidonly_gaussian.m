@@ -1,4 +1,5 @@
 function prt=predict_partials_varywidonly_gaussian(pixels,f,params,dp,F)
+%  prt=predict_partials_varywidonly_gaussian(pixels,f,params,dp,F)
 
 global xpeak;
 

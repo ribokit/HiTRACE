@@ -1,7 +1,11 @@
 function works = parallelization_exists();
-% 
+%  PARALLELIZATION_EXISTS:  helper function to handle matlabpool parallelization.
+%
 % works = parallelization_exists();
 %
+%
+if nargin == 0;  help( mfilename ); return; end;
+
 works = 0;
 
 if exist( 'matlabpool' )  

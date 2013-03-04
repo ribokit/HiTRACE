@@ -1,4 +1,5 @@
 function fitprofile = predict_profile_varywidonly_gaussian(pixels,params)
+% fitprofile = predict_profile_varywidonly_gaussian(pixels,params)
 
 global xpeak;
 

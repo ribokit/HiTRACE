@@ -1,4 +1,7 @@
 function   [ TP_lengths, FP_lengths, TP_SHAPE, FP_SHAPE, TP_bpp, FP_bpp, TP_bpp_per_bp, FP_bpp_per_bp  ] = get_TP_FP_data( native_structure, structure, SHAPEdata, bpp, ignore_pos );
+%   [ TP_lengths, FP_lengths, TP_SHAPE, FP_SHAPE, TP_bpp, FP_bpp, TP_bpp_per_bp, FP_bpp_per_bp  ] = get_TP_FP_data( native_structure, structure, SHAPEdata, bpp, ignore_pos );
+%
+if nargin == 0;  help( mfilename ); return; end;
 
 TP_lengths = [];
 FP_lengths = [];

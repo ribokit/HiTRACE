@@ -8,6 +8,8 @@ function shape_energy = SHAPE_pseudoenergy( shape_val );
 %    functional form developed in Deigan et al., PNAS 2009
 %
 
+if nargin == 0;  help( mfilename ); return; end;
+
 shape_energy = 0.0;
 if ( shape_val < -500 | isnan( shape_val ) ); return; end;
 if (shape_val < 0.0) shape_val = 0.0; end;

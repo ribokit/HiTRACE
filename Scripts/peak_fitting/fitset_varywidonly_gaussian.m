@@ -1,6 +1,12 @@
 function [ widthpeak,amppeak,areapeak ] ...
     = fitset_varywidonly_gaussian(Profile_tofit,numres,xsel, widthpeak, ...
 				  x_disallow)
+%
+% [ widthpeak,amppeak,areapeak ] ...
+%    = fitset_varywidonly_gaussian(Profile_tofit,numres,xsel, widthpeak,  x_disallow)
+%
+%
+
 figure(2);
 subplot(1,1,1);
 hold off;

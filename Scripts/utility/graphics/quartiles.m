@@ -1,4 +1,6 @@
 function Q=quartiles(X)
+%   Q=quartiles(X)
+if nargin == 0;  help( mfilename ); return; end;
 
 Nx = size(X,1);
 

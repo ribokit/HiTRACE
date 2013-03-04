@@ -1,8 +1,9 @@
 function sequence2=RNA2DNA(sequence)
-
 % Converts a RNA sequence to a DNA sequence
 % Converts lowercase sequences to an uppercase sequence
 % CVL 12/9/10
+
+if nargin == 0;  help( mfilename ); return; end;
 
 N_BP = length( sequence );
 

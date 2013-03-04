@@ -1,4 +1,8 @@
 function make_lines_horizontal(line_pos,colorcode,linewidth);
+%
+% make_lines_horizontal(line_pos,colorcode,linewidth);
+%
+if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist('colorcode')
   colorcode='r';

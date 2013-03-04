@@ -27,6 +27,8 @@ function imagex_color = colorbases(imagex,offset,base_locations, residue_locatio
 % 
 % (C) R. Das, 2004-2012
 
+if nargin == 0;  help( mfilename ); return; end;
+
 [xsize,ysize,zsize]=size(imagex);
 axis([0 ysize 0 xsize]); zoomedin = 0;
 

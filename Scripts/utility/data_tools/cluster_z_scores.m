@@ -3,6 +3,8 @@ function  cluster_z_scores( zscore_matrix, structure, offset  );
 %
 % (C) R. Das, 2011-2013.
 
+if nargin == 0;  help( mfilename ); return; end;
+
 if ischar( zscore_matrix ); 
   d = load( zscore_file );
 else  

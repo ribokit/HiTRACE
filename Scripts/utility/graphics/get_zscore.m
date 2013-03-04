@@ -1,4 +1,8 @@
 function c = get_zscore( a, ref_cols )
+% c = get_zscore( a, ref_cols )
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist( 'ref_cols' ); ref_cols = [1:size(a,2)]; end;
 

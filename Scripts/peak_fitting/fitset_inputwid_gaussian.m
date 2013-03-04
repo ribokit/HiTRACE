@@ -1,5 +1,9 @@
 function [xpeak_fit,widthpeak,amppeak,areapeak,f] ...
     = fitset_inputwid_gaussian(Profile_tofit,numres,xsel,width_input,x_disallow)
+%
+% [xpeak_fit,widthpeak,amppeak,areapeak,f] ...
+%    = fitset_inputwid_gaussian(Profile_tofit,numres,xsel,width_input,x_disallow)
+%
 
 figure(2);
 subplot(1,1,1);

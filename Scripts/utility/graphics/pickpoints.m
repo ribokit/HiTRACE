@@ -11,6 +11,8 @@ function residue_locations = pickpoints(imagex,offset,residue_locations,square_w
 %
 %
 
+if nargin == 0;  help( mfilename ); return; end;
+
 figure(1); subplot(1,1,1); hold off; image(imagex); hold on
 [xsize,ysize,zsize]=size(imagex);
 axis([0 ysize 0 xsize]); zoomedin = 0;

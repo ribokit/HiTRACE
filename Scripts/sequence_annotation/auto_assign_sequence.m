@@ -4,6 +4,9 @@ function [xsel, D, msg] = auto_assign_sequence( image_x, sequence, seqpos, offse
 %
 % (C) R. Das, 2010-2011
 %
+
+if nargin == 0;  help( mfilename ); return; end;
+
 if ~exist('PLOT_STUFF','var'), PLOT_STUFF = 1; end
 if ~exist('input_bounds','var'), input_bounds = []; end
 if ~exist( 'data_types', 'var' ), data_types = []; end;

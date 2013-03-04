@@ -22,6 +22,8 @@ function area_pred = get_area_pred( sequence, data_types, offset, structure );
 % (C) R. Das, 2013.
 %
 
+if nargin == 0;  help( mfilename ); return; end;
+
 seqpos = 1:length(sequence);
 area_pred = zeros( length(sequence), length(data_types) );
 if ~exist( 'structure' ) | length( structure ) == 0;   for i = 1:length( sequence ); structure = [structure, '.']; end; end

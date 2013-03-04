@@ -1,4 +1,5 @@
 function bps = convert_structure_to_bps( structure );
+%  bps = convert_structure_to_bps( structure );
 
 LEFT_BRACKET = [];
 bps = [];

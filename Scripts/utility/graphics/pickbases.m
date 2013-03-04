@@ -11,6 +11,7 @@ function base_locations = pickbases(imagex,offset,residue_locations, base_locati
 %                      horizontally with residue_locations. Initially you can set this to the empty set [].
 % squarewidth       = [default 24] how big to make squares.
 
+if nargin == 0;  help( mfilename ); return; end;
 
 figure(1); subplot(1,1,1); hold off; image(imagex); hold on
 [xsize,ysize,zsize]=size(imagex);

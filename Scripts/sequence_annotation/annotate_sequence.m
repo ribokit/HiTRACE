@@ -1,6 +1,6 @@
 function [xsel,seqpos,area_pred] = annotate_sequence( d_align, xsel, sequence_full, ...
 					offset, data_types, first_RT_nucleotide, structure );
-% MARK_SEQUENCE - Tool for rapid manual assignment of bands in electropherograms.
+% ANNOTATE_SEQUENCE - Tool for rapid manual assignment of bands in electropherograms.
 %
 %  [xsel,seqpos,area_pred] = ( d_align, xsel, sequence_full, offset, data_types, first_RT_nucleotide, structure );
 %
@@ -23,8 +23,8 @@ function [xsel,seqpos,area_pred] = annotate_sequence( d_align, xsel, sequence_fu
 %
 % (C) R. Das, 2013
 %
-% It should be possible to dramatically accelerate this by not calling make_plot every time.
-%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 % initialize outputs.
 if ~exist('xsel');  xsel = []; end

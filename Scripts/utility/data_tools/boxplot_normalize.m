@@ -9,6 +9,8 @@ function [d_norm, scalefactor, cap_value ] = boxplot_normalize( d_for_scalefacto
 %
 %
 
+if nargin == 0;  help( mfilename ); return; end;
+
 FLIPPED = 0;
 if size( d_for_scalefactor, 1) == 1
   FLIPPED = 1;

@@ -25,6 +25,8 @@ function  colorplot = getcolor(colorvalue, maxplot,maxplot2,colorscheme);
 % (C) R. Das, 2008-2012
 %
 
+if nargin == 0;  help( mfilename ); return; end;
+
 if ~exist('colorscheme') colorscheme = 1; end;
 
 if isnan( colorvalue); colorplot = [0.7 0.7 0.7]; return;end;

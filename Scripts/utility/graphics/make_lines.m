@@ -1,4 +1,9 @@
 function make_lines(line_pos,colorcode,linewidth);
+%
+% make_lines(line_pos,colorcode,linewidth);
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist('colorcode')
   colorcode='k';

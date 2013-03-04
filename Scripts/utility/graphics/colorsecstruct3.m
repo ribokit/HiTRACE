@@ -23,6 +23,9 @@ function imagex_color = colorsecstruct3(imagex,offset,residue_locations, whichre
 % hold off; image(imagex); hold on; axis equal; 
 % 
 % (C) R. Das, 2004-2012
+
+if nargin == 0;  help( mfilename ); return; end;
+
 [xsize,ysize,zsize]=size(imagex);
 axis([0 ysize 0 xsize]); zoomedin = 0;
 

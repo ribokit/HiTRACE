@@ -11,6 +11,8 @@ function [ areas, prof_fit, deviation ] = do_the_fit_fast( d_align, xsel, const_
 % (C) R. Das 2008-2010
 
 areas = [];
+if nargin == 0;  help( mfilename ); return; end;
+
 prof_fit = 0 * d_align;
 deviation = [];
 if length( xsel ) == 0; return; end;
@@ -54,7 +56,6 @@ if num_xsel_lanes == 1
     xsel(:,j) = xsel(:,1);
   end
 end
-
 
 
 %%%%%%%%%%%%%%%%%%

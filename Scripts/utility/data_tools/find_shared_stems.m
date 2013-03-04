@@ -1,4 +1,8 @@
 function  [ stem_correspondence, num_extra_bps_added_to_stem, num_missing_bps_in_stem ] = find_shared_stems( native_stems, stems );
+%  [ stem_correspondence, num_extra_bps_added_to_stem, num_missing_bps_in_stem ] = find_shared_stems( native_stems, stems );
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 stem_correspondence          = zeros(  1,length( native_stems ) );
 num_extra_bps_added_to_stem  = -1 * ones(  1,length( native_stems ) );

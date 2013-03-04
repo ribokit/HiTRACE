@@ -1,5 +1,10 @@
 function [dev_profile, jacobian, f] = ...
     evaluate_deviation_inputwid_gaussian(pixels, profiles, params)
+%
+% [dev_profile, jacobian, f] = ...
+%    evaluate_deviation_inputwid_gaussian(pixels, profiles, params)
+%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Using existing routine.

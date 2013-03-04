@@ -18,6 +18,7 @@ function [ data_all, filenames_all, data_set_starts, data_length ] = ...
 % (C) R. Das 2008-2011, 2013
 %
 
+if nargin == 0;  help( mfilename ); return; end;
 
 data = {};
 data_all = {};
@@ -25,8 +26,6 @@ data_set_starts = [];
 data_length = [];
 filenames_all = {};
 count = 0;
-
-if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist( 'dye_names_full' ) dye_names_full = {}; end;
 

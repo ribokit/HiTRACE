@@ -22,8 +22,9 @@ function [d_out,x_transform_all, anchor_nodes] = align_by_DP( d_all, align_block
 % (C) R. Das, 2009-2011, 2013
 %
 
-d_out = [];
 if nargin == 0;  help( mfilename ); return; end;
+
+d_out = [];
 
 %if no 'block's are specified, align the whole thing to column 1
 if ~exist( 'align_blocks_in' ) | length( align_blocks_in) == 0;     align_blocks_in = { [1:size(d_all,2) ] }; end

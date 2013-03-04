@@ -1,4 +1,9 @@
 function [deviation,pred_fit] = combined_hill_fit( params, conc, data )
+%
+% [deviation,pred_fit] = combined_hill_fit( params, conc, data )
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 n_hill = abs(params( 1 ));
 midpt  = 10.^params( 2 );

@@ -1,5 +1,9 @@
 function [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds, data_types )
 % [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds, data_types );
+%
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 START_POS = 0;
 if length( input_bounds ) >= 1; START_POS = round(input_bounds(1)); end;

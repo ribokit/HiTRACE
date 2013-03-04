@@ -1,4 +1,5 @@
 function fitprofile = predict_profile_inputwid_gaussian(pixels,params)
+%  fitprofile = predict_profile_inputwid_gaussian(pixels,params)
 
 numpeaks = (length(params))/2;
 xpeak    = params(  1         : numpeaks);

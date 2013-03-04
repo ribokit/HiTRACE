@@ -16,9 +16,10 @@ function [ data, filenames ] = plot_ABI_runs( dirname, dye_names_full, PLOT_STUF
 % (C) R. Das, 2008-2011, 2013
 %
 
+if nargin == 0;  help( mfilename ); return; end;
+
 data = {};
 filenames = {};
-if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist( 'dye_names' ) dye_names = {}; end;
 if ~exist( 'PLOT_STUFF' );  PLOT_STUFF = 1; end

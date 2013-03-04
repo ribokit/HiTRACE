@@ -1,5 +1,7 @@
 function [dev_profile, jacobian] = ...
     evaluate_deviation_varywidonly_gaussian(pixels, profiles, params)
+% [dev_profile, jacobian] = ...
+%    evaluate_deviation_varywidonly_gaussian(pixels, profiles, params)
 
 
 %dev_profile = predict_profile_varywidonly_gaussian( pixels, params' )  -   profiles';

@@ -1,4 +1,8 @@
 function [x_disallow,x_allow] = find_x_disallow( d );
+%
+% [x_disallow,x_allow] = find_x_disallow( d );
+%
+
 
 SATURATION_CUTOFF = 0.98;
 x_disallow = [];

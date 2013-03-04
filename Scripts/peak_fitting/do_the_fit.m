@@ -6,9 +6,13 @@ function [ areas, prof_fit, xsel_fit_all, width_peak_all ] = do_the_fit( d_align
 %  d_align = input matrix of traces
 %  xsel = band locations for each trace.
 %
-%  Largely deprecated due to use of align_by_DP() to give precisely aligned traces. Can just use align_by_DP() instead.
+%  Largely deprecated due to use of align_by_DP() to give precisely aligned traces. Can just use align_by_DP() instead, 
+%       and then do_the_fit_fast().
+
 %
 % (C) R. Das 2008-2010
+
+if nargin == 0;  help( mfilename ); return; end;
 
 if ( size(xsel,1) == 1  )
   xsel = xsel';

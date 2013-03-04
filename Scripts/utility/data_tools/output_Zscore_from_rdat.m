@@ -26,6 +26,8 @@ function [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, 
 % (C) R. Das, 2010-2013.
 %
 
+if nargin == 0;  help( mfilename ); return; end;
+
 if ~exist( 'MEAN_EXPOSURE_CUTOFF' ) MEAN_EXPOSURE_CUTOFF = 1.0; end;
 if ~exist( 'APPLY_ZSCORE_OFFSET' ) APPLY_ZSCORE_OFFSET = 1; end;
 if ~exist( 'ZSCORE_OFFSET' ) ZSCORE_OFFSET = 0.0; end;

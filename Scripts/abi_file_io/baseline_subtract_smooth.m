@@ -19,8 +19,9 @@ function [d_sub, bd] = baseline_subtract_smooth( d, ymin,ymax, A, B, PLOT_STUFF)
 %  used for baseline correction of chomatographic traces
 % 
 
-d_sub = []; bd = [];
 if nargin == 0;  help( mfilename ); return; end;
+
+d_sub = []; bd = [];
 
 %Declare boundaries
 if ~exist( 'ymin') | ymin == 0;  ymin = 1;end

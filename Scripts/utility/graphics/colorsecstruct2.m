@@ -1,4 +1,8 @@
 function imagex_color = colorsecstruct2(imagex,offset,residue_locations, whichres,whattoplot,maxplot,maxplot2,colorscheme,makelegend,square_width)
+%
+% imagex_color = colorsecstruct2(imagex,offset,residue_locations, whichres,whattoplot,maxplot,maxplot2,colorscheme,makelegend,square_width)
+%
+if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist('square_width')
   square_width = 25;

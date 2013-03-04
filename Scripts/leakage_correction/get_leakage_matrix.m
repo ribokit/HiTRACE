@@ -1,4 +1,13 @@
 function lm = get_leakage_matrix( dye_names_full );
+% GET_LEAKAGE_MATRIX:  read in a matrix of numbers from a text file.
+%
+% lm = get_leakage_matrix( dye_names_full );
+%
+% NOTE: If you are trying to parametrize a new leakage matrix from a 
+%   CE run with standards, use FIGURE_OUT_LEAKAGE_CORRECTION.
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 % where are we?
 dirname = which( 'get_leakage_matrix.m' );

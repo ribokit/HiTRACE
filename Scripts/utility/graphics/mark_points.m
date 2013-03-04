@@ -1,7 +1,11 @@
-function [point_values, point_locations] = ...
-    mark_points(imagex, ...
-		mutpos, xsel, probepos,...
-		point_locations );
+function [point_values, point_locations] =  mark_points(imagex, mutpos, xsel, probepos, point_locations );
+% MARK_POINTS: Function for interactively reading out (x,y) values from a figure graphic, e.g.
+%                  from a paper.
+%
+% [point_values, point_locations] =  mark_points(imagex, mutpos, xsel, probepos, point_locations );
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 stop_pick = 0;
 

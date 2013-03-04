@@ -1,4 +1,5 @@
 function draw_arrow( x1, x2, colorcode, RADIUS );
+%  draw_arrow( x1, x2, colorcode, RADIUS );
 
 if ~exist('RADIUS')
   RADIUS = 15;

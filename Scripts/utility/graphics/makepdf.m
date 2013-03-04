@@ -2,6 +2,9 @@ function []=makepdf(xsel,d,sequence_names,FigTITLE,offset,spacing,bufferspace,xt
 % Function to make a file that will be ready to be saved in a pdf format.
 % Takes your aligned data and presents it in a useable format with sequence
 % assignments and numbering.
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 
 if ~exist( 'FigTITLE','var' )
