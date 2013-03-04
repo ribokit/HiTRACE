@@ -1,7 +1,7 @@
-function [d_sub, bd] = baseline_subtract_v2( d, ymin,ymax, A, B, PLOT_STUFF)
-% BASELINE_SUBTRACT_V2:  subtraction of a smooth (but not necessarily constant) baseline.
+function [d_sub, bd] = baseline_subtract_smooth( d, ymin,ymax, A, B, PLOT_STUFF)
+% BASELINE_SUBTRACT_smooth:  subtraction of a smooth (but not necessarily constant) baseline.
 %
-% [d_sub, bd] = baseline_subtract_v2( d, ymin,ymax, A, B, PLOT_STUFF)
+% [d_sub, bd] = baseline_subtract_smooth( d, ymin,ymax, A, B, PLOT_STUFF)
 %
 %  Require input:
 %    d = trace (or matrix of traces)
@@ -34,12 +34,12 @@ if parallelization_exists()
   %parfor k = 1:size(d,2);
   for k = 1:size(d,2);
       fprintf(1,'Baseline subtracting...%d\n',k);
-      [d_sub(:,k),bdx(:,k)] = baseline_subtract_v2_one_profile( d(:,k), ymin,ymax,A,B);
+      [d_sub(:,k),bdx(:,k)] = baseline_subtract_smooth_one_profile( d(:,k), ymin,ymax,A,B);
   end 
 else
   for k = 1:size(d,2)
       fprintf(1,'Baseline subtracting...%d\n',k);
-      [d_sub(:,k),bd(:,k)] = baseline_subtract_v2_one_profile( d(:,k), ymin,ymax,A,B);
+      [d_sub(:,k),bd(:,k)] = baseline_subtract_smooth_one_profile( d(:,k), ymin,ymax,A,B);
   end 
 end
 
@@ -54,7 +54,7 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [d_sub, bd ] = baseline_subtract_v2_one_profile( d, ymin,ymax, ...
+function [d_sub, bd ] = baseline_subtract_smooth_one_profile( d, ymin,ymax, ...
 						  A,B);
 
 bd=zeros(length(d),1);
