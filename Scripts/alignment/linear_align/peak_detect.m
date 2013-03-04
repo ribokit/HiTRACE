@@ -1,4 +1,7 @@
 function [ peak, peak_out ] = peak_detect( data );
+% [ peak, peak_out ] = peak_detect( data );
+
+if nargin == 0;  help( mfilename ); return; end;
 
 % jk begin - Peak detection
 PEAKDETECT = 1;

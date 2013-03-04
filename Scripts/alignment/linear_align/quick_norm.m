@@ -1,4 +1,12 @@
 function [d_out, norm_factor ] = quick_norm( d, bins );
+% QUICK_NORM: normalize data based on mean in specified bins
+%
+% [d_out, norm_factor ] = quick_norm( d, bins );
+%
+% (C) R. Das, 2008.
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 do_transpose = 0;
 if size( d, 1) == 1 && size( d, 2)>1

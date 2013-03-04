@@ -3,6 +3,8 @@ function peak = peakify( data )
 %
 % (C) J. Kim & S. Yoon 2009-2011.
 
+if nargin == 0;  help( mfilename ); return; end;
+
 % jk begin - Peak detection
     
 %Parameters for peak detection

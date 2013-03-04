@@ -1,21 +1,23 @@
 function [data_align, x_realign, d1] = align_to_first_ver3( data, PLOT_STUFF, refcol );
+%
+% ALIGN_TO_FIRST_VER3:  (linear-time) alignment of a matrix of electropheretic traces to first trace
+%
+%   [data_align, x_realign, d1] = align_to_first_ver3( data, PLOT_STUFF, refcol )
+%
+%  Optimizes correlation coefficient by grid search + Fast Fourier Transform
+%
+% (C) R. Das & S.R. Yoon, 2009-2011
+%
+
+if nargin == 0;  help( mfilename ); return; end;
 
 FULL_SIGNAL_WINDOW = 1000;
 
-if ~exist('refcol')
-  refcol = 1;
-end
+if ~exist('refcol', 'var');  refcol = 1; end
 
 num_capillaries = size( data,2 );
-%numpts = size( data, 1); % sryoon
 
-%data = peakify( data );
-%image( 100 * data );
-%pause;
-
-if ~exist('PLOT_STUFF')
-  PLOT_STUFF = 0;
-end
+if ~exist('PLOT_STUFF','var');  PLOT_STUFF = 0; end
 
 %d_ref = baseline_subtract( data(:,refcol) );
 d_ref = data(:,refcol);

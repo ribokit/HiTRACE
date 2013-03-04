@@ -6,25 +6,23 @@ function [data_align, x_realign] = align_to_first_ver2( data, PLOT_STUFF, refcol
 %
 %  Optimizes correlation coefficient by grid search + Fast Fourier Transform
 %
+%  Uses 'peakified' traces to help prevent outliers from distorting alignment.
+%
 % (C) R. Das & S.R. Yoon, 2009-2011
 %
+
+if nargin == 0;  help( mfilename ); return; end;
+
 FULL_SIGNAL_WINDOW = 5000;
 
-
-if ~exist('refcol')
-  refcol = 1;
-end
-
-
-peak = peakify( data );
+if ~exist('refcol', 'var');  refcol = 1; end
 
 num_capillaries = size( data,2 );
-%numpts = size( data, 1); % sryoon
 
-if ~exist('PLOT_STUFF')
-  PLOT_STUFF = 0;
-end
+if ~exist('PLOT_STUFF', 'var');  PLOT_STUFF = 0; end
 
+% main difference with align_to_first_ver3 -- use of 'peakify'.
+peak = peakify( data );
 data = peak; % jk
 
 %d_ref = baseline_subtract( data(:,refcol) );

@@ -1,15 +1,15 @@
 function data_align = align_capillaries_group( data, refcol, reflane, refgrp)
+% ALIGN_CAPILLARIES_GROUP:  Data from ABI readin -- align based on channel 'refcol'.
+%
+%   data_align = align_capillaries_group( data , refcol, reflane, refgrp );
+%
 % by kprotoss, group align
 
-if ~exist( 'refcol')
-  refcol = 4;
-end
-if ~exist( 'reflane')
-  reflane = 1;
-end
-if ~exist('refgrp')
-    refgrp = 1;
-end
+if nargin == 0;  help( mfilename ); return; end;
+
+if ~exist( 'refcol', 'var')  refcol = 4; end
+if ~exist( 'reflane', 'var')  reflane = 1; end
+if ~exist('refgrp') refgrp = 1; end
 
 num_grp = length( data );
 num_capillaries = 0;
