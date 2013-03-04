@@ -20,7 +20,7 @@ function [d, d_ref, ylimit, labels] = quick_look( dirnames, ylimit, trace_subset
 %                  Note: the number of dye names should correspond to the number of signals_and_ref. If dye names is given as {},
 %                    no leakage correction will be applied. (Default: no leakage correction.)
 %                  You can also input your own leakage matrix here (give the filename as a string).
-%     moreOptions= Any of the following to turn off data processing steps: {'noPlotStuff', 'noNormalize', 
+%     moreOptions= Any of the following to turn off data processing steps: {'noNormalize', 
 %             'noSmoothBaselineSubtract',  'noLeakageCorrection' 'noLocalAlign'}  [Default: run al processing steps]
 %
 %  Outputs:
@@ -125,8 +125,12 @@ if ~iscell( dirnames )
     [dirnames] = textread(dirnames,'%s');
   end
 end
+
 tag = dirnames{1};
-if tag(end) == '/'; tag = tag(1:end-1); end;
+if tag(end) == '/'; tag = tag(1:end-1); end; % get rid of final slash
+%  just get the last directory name.
+tags = split_string( tag, '/' );
+tag = tags{ end } 
 
 filepath = '';
 [ data_all, filenames_all, data_set_starts, data_length ] = ...
@@ -181,7 +185,7 @@ for m = 1:length(sigchannels) % usually just channel 1.
     d0_signal          (1:L,count) = baseline_subtract(data_all{ trace_subset(i) }(:,sigchannels(m)));
     d0_reference_ladder(1:L,count) = baseline_subtract(data_all{ trace_subset(i) }(:,refchannel));
 
-    labels{count} = filenames_all{i};
+    labels{count} = filenames_all{ trace_subset(i) };
   end
 
   subset_pos = [subset_pos, count + subset_pos];
@@ -372,8 +376,7 @@ if PLOT_STUFF
   
   figure(2)
   figure(4)
-  
-
+ 
 end
 
 if PLOT_STUFF
@@ -398,10 +401,10 @@ if length( dye_names_full ) > 0;
 else  
   fprintf( 'No leakage correction applied to color channels.\n' ); 
 end
-if AUTOFIND_YLIMIT;                fprintf( 'Used auto-find of ymin, ymax.\n' ); end;
-if NORMALIZE;                    fprintf( 'Normalized data based on mean peak intensity.\n' ); end;
-if SMOOTH_BASELINE_SUBTRACT;     fprintf( 'Applied subtraction of smooth base line.\n' ); end;
-if LOCAL_ALIGN;                  fprintf( 'Applied local alignment based on piece-wise linear transform.\n' ); end;
+if AUTOFIND_YLIMIT;              fprintf( 'Used auto-find of ymin, ymax.  [specify ylimit to turn off]\n' ); end;
+if NORMALIZE;                    fprintf( 'Normalized data based on mean peak intensity. [set noNormalize to turn off]\n' ); end;
+if SMOOTH_BASELINE_SUBTRACT;     fprintf( 'Applied subtraction of smooth base line [set noSmoothBaselineSubtract to turn off].\n' ); end;
+if LOCAL_ALIGN;                  fprintf( 'Applied local alignment based on piece-wise linear transform [set noLocalAlign to turn off].\n' ); end;
 
 fprintf( '\nFor all options, type: help %s\n', mfilename );
 
@@ -429,3 +432,15 @@ for m = 1:length( signals_and_ref )
   dye_names_full{ signals_and_ref(m) } = dye_names{m};
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function cols = split_string( l, delimiter );
+
+if ~exist( 'delimiter') delimiter = ' '; end;
+
+remain = l;
+cols = {};
+while length( remain ) > 0
+  [token, remain] = strtok(remain, delimiter);
+  cols = [cols, token];
+end

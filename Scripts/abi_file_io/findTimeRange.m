@@ -28,9 +28,36 @@ for j = 1:N;
     max_list(j) = y(end);
 end
 
+min_list = sort_and_filter( min_list );
+max_list = sort_and_filter( max_list );
+
+%subplot(2,1,1);
+%plot( min_list );
+%subplot( 2,1,2);
+%plot( max_list );
+%pause;
+
 % get rid of outliers...
-ymin = round( min_list( ceil( 0.50*N ) ) - 200);
-ymax = round( max_list( ceil( 0.90*N ) ) + 200);
+N = length( min_list );
+ymin = round( min_list( ceil( 0.50*N ) ) ) - 150;
+
+N = length( max_list );
+ymax = round( max_list( ceil( 0.50*N ) ) ) + 150;
 
 ymin = max( ymin, 1 );
 ymax = min( ymax, size(d,1) );
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function min_list = sort_and_filter( min_list );
+
+min_list = sort( min_list );
+
+N = length( min_list );
+q1 = min_list( ceil( 0.25*N) );
+q3 = min_list( ceil( 0.75*N) );
+
+gp = find(  min_list >= (q1 - 1.5 *abs( q3-q1)) & ...
+	    min_list <= (q3 + 1.5 *abs( q3-q1)) );
+min_list = min_list( gp );
+
+

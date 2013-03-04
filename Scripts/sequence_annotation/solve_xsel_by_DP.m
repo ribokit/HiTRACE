@@ -123,7 +123,9 @@ D_test = 10 * BIG_NUMBER * ones(1,num_pixels);
 min_pos_raw = 0;
 max_pos_raw = num_pixels - sum(optimal_SEP) + optimal_SEP(1);
 for n = 2:N
-    
+  
+  fprintf( 'Checking band position: %d\n', n )
+  
     min_pos_raw = min_pos_raw + optimal_SEP(n-1);
     max_pos_raw = max_pos_raw + optimal_SEP(n);
     

@@ -31,7 +31,8 @@ if ~exist('PLOT_STUFF')  PLOT_STUFF = 1; end
 
 
 if parallelization_exists()
-  parfor k = 1:size(d,2);
+  %parfor k = 1:size(d,2);
+  for k = 1:size(d,2);
       fprintf(1,'Baseline subtracting...%d\n',k);
       [d_sub(:,k),bdx(:,k)] = baseline_subtract_v2_one_profile( d(:,k), ymin,ymax,A,B);
   end 
@@ -70,8 +71,7 @@ bd=zeros(length(d),1);
 bd(ymin:ymax)=baseline_xi(d(ymin:ymax), A,B );
 
 %Baseline correction
-d_sub=d-bd;
-
+d_sub=d - bd;
 
 %Baseline Model V1.0
 %Yuanxin Xi, IDAV, UC Davis
@@ -128,7 +128,7 @@ D0(L-1,L-1) = 10;
 % iteration number
 I=0;
 
-while nm>10 & I<30
+while (nm > 10 | I < 5) & I<30
   %& nm<nm0;
   I=I+1;
 
@@ -153,10 +153,21 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function d = filter_negative_outliers( d )
 d_sort = sort( smooth( d ) );
-N = length( d );
-d1 = d( round( N * 0.25 ) );
-d3 = d( round( N * 0.75 ) );
 
-outlier_cutoff = d1 - 5 * abs(d3 - d1 );
+N = size( d,1 );
+d1 = d_sort( round( N * 0.1 ) );
+d3 = d_sort( round( N * 0.9 ) );
+
+%outlier_cutoff = d1 - 1 * abs(d3 - d1 );
+outlier_cutoff = d1;% - 0.1*abs(d3-d1);
+
+%plot( d_sort )
+%hold on
+%plot( [1 N],d1 *[1 1],'r' );
+%plot( [1 N],d3 *[1 1],'m' );
+%plot( [1 N], outlier_cutoff *[1 1],'k' );
+%hold off
+%pause;
+
 outlier_points = find( d < outlier_cutoff );
 d( outlier_points ) = outlier_cutoff;

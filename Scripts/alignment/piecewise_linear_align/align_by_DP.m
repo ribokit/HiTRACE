@@ -89,6 +89,7 @@ anchor_nodes = zeros( length( nodes )+1, size( d_all, 2) );
 
 % parallelization! yea!
 if parallelization_exists()
+  %for i = which_lanes;
   parfor i = which_lanes;
     [x_warp_all(:,i), anchor_nodes(:,i)]    = align_by_DP_inner_loop( i, refcol, d_all, penalizeStretchFactor, slack, maxShift, windowSize, num_pixels );
   end
@@ -116,6 +117,8 @@ else
   d_ref = process_profile( d_all(:,refcol) );
   d_ali = process_profile( d_all(:,     i) );
     
+  %plot( [d_ref d_ali] ); pause;
+  
   [d_warp, x_warp, DP, choice, anchor_nodes] = refine_by_warping( d_ref, d_ali, penalizeStretchFactor, slack, maxShift, windowSize );    
   %toc
 end
@@ -389,17 +392,17 @@ d = 20 * (max( d, 0) );
 
 % remove baseline.
 d = d - mode( round(smooth(d)) );
-  
+
 % get interquartile range, and use it to cap outliers.  
 d = cap_outliers( d );
-  
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function  d =  cap_outliers( d )
 d_sort = sort( d );
 N = length(d);
 q3 = d_sort( round( N * 0.75 ) );
 q1 = d_sort( round( N * 0.25) );
-cutoff = 10*(q3-q1)  + q3;
+cutoff = 5*(q3-q1)  + q3;
 d( find( d > cutoff ) ) = cutoff;
 
 

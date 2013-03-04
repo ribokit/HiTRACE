@@ -1,8 +1,8 @@
 function [xsel,seqpos,area_pred] = annotate_sequence( d_align, xsel, sequence_full, ...
-					offset, data_types, primer_binding_site, structure );
+					offset, data_types, first_RT_nucleotide, structure );
 % MARK_SEQUENCE - Tool for rapid manual assignment of bands in electropherograms.
 %
-%  [xsel,seqpos,area_pred] = ( d_align, xsel, sequence_full, offset, data_types, primer_binding_site, structure );
+%  [xsel,seqpos,area_pred] = ( d_align, xsel, sequence_full, offset, data_types, first_RT_nucleotide, structure );
 %
 %
 % Input:
@@ -12,8 +12,8 @@ function [xsel,seqpos,area_pred] = annotate_sequence( d_align, xsel, sequence_fu
 %  offset         = value that is added to sequence index to achieve 'historical'/favorite numbering. [default: 0]
 %  data_type      = cell of tags of modification reactions in each trace, e.g., 
 %               {'SHAPE','SHAPE','ddTTP'}
-% primer_binding_site = integer that gives first nucleotide of primer binding site. 
-%                         [default: one beyond the end of sequence]
+% first_RT_nucleotide = integer that gives nucleotide immediately 5' of primer binding site. 
+%                         [default: end of sequence]
 % structure       = structure in dot/bracket notation [give as '' if unknown] [default: '']
 %
 % Output:
@@ -47,8 +47,8 @@ if ~exist('data_types'); data_types = []; end
 if ~exist('structure');  structure = ''; end
 
 % 
-if exist( 'primer_binding_site' ) | isempty( primer_binding_site )
-  sequence = sequence_full( 1 : (primer_binding_site-offset-1) );
+if exist( 'first_RT_nucleotide' ) | isempty( first_RT_nucleotide )
+  sequence = sequence_full( 1 : (first_RT_nucleotide-offset) );
   if length( structure ) > length( sequence ); structure = structure( 1: length(sequence ) ); end;
 else
   sequence = sequence_full;
@@ -74,7 +74,9 @@ end
 ylim = get(gca,'ylim');
 ymin = ylim(1);
 ymax = ylim(2);
-if ( ymin==0 & ymax==1)
+
+xlim = get(gca,'xlim');
+if ( xlim(1) ~= 0.5 | xlim(2) ~= numlanes+0.5 )
   ymin = 1;
   ymax = size(d_align,1);
   colormap( 1 - gray(100) );
@@ -170,12 +172,14 @@ while ~stop_sel
       yscale = (ymax - ymin)*0.75;
       ymin = xselpick - yscale * (current_relative_pos);
       ymax = xselpick + yscale * ( 1- current_relative_pos);
+      update_plot = 1; % for text labels
       update_ylim = 1;
      case {'l','L'}
       current_relative_pos =  (xselpick - ymin)/(ymax-ymin);
       yscale = (ymax - ymin)/0.75;
       ymin = xselpick - yscale * (current_relative_pos);
       ymax = xselpick + yscale * ( 1- current_relative_pos);
+      update_plot = 1; % for text labels
       update_ylim = 1;
      case {'i','I'}
       yscale = (ymax - ymin);
@@ -187,6 +191,18 @@ while ~stop_sel
       yscale = (ymax - ymin);
       ymin = ymin + yscale*0.05;
       ymax = ymax + yscale*0.05;
+      update_plot = 1; % for text labels
+      update_ylim = 1;
+     case {'b', 'B'}
+      yscale = (ymax - ymin);
+      ymin = ymin + yscale;
+      ymax = ymax + yscale;
+      update_plot = 1; % for text labels
+      update_ylim = 1;
+     case {'t', 'T'}
+      yscale = (ymax - ymin);
+      ymin = ymin - yscale;
+      ymax = ymax - yscale;
       update_plot = 1; % for text labels
       update_ylim = 1;
      case {'1'}

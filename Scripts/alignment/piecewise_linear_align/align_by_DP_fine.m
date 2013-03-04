@@ -22,6 +22,7 @@ function [d_out,x_warp_all, anchor_nodes] = align_by_DP_fine( d_all, align_block
 
 d_out = [];
 if nargin == 0;  help( mfilename ); return; end;
+if ~exist( 'align_blocks_in','var') align_blocks_in = []; end;
 
 penalizeStretchFactor = 1.0;
 slack = 10;
