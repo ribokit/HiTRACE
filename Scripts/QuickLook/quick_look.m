@@ -319,11 +319,11 @@ figure(4);
 
 
 % this appears to get thrown off by 
-if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_v2( d, max(ymin-200,1), min(ymax+200,size(d,1)) );  end;
+if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_smooth( d, max(ymin-200,1), min(ymax+200,size(d,1)) );  end;
 
 d = d(  [ymin:ymax], : );
 d_ref = d_ref( [ymin:ymax], : );
-%if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_v2( d, 1, size(d,1) );  end;
+%if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_smooth( d, 1, size(d,1) );  end;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
