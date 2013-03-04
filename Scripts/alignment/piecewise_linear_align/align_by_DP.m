@@ -1,7 +1,7 @@
-function [d_out,x_warp_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize,  PLOT_STUFF );
+function [d_out,x_transform_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize,  PLOT_STUFF );
 % ALIGN_BY_DP: refine alignment by piece-wise-linear transform, optimizing correlation by dynamic programming
 %
-%  [d_out, x_warp_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize,  PLOT_STUFF );
+%  [d_out, x_transform_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize,  PLOT_STUFF );
 %
 % Inputs:
 %  d_all = matrix with traces to be aligned
@@ -16,7 +16,7 @@ function [d_out,x_warp_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in,
 %  
 % Outputs:
 %  d_out        = matrix with aligned traces
-%  x_warp_all   = [advanced] matrix describing the local realignments
+%  x_transform_all   = [advanced] matrix describing the local realignments
 %  anchor_nodes = [advanced] window boundaries. 
 %
 % (C) R. Das, 2009-2011, 2013
@@ -51,7 +51,7 @@ end
 d_out = d_all;
 
 for j = 1:length( align_blocks_in )
-  [d_align, x_warp_all, DP, choice, anchor_nodes ] = align_by_DP_block( d_out(:, align_blocks_in{j}), 1, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF );
+  [d_align, x_transform_all, DP, choice, anchor_nodes ] = align_by_DP_block( d_out(:, align_blocks_in{j}), 1, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF );
   d_out(:, align_blocks_in{j} )  = d_align;
 end
 
@@ -70,7 +70,7 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [d_out,x_warp_all,DP,choice, anchor_nodes] = align_by_DP_block( d_all, refcol, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF );
+function [d_out,x_transform_all,DP,choice, anchor_nodes] = align_by_DP_block( d_all, refcol, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF );
 
 DP = [];
 choice = [];
@@ -81,7 +81,7 @@ which_lanes =  1:size( d_all, 2 );
 
 num_pixels = size( d_all, 1 );
 
-x_warp_all = zeros(  num_pixels, size( d_all, 2 ) );
+x_transform_all = zeros(  num_pixels, size( d_all, 2 ) );
 
 % keep track of alignment 'anchor' nodes.
 nodes = get_windows( windowSize, d_all(:,1) );
@@ -91,23 +91,23 @@ anchor_nodes = zeros( length( nodes )+1, size( d_all, 2) );
 if parallelization_exists()
   %for i = which_lanes;
   parfor i = which_lanes;
-    [x_warp_all(:,i), anchor_nodes(:,i)]    = align_by_DP_inner_loop( i, refcol, d_all, penalizeStretchFactor, slack, maxShift, windowSize, num_pixels );
+    [x_transform_all(:,i), anchor_nodes(:,i)]    = align_by_DP_inner_loop( i, refcol, d_all, penalizeStretchFactor, slack, maxShift, windowSize, num_pixels );
   end
 else
   for i = which_lanes;
-    [x_warp_all(:,i), anchor_nodes(:,i)]    = align_by_DP_inner_loop( i, refcol, d_all, penalizeStretchFactor, slack, maxShift, windowSize, num_pixels );
+    [x_transform_all(:,i), anchor_nodes(:,i)]    = align_by_DP_inner_loop( i, refcol, d_all, penalizeStretchFactor, slack, maxShift, windowSize, num_pixels );
   end
 end
   
-d_out = apply_warp( d_all, x_warp_all, PLOT_STUFF );
+d_out = apply_transform( d_all, x_transform_all, PLOT_STUFF );
    
 return;  
    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
-function  [x_warp, anchor_nodes]  = align_by_DP_inner_loop( i, refcol, d_all, penalizeStretchFactor, slack, maxShift, windowSize, num_pixels );
+function  [x_transform, anchor_nodes]  = align_by_DP_inner_loop( i, refcol, d_all, penalizeStretchFactor, slack, maxShift, windowSize, num_pixels );
   
 if ( i == refcol )
-  x_warp = [1:num_pixels];
+  x_transform = [1:num_pixels];
   [start_nodes, final_nodes] = get_windows( windowSize, d_all(:,i) );
   anchor_nodes = [start_nodes, final_nodes(end) ];
 else
@@ -119,17 +119,17 @@ else
     
   %plot( [d_ref d_ali] ); pause;
   
-  [d_warp, x_warp, DP, choice, anchor_nodes] = refine_by_warping( d_ref, d_ali, penalizeStretchFactor, slack, maxShift, windowSize );    
+  [d_transform, x_transform, DP, choice, anchor_nodes] = refine_by_transforming( d_ref, d_ali, penalizeStretchFactor, slack, maxShift, windowSize );    
   %toc
 end
 
-x_warp = x_warp';
+x_transform = x_transform';
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [ d_warp, x_warp, DP_matrix, choice, anchor_nodes ] = refine_by_warping( d_ref_input, d_ali_input, penalizeStretchFactor, slack, max_shift, window_size );
+function [ d_transform, x_transform, DP_matrix, choice, anchor_nodes ] = refine_by_transforming( d_ref_input, d_ali_input, penalizeStretchFactor, slack, max_shift, window_size );
 
 % window_size = 100; % in pixels
 % slack = 10; % Stretch/contract each window by this many pixels
@@ -292,7 +292,7 @@ for n = NUM_WINDOWS:-1:1
       
       prev_score = DP_matrix( final_nodes(k, goodpoints)+1, n+1)';
       convolution_score = diff2_matrix( k, goodpoints );
-      % New -- prevent warping if there's not much information.
+      % New -- prevent transforming if there's not much information.
       stretch_score = 0 * prev_score;
       potential_block_stretches = ( final_nodes(k, goodpoints) - start_nodes(k) ) - ( final_nodes_ref(n) - start_nodes_ref(n) );
       if ( n < NUM_WINDOWS )
@@ -350,13 +350,13 @@ nodes = [ start_nodes final_nodes(end) ];
 nodes_ref = [ start_nodes_ref final_nodes_ref(end)];
 %[ nodes; nodes_ref; nodes-nodes_ref]
 
-x_warp = interp1( nodes, nodes_ref, [1:num_pixels], 'linear','extrap');
+x_transform = interp1( nodes, nodes_ref, [1:num_pixels], 'linear','extrap');
 
-if ( length( unique( x_warp )  ) ~= length( x_warp  ) ) % something weird.
-  x_warp;
-  x_warp = 1:num_pixels;
+if ( length( unique( x_transform )  ) ~= length( x_transform  ) ) % something weird.
+  x_transform;
+  x_transform = 1:num_pixels;
 end
-d_warp = interp1( x_warp, d_ali_input( 1: num_pixels), 1:num_pixels, 'linear',0.0);
+d_transform = interp1( x_transform, d_ali_input( 1: num_pixels), 1:num_pixels, 'linear',0.0);
 
 anchor_nodes = nodes'; %useful output
 

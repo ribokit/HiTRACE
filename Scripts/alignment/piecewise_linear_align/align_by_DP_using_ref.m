@@ -1,7 +1,7 @@
-function [d_out,d_ref_out, x_warp_all] = align_by_DP_using_ref( d, d_ref, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF , SHOW_ANCHOR_NODES);
+function [d_out,d_ref_out, x_transform_all] = align_by_DP_using_ref( d, d_ref, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF , SHOW_ANCHOR_NODES);
 % ALIGN_BY_DP_USING_REF: refine alignment by piece-wise-linear transform, optimizing correlation by dynamic programming
 %
-% [d_out,d_ref_out, x_warp_all] = align_by_DP_using_ref( d, d_ref, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF , SHOW_ANCHOR_NODES);
+% [d_out,d_ref_out, x_transform_all] = align_by_DP_using_ref( d, d_ref, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF , SHOW_ANCHOR_NODES);
 %
 % Inputs:
 %  d     = matrix with traces to be aligned
@@ -19,7 +19,7 @@ function [d_out,d_ref_out, x_warp_all] = align_by_DP_using_ref( d, d_ref, align_
 % Outputs:
 %  d_out        = matrix with aligned traces
 %  d_ref_out    = matrix with aligned reference traces
-%  x_warp_all   = [advanced] matrix describing the local realignments
+%  x_transform_all   = [advanced] matrix describing the local realignments
 %
 % (C) R. Das, 2011, 2013
 %
@@ -51,8 +51,8 @@ d_ref_out = d_ref;
 d_out = d;
 
 for j = 1:length( align_blocks_in )
-  [d_ref_out, x_warp_all, anchor_nodes ] = align_by_DP( d_ref_out,  align_blocks_in{j}, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF );
-  d_out(:, align_blocks_in{j}) = apply_warp( d_out(:,align_blocks_in{j}), x_warp_all, 0 );
+  [d_ref_out, x_transform_all, anchor_nodes ] = align_by_DP( d_ref_out,  align_blocks_in{j}, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF );
+  d_out(:, align_blocks_in{j}) = apply_transform( d_out(:,align_blocks_in{j}), x_transform_all, 0 );
 end
 
 

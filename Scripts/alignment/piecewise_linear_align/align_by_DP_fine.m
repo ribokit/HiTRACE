@@ -1,10 +1,10 @@
-function [d_out,x_warp_all, anchor_nodes] = align_by_DP_fine( d_all, align_blocks_in );
+function [d_out,x_transform_all, anchor_nodes] = align_by_DP_fine( d_all, align_blocks_in );
 % ALIGN_BY_DP_FINE: refine alignment by piece-wise-linear transform, optimizing correlation by dynamic programming
 %
 % calls ALIGN_BY_DP using parameter values that permit fine-grained realigment, as is useful
 % with mutate/map data.
 %
-%  [d_out, x_warp_all, anchor_nodes] = align_by_DP_fine( d_all, align_blocks_in );
+%  [d_out, x_transform_all, anchor_nodes] = align_by_DP_fine( d_all, align_blocks_in );
 %
 % Inputs:
 %  d_all = matrix with traces to be aligned
@@ -14,7 +14,7 @@ function [d_out,x_warp_all, anchor_nodes] = align_by_DP_fine( d_all, align_block
 %  
 % Outputs:
 %  d_out        = matrix with aligned traces
-%  x_warp_all   = [advanced] matrix describing the local realignments
+%  x_transform_all   = [advanced] matrix describing the local realignments
 %  anchor_nodes = [advanced] window boundaries. 
 %
 % (C) R. Das, 2013
@@ -30,4 +30,4 @@ maxShift = 50;
 windowSize = 50;
 PLOT_STUFF = 1;
 
-[d_out,x_warp_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize,  PLOT_STUFF );
+[d_out, x_transform_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize,  PLOT_STUFF );
