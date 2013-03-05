@@ -129,7 +129,7 @@ tag = dirnames{1};
 if tag(end) == '/'; tag = tag(1:end-1); end; % get rid of final slash
 %  just get the last directory name.
 tags = split_string( tag, '/' );
-tag = tags{ end } 
+tag = tags{ end };
 
 filepath = '';
 [ data_all, filenames_all, data_set_starts, data_length ] = ...
