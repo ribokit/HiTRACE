@@ -90,7 +90,7 @@ data_in = data_correct;
 data_fix = {};
 for i = 1: length(data_in)
     data_fix{1,i} = fix_strong_negativeB(data_in{1,i},flatten_range(i,:));
-    figure(i+5); plot(data_in{1,i}(:,2),'b'); hold on; plot(data_fix{1,i}(:,2),'Color',[0 0.5 0]);     %plot uninterpolated and interpolated data
+%    figure(i+5); plot(data_in{1,i}(:,2),'b'); hold on; plot(data_fix{1,i}(:,2),'Color',[0 0.5 0]);     %plot uninterpolated and interpolated data
 end
 
 data_in = data_fix;
