@@ -9,7 +9,7 @@ function [d_sub, bd] = baseline_subtract_smooth( d, ymin,ymax, A, B, PLOT_STUFF)
 %  Optional:
 %    ymin, ymax = anchorpoints for subtraction
 %    A = parameter weighting how smooth baseline should be [default 2e9]
-%    B = parameter weghting how to penalize basleine overshooting input trace. [default 2e4]
+%    B = parameter weghting how to penalize baseline overshooting input trace. [default 2e4]
 %    PLOT_STUFF = setting used by GUI interface to turn off plots.
 %
 %

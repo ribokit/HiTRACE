@@ -78,6 +78,7 @@ refchannel = signals_and_ref( end );
 fprintf( 'Assuming reference channel: %d\n', refchannel );
 
 
+
 % Parse some of these crazy options.
 if ~exist( 'moreOptions' ) moreOptions = {}; end;
 if ~iscell( moreOptions); moreOptions = { moreOptions }; end;
@@ -133,7 +134,7 @@ tag = tags{ end };
 
 filepath = '';
 [ data_all, filenames_all, data_set_starts, data_length ] = ...
-    read_abi_dirs( filepath, dirnames, dye_names_full, PLOT_STUFF );
+    read_abi_dirs( filepath, dirnames, dye_names_full, PLOT_STUFF );        %Reads in ABI files, performs leakage correction if specified, then plots traces
 
 if length( data_all ) == 0 ; return; end;
 
@@ -230,7 +231,7 @@ if PLOT_STUFF
   xticklabel_rotate;
   
   colormap( 1- gray(100));
-  print( '-depsc2',[tag,'_Figure2.eps']);
+  %print( '-depsc2',[tag,'_Figure2.eps']);
 end
 
 
@@ -325,6 +326,21 @@ d_ref = d_ref( [ymin:ymax], : );
 %if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_smooth( d, 1, size(d,1) );  end;
 
 
+
+%%%%%%%
+% Clarence Cheng, 2013
+% Plot baseline-subtracted negative peak-fixed data - this section was for
+% testing the addition of fix_strong_negative to plot_ABI_runs
+%
+%i = size(d,2)/2;
+%for j = 1:i
+%   hold on; figure(5+j); plot(d(:,j+i)*100,'Color',[0 0.75 0.75]);
+%end
+%figure;
+%%%%%%%
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % STAGE 5
 % align_by_DP -- local refinement through 
@@ -351,7 +367,7 @@ if PLOT_STUFF
   set( h,'interpreter','none' )
   colormap(  1 - gray(100) )
 
-  print( '-depsc2',[tag,'_Figure4.eps']);
+  %print( '-depsc2',[tag,'_Figure4.eps']);
 
   
   h = figure(5); clf;
@@ -379,10 +395,28 @@ if PLOT_STUFF
 end
 
 if PLOT_STUFF
-  fprintf( ['\nCreated: ',tag,'_Figure2.eps\n'] );
+  %fprintf( ['\nCreated: ',tag,'_Figure2.eps\n'] );
   %fprintf( ['Created: ',tag,'_Figure3.eps\n'] );
-  fprintf( ['Created: ',tag,'_Figure4.eps\n'] );
+  %fprintf( ['Created: ',tag,'_Figure4.eps\n'] );
 end
+
+
+%% Clarence Cheng - save all figures as .eps and .fig
+mkdir('Figures');
+cd Figures;
+print( figure(1),'-depsc2',[tag,'_1Traces.eps']);
+hgsave(figure(1),[tag,'_1Traces']);
+print( figure(2),'-depsc2',[tag,'_2AllData.eps']);
+hgsave(figure(2),[tag,'_2AllData']);
+print( figure(3),'-depsc2',[tag,'_3LinearAlign.eps']);
+hgsave(figure(3),[tag,'_3LinearAlign']);
+print( figure(4),'-depsc2',[tag,'_4FinalSignal.eps']);
+hgsave(figure(4),[tag,'_4FinalSignal']);
+print( figure(5),'-depsc2',[tag,'_5FinalReference.eps']);
+hgsave(figure(5),[tag,'_5FinalReference']);
+cd ..
+%%
+
 
 fprintf( '\n' );
 fprintf( 'ymin = %d\n', ymin)

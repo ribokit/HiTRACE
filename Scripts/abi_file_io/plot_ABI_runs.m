@@ -54,6 +54,18 @@ if length( data_in ) == 0;
 end; % did the files exist?
 
 
+%%%%%%%
+% Clarence Cheng, 2013
+% In case of large negative peak in HEX channel due to ROX ladder, use fix_strong_negative script to replace the peak with a linear interpolation around the peak
+% Strategy: detect whether there is a large negative peak; if so, get peak range for flattening; then leakage correct; then flatten the correct range, then return for rest of quick_look (including baseline subtraction) 
+
+for i = 1: length(data_in)
+    flatten_range(i,:) = fix_strong_negativeA(data_in{1,i});
+end
+
+%%%%%%%
+
+
 % in case there are more color channels than specified in dye_names_full...
 if ~ischar( dye_names_full )
   for i = length( dye_names_full)+1 : size( d,2 )
@@ -69,6 +81,22 @@ else
 end
 data_correct = correct_leakage( data_in, lm );
 data_in = data_correct;
+
+
+%%%%%%%
+% Clarence Cheng, 2013
+% flatten region of former strong negative peak by interpolation; if no strong negative peak detected, will not flatten anything 
+
+data_fix = {};
+for i = 1: length(data_in)
+    data_fix{1,i} = fix_strong_negativeB(data_in{1,i},flatten_range(i,:));
+    figure(i+5); plot(data_in{1,i}(:,2),'b'); hold on; plot(data_fix{1,i}(:,2),'Color',[0 0.5 0]);     %plot uninterpolated and interpolated data
+end
+
+data_in = data_fix;
+
+%%%%%%%
+
 
 %how_many_cols = figure_out_cols( filenames );
 for k = 1:count

@@ -10,6 +10,7 @@ if nargin == 0;  help( mfilename ); return; end;
 alldata_correct = {};
 
 invmatrix = inv( leakage_matrix );
+
 for j = 1: size( alldata,2 )
   data = alldata{j};
   alldata_correct{j} = data * invmatrix;
