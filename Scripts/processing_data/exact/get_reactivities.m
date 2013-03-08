@@ -1,10 +1,8 @@
 function [ normalized_reactivity,area_peak_corrected,attenuation_corrected,reactionProb] = get_reactivities( saturated_array,diluted_array,sd_cutoff, bkg_col, ref_peak)
-% [ normalized_reactivity,area_peak_corrected,attenuation_corrected,reactionProb] = get_reactivities( saturated_array,diluted_array,sd_cutoff, bkg_col, ref_peak)
-%
-% Fully automated reactivity referencing workflow, starting from
-% measurements of area_peak.  See "unsaturate" for more details on
-% saturated_array, unsaturated_array, and sd_cutoff.
-% 
+%Fully automated reactivity referencing workflow, starting from
+%measurements of area_peak.  See "unsaturate" for more details on
+%saturated_array, unsaturated_array, and sd_cutoff.
+
 % bkg_col contains references to the nomod lanes.  Input reactionProbs of lanes
 % corresponding to a single nomod.  Nomod is the first lane of the reactionProb.
 % e.g. for nomods in lanes 1, 5, and 10, bkg_col = [1:4;5:9;10:12]  Enter
@@ -19,8 +17,6 @@ function [ normalized_reactivity,area_peak_corrected,attenuation_corrected,react
 % NORMALIZED REACTIVITY VALUES ARE RETURNED 5' to 3'.
 
 % Thomas Mann, November 2012.
-
-if nargin == 0;  help( mfilename ); return; end;
 
 area_peak_corrected = [];
 attenuation_corrected = [];
@@ -43,21 +39,33 @@ end;
 
 [~,num_probs] = size(bkg_col);
 
+reactionProb = [];
 for i = 1:num_nomod;
     for j = 1:num_probs;
-    reactionProb{i} = attenuation_corrected(:,bkg_col(i,j)) - attenuation_corrected(:,bkg_col(i,1));
+    reactionProb(:,i) = attenuation_corrected(:,bkg_col(i,j)) - attenuation_corrected(:,bkg_col(i,1));
     end;
 end;
 
-for i = 1:length(reactionProb);
-    reactivity(:,i) = reactionProb{i}(:) / reactionProb{i}(ref_peak);
+
+[prob_rows,prob_cols] = size(reactionProb);
+normalized_reactivity = zeros(prob_rows,prob_cols);
+
+for i = 1:prob_cols;
+    for j = 1:length(ref_peak); %allows for user-defined number of reference peaks
+        reactivity(:,j) = reactionProb(:,i) / reactionProb(ref_peak(j),i);
+    end;
+    
+    for k = 1:length(reactivity);
+        ref_averaged = (sum(reactivity(k,:)) / length(ref_peak));
+        normalized_reactivity(k,i) = ref_averaged;
+    end;
 end;
 
-normalized_reactivity = []
-[~,react_cols] = size(reactivity)
+
+[~,react_cols] = size(reactionProb)
 for i = 1:react_cols;
-    normalized_reactivity(:,i) = transpose(sequence_reversed(reactivity(:,i)));
+    normalized_reactivity(:,i) = transpose(sequence_reversed(normalized_reactivity(:,i)));
 end;
 
-
+end
 
