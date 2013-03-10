@@ -317,15 +317,18 @@ end
 %  not necessarily constant) baseline
 figure(4);
 
+ymin_pad = max(ymin-200,1);
+ymax_pad = min(ymax+200,size(d,1));
 
-% this appears to get thrown off by 
-if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_smooth( d, max(ymin-200,1), min(ymax+200,size(d,1)) );  end;
+if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_smooth( d, ymin_pad, ymax_pad);  end;
+
+if (LOCAL_ALIGN) 
+  ywindow = [ymin_pad:ymax_pad ];
+  [ d(ywindow,:), d_ref(ywindow,:) ] = align_by_DP_using_ref( d(ywindow,:), d_ref(ywindow,:) ); 
+end
 
 d = d(  [ymin:ymax], : );
 d_ref = d_ref( [ymin:ymax], : );
-%if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_smooth( d, 1, size(d,1) );  end;
-
-
 
 %%%%%%%
 % Clarence Cheng, 2013
@@ -345,7 +348,6 @@ d_ref = d_ref( [ymin:ymax], : );
 % STAGE 5
 % align_by_DP -- local refinement through 
 % piece-wise linear transformation.
-if (LOCAL_ALIGN) [d, d_ref] = align_by_DP_using_ref( d, d_ref ); end;
 
 if PLOT_STUFF
   h = figure(4); clf;
