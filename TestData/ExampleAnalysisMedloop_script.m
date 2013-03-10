@@ -36,10 +36,10 @@ d_align  = align_by_DP_fine( d_align_before_more_alignment, align_blocks );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % definitions of what's in this data set.
 sequence = 'GGAACGACGAACCGAAAACCGAAGAAAUGAAGAAAGGUUUUCGGUACCGACCUGAAAACCAAAGAAACAACAACAACAAC';
-structure= '..........((((((((((...............))))))))))...................................';
 % the value you add to the sequence position to get the 'conventional numbering' (here the numbering used in the Medloop paper)
 offset = -10;  
 first_RT_nucleotide = length( sequence ) - 20 + offset; % primer binds to last 20 nucleotides
+structure= '..........((((((((((...............))))))))))...................................';
 
 % definition of what to expect in each trace.
 for i = 1:40; data_types{i} = 'DMS'; end; % DMS mutate-and-map data.
