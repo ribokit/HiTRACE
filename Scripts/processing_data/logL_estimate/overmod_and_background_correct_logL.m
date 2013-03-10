@@ -1,9 +1,10 @@
-function [ area_correct_bsub, darea_correct_bsub ] = overmod_and_background_correct_logL( area_peak, backgd_cols, normbins,  area_pred, area_peak_error, overmod_specified );
+function [ area_correct_bsub, darea_correct_bsub ] = overmod_and_background_correct_logL( seqpos, area_peak, backgd_cols, normbins,  area_pred, area_peak_error, overmod_specified );
 % OVERMOD_AND_BACKGROUND_CORRECT_LOGL
 %
-%  [ area_correct_bsub, darea_correct_bsub ] = overmod_and_background_correct_logL( area_peak, backgd_cols );
+%  [ area_correct_bsub, darea_correct_bsub ] = overmod_and_background_correct_logL( seqpos, area_peak, backgd_cols );
 %
 % Inputs:
+%  seqpos      = sequence positions corresponding to area_peak -- used to figure out whether they are going from 5' to 3' or the other way 
 %  area_peak   = quantitated band intensities for one or more traces. Must include at least one 'background' 
 %                     (no-modification) control.
 %  backgd_cols = indices corresponding to control(s). If more than one, average is used as background estimate.
@@ -34,6 +35,18 @@ if ~exist( 'overmod_specified' )
   overmod_specified = -1;
 end
 
+% this script was originally written with the
+% assumption that the input data was ordered from
+% the first reverse transcribed nucleotide to the last
+% [3' to 5' in the RNA numbering.]
+seqpos_reversed = 0;
+if seqpos(2) > seqpos(1)
+  seqpos_reversed = 1;
+  area_peak       = area_peak(end:-1:1,:);
+  area_peak_error = area_peak_error(end:-1:1,:);
+  area_pred       = area_pred(end:-1:1,:);
+end
+
 b = mean( area_peak( :, backgd_cols ), 2 );
 db = sqrt( sum( area_peak_error(:,backgd_cols ).^2, 2 )/length( backgd_cols) );
 
@@ -60,3 +73,10 @@ for k = 1: size( area_peak,2 )
   
 end
 fprintf(1,'\n');
+
+
+if seqpos_reversed;
+ area_correct_bsub = area_correct_bsub( end:-1:1, : );
+ darea_correct_bsub = darea_correct_bsub( end:-1:1, : );
+end
+

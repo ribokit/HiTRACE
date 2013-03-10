@@ -330,19 +330,6 @@ end
 d = d(  [ymin:ymax], : );
 d_ref = d_ref( [ymin:ymax], : );
 
-%%%%%%%
-% Clarence Cheng, 2013
-% Plot baseline-subtracted negative peak-fixed data - this section was for
-% testing the addition of fix_strong_negative to plot_ABI_runs
-%
-%i = size(d,2)/2;
-%for j = 1:i
-%   hold on; figure(5+j); plot(d(:,j+i)*100,'Color',[0 0.75 0.75]);
-%end
-%figure;
-%%%%%%%
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % STAGE 5
@@ -418,6 +405,8 @@ print( figure(5),'-depsc2',[tag,'_5FinalReference.eps']);
 hgsave(figure(5),[tag,'_5FinalReference']);
 cd ..
 %%
+
+figure(4);
 
 
 fprintf( '\n' );

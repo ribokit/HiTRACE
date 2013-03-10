@@ -37,3 +37,4 @@ function [range] = fix_strong_negativeA(data)
     else
         range = [0 0];      %this will prevent fix_strong_negativeB from flattening any data after leakage correction if there are no strong negative peaks in the data
     end
+

@@ -60,7 +60,7 @@ end; % did the files exist?
 % Strategy: detect whether there is a large negative peak; if so, get peak range for flattening; then leakage correct; then flatten the correct range, then return for rest of quick_look (including baseline subtraction) 
 
 for i = 1: length(data_in)
-    flatten_range(i,:) = fix_strong_negativeA(data_in{1,i});
+  flatten_range{i} = fix_strong_negativeA(data_in{1,i});
 end
 
 %%%%%%%
@@ -89,8 +89,8 @@ data_in = data_correct;
 
 data_fix = {};
 for i = 1: length(data_in)
-    data_fix{1,i} = fix_strong_negativeB(data_in{1,i},flatten_range(i,:));
-%    figure(i+5); plot(data_in{1,i}(:,2),'b'); hold on; plot(data_fix{1,i}(:,2),'Color',[0 0.5 0]);     %plot uninterpolated and interpolated data
+    data_fix{1,i} = fix_strong_negativeB(data_in{1,i},flatten_range{i});
+    %    figure(i+5); plot(data_in{1,i}(:,2),'b'); hold on; plot(data_fix{1,i}(:,2),'Color',[0 0.5 0]);     %plot uninterpolated and interpolated data
 end
 
 data_in = data_fix;

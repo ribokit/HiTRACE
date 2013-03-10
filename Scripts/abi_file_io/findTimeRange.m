@@ -42,7 +42,7 @@ N = length( min_list );
 ymin = round( min_list( ceil( 0.50*N ) ) ) - 150;
 
 N = length( max_list );
-ymax = round( max_list( ceil( 0.80*N ) ) ) + 150;
+ymax = round( max_list( ceil( 0.50*N ) ) ) + 250;
 
 ymin = max( ymin, 1 );
 ymax = min( ymax, size(d,1) );
