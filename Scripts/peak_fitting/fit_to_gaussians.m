@@ -22,8 +22,8 @@ if ~exist( 'PLOT_STUFF' ); PLOT_STUFF = 1; end;
 global verbose;
 verbose = [0 1];
 if size( xsel, 1 ) == 1; xsel = xsel'; end;
-if ~exist( 'const_width' ) | const_width == 0.0
-  const_width = 0.25 * mean( abs(  xsel(2:end) - xsel(1:end-1) ) );
+if ~exist( 'const_width' ) || const_width == 0.0
+  const_width = 0.25 * median( abs( diff(xsel) ) );
 end
 fprintf( 'Assuming constant peak width: %5.1f\n', const_width );
 area = [];
