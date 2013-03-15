@@ -173,17 +173,15 @@ count = 0;
 for m = 1:length(sigchannels) % usually just channel 1.
 
   for i = 1:length( trace_subset )  
-
     
     L = size(data_all{trace_subset(i)},1);
-    if( L < max_size)
-      data_all{ trace_subset(i) }(max_size, size(data_all{trace_subset(i)},2)) = 0;
-    end
+    if( L < max_size)  data_all{ trace_subset(i) }( (L+1):max_size, 1:size(data_all{trace_subset(i)},2)) = 0;    end
     
     % this is a straightforward subtraction of an offset.
     count = count+1;
-    d0_signal          (1:L,count) = baseline_subtract(data_all{ trace_subset(i) }(:,sigchannels(m)));
-    d0_reference_ladder(1:L,count) = baseline_subtract(data_all{ trace_subset(i) }(:,refchannel));
+
+    d0_signal          (1:max_size,count) = baseline_subtract(data_all{ trace_subset(i) }(:,sigchannels(m)));
+    d0_reference_ladder(1:max_size,count) = baseline_subtract(data_all{ trace_subset(i) }(:,refchannel));
 
     labels{count} = filenames_all{ trace_subset(i) };
   end
