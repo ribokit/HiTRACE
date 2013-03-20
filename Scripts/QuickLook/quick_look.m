@@ -143,7 +143,7 @@ numfiles = length( data_all );
 filenames_all;
 
 if ~exist( 'trace_subset' ) | length( trace_subset) == 0;  
-  trace_subset = [ 1 : length( data_all ) ]; 
+  trace_subset = [ 1 : length( data_all ) ];
 else
   subset_pos = [0]; % if user asks for a subset, it will be hard to define boundaries between subsets.
 end
@@ -158,8 +158,8 @@ end
 % standard...
 
 %truncate data to the same length (this shouldn't be necessary, but happened once with a mixed-up data set from the PAN facility.
-for i = length(trace_subset)
-    size_v = size(data_all{i},1);
+for i = 1:length(trace_subset)
+  size_v(i) = size( data_all{trace_subset(i)}, 1);
 end
 max_size = max(size_v);
 
@@ -175,7 +175,7 @@ for m = 1:length(sigchannels) % usually just channel 1.
   for i = 1:length( trace_subset )  
     
     L = size(data_all{trace_subset(i)},1);
-    if( L < max_size)  data_all{ trace_subset(i) }( (L+1):max_size, 1:size(data_all{trace_subset(i)},2)) = 0;    end
+    if( L < max_size)  data_all{ trace_subset(i) }( (L+1):max_size, 1:size(data_all{trace_subset(i)})) = 0;    end
     
     % this is a straightforward subtraction of an offset.
     count = count+1;
