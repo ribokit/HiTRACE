@@ -164,9 +164,9 @@ while ~stop_sel
 	%fprintf('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n')
 	%end
       end
-     %case {'e','E'} % doesn't work -- use mouse middle-click to erase.
-     % xsel = remove_pick( xsel, xselpick );
-     % update_plot = 1;
+     case {'e','E'} % doesn't work -- use mouse middle-click to erase.
+      xsel = remove_pick( xsel, xselpick );
+      update_plot = 1;
      case {'j','J'}
       current_relative_pos =  (xselpick - ymin)/(ymax-ymin);
       yscale = (ymax - ymin)*0.75;

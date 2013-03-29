@@ -74,9 +74,11 @@ else
 end  
 
 
-if PLOT_STUFF
-  figure(3)
-  
+if PLOT_STUFF == 1
+  h = figure(3);
+  set(h, 'Position', [0, 0, 800, 600]);
+  orient landscape;
+
   subplot(1,3,1);
   scalefactor = 40/mean(mean(d_align));
   image( scalefactor * d_align );
@@ -96,6 +98,16 @@ if PLOT_STUFF
   
   
   colormap( 1 - gray(100) );
+else
+    if PLOT_STUFF == 2
+        figure(3)
+        scalefactor = 40/mean(mean(d_align));
+        image( scalefactor * prof_fit );
+        ylim( [ min(xsel_start)-100, max(xsel_start)+100 ] );
+        title( 'fit' );
+        colormap( 1 - gray(100) );
+    end
+        
 end
 
 

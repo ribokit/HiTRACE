@@ -41,7 +41,7 @@ beta = zeros(1,n);
 L = zeros(1,n); % this is -log Likelihood
 
 % this inner loop can be totally parallelized!
-if exist( 'matlabpool' )
+if parallelization_exists()
   if matlabpool( 'size' ) == 0 ;   res = findResource; matlabpool( res.ClusterSize ); end    
   parfor i = 1:n
     [s_correct, correction ] = apply_overmod_correction_EXACT( s, overmod(i) ) ;

@@ -28,8 +28,9 @@ if ~exist( 'align_blocks_in','var') align_blocks_in = []; end;
 
 penalizeStretchFactor = 1.0;
 slack = 10;
-maxShift = 50;
+maxShift = 20;
 windowSize = 50;
 PLOT_STUFF = 1;
+% maxShift changed from 10 to 20, by T47, tested on 16S mutate-and-map
 
 [d_out, x_transform_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize,  PLOT_STUFF );
