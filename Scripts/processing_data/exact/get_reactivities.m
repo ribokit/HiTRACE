@@ -28,10 +28,14 @@ area_peak_corrected = unsaturate(saturated_array,diluted_array,sd_cutoff);
 
 [~, num_cols] = size(area_peak_corrected);
 
-num_nomod = length(bkg_col); %number of different background conditions to subtract.
+[num_nomod,~] = size(bkg_col); %number of different background conditions to subtract.
 
 %contains all the steps to process data after peak alignment, assignment,
 %and dilution scaling.
+
+for i = 1:num_cols;
+    area_peak_corrected(:,i) = transpose(sequence_reversed(area_peak_corrected(:,i)));
+end;
 
 for i = 1:num_cols;
     attenuation_corrected(:,i) = attenuation_corrector_v2(area_peak_corrected(:,i))
@@ -62,10 +66,10 @@ for i = 1:prob_cols;
 end;
 
 
-[~,react_cols] = size(reactionProb)
-for i = 1:react_cols;
-    normalized_reactivity(:,i) = transpose(sequence_reversed(normalized_reactivity(:,i)));
-end;
+%[~,react_cols] = size(reactionProb)
+%for i = 1:react_cols;
+ %   normalized_reactivity(:,i) = transpose(sequence_reversed(normalized_reactivity(:,i)));
+%end;
 
 end
 
