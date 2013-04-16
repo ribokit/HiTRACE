@@ -2,12 +2,18 @@ function make_lines_horizontal(line_pos,colorcode,linewidth);
 %
 % make_lines_horizontal(line_pos,colorcode,linewidth);
 %
-if nargin == 0;  help( mfilename ); return; end;
 
-if ~exist('colorcode')
-  colorcode='r';
+%if nargin == 0;  help( mfilename ); return; end;
+
+if ~exist( 'line_pos', 'var' ) | isempty( line_pos )
+    ylimits = get(gca,'ylim');
+    line_pos = round( [ylimits(1):ylimits(2)] );
 end
-if ~exist('linewidth')
+
+if ~exist('colorcode', 'var')
+  colorcode='k';
+end
+if ~exist('linewidth', 'var')
   linewidth = 1;
 end
 

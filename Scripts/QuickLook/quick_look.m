@@ -163,32 +163,30 @@ for i = 1:length(trace_subset)
 end
 max_size = max(size_v);
 
-d0_signal = [];
-d0_reference_ladder = [];
+N_traces = length( sigchannels ) * length( trace_subset );
+d0_signal = zeros( max_size, N_traces );
+d0_reference_ladder = zeros( max_size, N_traces );
 
 
 % If more than one color channel is specified, first fill a matrix with channel 1, then
 %  fill additional traces from channel 2, in the same order...
 count = 0;
+tic
 for m = 1:length(sigchannels) % usually just channel 1.
-
   for i = 1:length( trace_subset )  
-    
-    L = size(data_all{trace_subset(i)},1);
-    if( L < max_size)  data_all{ trace_subset(i) }( (L+1):max_size, 1:size(data_all{trace_subset(i)})) = 0;    end
-    
-    % this is a straightforward subtraction of an offset.
-    count = count+1;
 
-    d0_signal          (1:max_size,count) = baseline_subtract(data_all{ trace_subset(i) }(:,sigchannels(m)));
-    d0_reference_ladder(1:max_size,count) = baseline_subtract(data_all{ trace_subset(i) }(:,refchannel));
+    count = count+1;
+    L = size(data_all{trace_subset(i)},1);
+    % this is a straightforward subtraction of an offset.
+    d0_signal          (1:L,count) = baseline_subtract(data_all{ trace_subset(i) }(:,sigchannels(m)));
+    d0_reference_ladder(1:L,count) = baseline_subtract(data_all{ trace_subset(i) }(:,refchannel));
 
     labels{count} = filenames_all{ trace_subset(i) };
   end
 
   subset_pos = [subset_pos, count + subset_pos];
 end
-
+toc
 
 % If user has not  specified ymin,ymax in ylimit, figure it out.
 AUTOFIND_YLIMIT = 0;
@@ -389,19 +387,12 @@ end
 
 
 %% Clarence Cheng - save all figures as .eps and .fig
-mkdir('Figures');
-cd Figures;
-print( figure(1),'-depsc2',[tag,'_1Traces.eps']);
-hgsave(figure(1),[tag,'_1Traces']);
-print( figure(2),'-depsc2',[tag,'_2AllData.eps']);
-hgsave(figure(2),[tag,'_2AllData']);
-print( figure(3),'-depsc2',[tag,'_3LinearAlign.eps']);
-hgsave(figure(3),[tag,'_3LinearAlign']);
-print( figure(4),'-depsc2',[tag,'_4FinalSignal.eps']);
-hgsave(figure(4),[tag,'_4FinalSignal']);
-print( figure(5),'-depsc2',[tag,'_5FinalReference.eps']);
-hgsave(figure(5),[tag,'_5FinalReference']);
-cd ..
+if ~exist( 'Figures','dir' ) mkdir('Figures'); end;
+print_and_save_figure( 1, ['Figures/',tag,'_1Traces'] );
+print_and_save_figure( 2, ['Figures/',tag,'_2AllData'] );
+print_and_save_figure( 3, ['Figures/',tag,'_3LinearAlign'] );
+print_and_save_figure( 4, ['Figures/',tag,'_4FinalSignal'] );
+print_and_save_figure( 5, ['Figures/',tag,'_5FinalReference'] );
 %%
 
 figure(4);
@@ -466,3 +457,12 @@ while length( remain ) > 0
   [token, remain] = strtok(remain, delimiter);
   cols = [cols, token];
 end
+
+function  print_and_save_figure( fignum, tag );
+
+print( figure(fignum),'-depsc2',[tag,'.eps']);
+fprintf( ['\nCreated: ', tag,'.eps'] );
+hgsave(figure(fignum),tag);
+
+
+%%

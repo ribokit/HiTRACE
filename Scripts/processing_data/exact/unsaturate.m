@@ -1,6 +1,6 @@
 function [ area_peak_unsaturated ] = unsaturate( saturated_array, diluted_array, sd_cutoff )
 % UNSATURATE: Corrects area_peak arrays for saturating bands.  
-
+%
 % [ area_peak_unsaturated ] = unsaturate( saturated_array, diluted_array, sd_cutoff )
 %
 %Saturated array is the set of arrays measured at a full concentration; 

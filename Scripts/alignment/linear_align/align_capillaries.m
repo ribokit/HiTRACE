@@ -1,3 +1,4 @@
+
 function data_align = align_capillaries( data , refcol, reflane, REFINE);
 % ALIGN_CAPILLARIES:  Data from ABI readin -- align based on channel 'refcol'.
 %
@@ -37,7 +38,7 @@ if REFINE
   fprintf( 'ERROR! REFINE is no longer supported!\n');
   return;
 else
-  % what is the difference between ver2 and ver3?
+  % what is the difference between ver2 and ver3?  
   [d_align, x_realign] = align_to_first_ver2( d, 0, reflane );
 end
 

@@ -30,9 +30,13 @@ d_out = [];
 
 %if no 'block's are specified, align the whole thing to column 1
 if ~exist( 'align_blocks_in' ) | length( align_blocks_in) == 0;  align_blocks_in = { [1:size(d,2) ] }; end
-if ~iscell( align_blocks_in ); % might be a single refcol
-  refcol = align_blocks_in;
-  align_blocks_in = { [refcol, 1:(refcol-1), (refcol+1):size(d,2) ] };
+if ~iscell( align_blocks_in ); 
+  if length( align_blocks_in) == 1% might be a single refcol
+    refcol = align_blocks_in;
+    align_blocks_in = { [refcol, 1:(refcol-1), (refcol+1):size(d,2) ] };
+  else
+    align_blocks_in = {align_blocks_in};
+  end
 end
 
 

@@ -65,7 +65,7 @@ if length( data_types ) > 0
       peak_scores(i) = 0;
     elseif ( strcmp(data_types{i},'ddTTP') || strcmp(data_types{i},'ddGTP') ...
 	     || strcmp(data_types{i},'ddATP') || strcmp(data_types{i},'ddCTP') || strcmp(data_types{i},'ddUTP') )
-      peak_scores(i) = (num_lanes - 2) / 1.5;
+      %peak_scores(i) = (num_lanes - 2) / 1.5;
     end
   end
 end

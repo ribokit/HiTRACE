@@ -51,6 +51,12 @@ for k = 1:length( data_types )
 	area_pred(i,k) = 1.0;
       end
     end
+   case 'G'
+    for i = 1:length( structure )
+      if ( sequence(i) == 'G'  )
+	area_pred(i,k) = 1.0;
+      end
+    end
    case 'UV'
     for i = 2:length( structure )
       if ( sequence(i) == 'C'  | sequence(i) == 'U'  ) & ...

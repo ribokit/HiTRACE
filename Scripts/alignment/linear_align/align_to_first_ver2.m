@@ -55,6 +55,8 @@ else
 end
 
 
+data_align = data_realign;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [data_align, x_realign] =  align_to_first_inner_loop( d, FULL_SIGNAL_WINDOW, scales, shifts, d1, x,minbin_ref, maxbin_ref, PLOT_STUFF );
 

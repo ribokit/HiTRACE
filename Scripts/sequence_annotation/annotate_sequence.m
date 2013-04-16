@@ -2,7 +2,7 @@ function [xsel,seqpos,area_pred] = annotate_sequence( d_align, xsel, sequence_fu
 					offset, data_types, first_RT_nucleotide, structure );
 % ANNOTATE_SEQUENCE - Tool for rapid manual assignment of bands in electropherograms.
 %
-%  [xsel,seqpos,area_pred] = ( d_align, xsel, sequence_full, offset, data_types, first_RT_nucleotide, structure );
+%  [xsel,seqpos,area_pred] = annotate_sequence( d_align, xsel, sequence_full, offset, data_types, first_RT_nucleotide, structure );
 %
 %
 % Input:
@@ -86,6 +86,8 @@ axis( [ 0.5 numlanes+0.5 ymin ymax]);
 scale_factor = 40/ mean(mean(abs(d_align)));
 image( d_align * scale_factor );
 
+set (gcf, 'WindowButtonMotionFcn', @mouseMove);
+
 contrast_factor = 100.0/size(colormap,1);
 numlanes = size(d_align,2);
 
@@ -134,8 +136,8 @@ while ~stop_sel
     end
   else    
     keychar = get(gcf,'CurrentCharacter');
+
     switch keychar
-      
      case {'p', 'P'}
       [name path] = uiputfile('xsel.mat', 'Write xsel to matlab file');
       if(name)
@@ -416,3 +418,8 @@ for i = 1:length( annotation_handles )
 end
 
 ylim( [ymin ymax]);
+
+
+function mouseMove (object, eventdata)
+C = get (gca, 'CurrentPoint');
+%title(gca, ['(X,Y) = (', num2str(C(1,1)), ', ',num2str(C(1,2)), ')']);
