@@ -10,8 +10,8 @@ function [ normalized_reactivity,area_peak_corrected,attenuation_corrected,react
 % in your quick_look output, enter it as 1 if it is first in
 % saturated_array.
 
-% ref_peak is the nucleotide to which you want to normalize reactivites.
-% keep in mind that area_peak is oriented 3' to 5'.
+% ref_peak is the nucleotide to which you want to normalize reactivites,
+% read from the 3' end.
 % 
 
 % NORMALIZED REACTIVITY VALUES ARE RETURNED 5' to 3'.
@@ -33,9 +33,7 @@ area_peak_corrected = unsaturate(saturated_array,diluted_array,sd_cutoff);
 %contains all the steps to process data after peak alignment, assignment,
 %and dilution scaling.
 
-for i = 1:num_cols;
-    area_peak_corrected(:,i) = transpose(sequence_reversed(area_peak_corrected(:,i)));
-end;
+area_peak_corrected = flipud(area_peak_corrected); %makes it read 3' to 5'
 
 for i = 1:num_cols;
     attenuation_corrected(:,i) = attenuation_corrector_v2(area_peak_corrected(:,i))
@@ -65,11 +63,8 @@ for i = 1:prob_cols;
     end;
 end;
 
+normalized_reactivity = flipud(normalized_reactivity);
 
-%[~,react_cols] = size(reactionProb)
-%for i = 1:react_cols;
- %   normalized_reactivity(:,i) = transpose(sequence_reversed(normalized_reactivity(:,i)));
-%end;
 
 end
 
