@@ -1,5 +1,5 @@
 function [xsel,seqpos,area_pred] = annotate_sequence( d_align, xsel, sequence_full, ...
-					offset, data_types, first_RT_nucleotide, structure );
+					offset, data_types, first_RT_nucleotide, structure, ft_sz );
 % ANNOTATE_SEQUENCE - Tool for rapid manual assignment of bands in electropherograms.
 %
 %  [xsel,seqpos,area_pred] = annotate_sequence( d_align, xsel, sequence_full, offset, data_types, first_RT_nucleotide, structure );
@@ -15,6 +15,8 @@ function [xsel,seqpos,area_pred] = annotate_sequence( d_align, xsel, sequence_fu
 % first_RT_nucleotide = integer that gives nucleotide immediately 5' of primer binding site. 
 %                         [default: end of sequence]
 % structure       = structure in dot/bracket notation [give as '' if unknown] [default: '']
+% font_size       = font size of y-axis. Default is 6 for printout, supply
+%                         10 when you assign bands on the screen. %%added by T47
 %
 % Output:
 % xsel      = positions of bands across all lanes.
@@ -45,6 +47,7 @@ if ~exist('marks');  marks = []; end
 if ~exist('mutpos');  mutpos = []; end
 if ~exist('data_types'); data_types = []; end
 if ~exist('structure');  structure = ''; end
+if ~exist('ft_sz'); ft_sz = 6; end
 
 % 
 if exist( 'first_RT_nucleotide' ) | isempty( first_RT_nucleotide )
@@ -105,7 +108,7 @@ set(gcf, 'PaperPositionMode','auto','color','white','pointer','fullcross');
 while ~stop_sel
 
   % try to do 'lazy update'
-  if update_plot;     annotation_handles = make_plot( d_align, xsel, sequence, offset, area_pred, annotation_handles );   end
+  if update_plot;     annotation_handles = make_plot( d_align, xsel, sequence, offset, area_pred, annotation_handles, ft_sz );   end
   if update_contrast; colormap( 1 - gray( round( 100/contrast_factor ) ) ); end;
   if (update_ylim | update_plot); do_ylim_update( annotation_handles, ymin, ymax ); end;
 
@@ -271,7 +274,7 @@ if length( xsel ) > 0
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function  annotation_handles = make_plot( d_align, xsel, sequence, offset, area_pred, annotation_handles );
+function  annotation_handles = make_plot( d_align, xsel, sequence, offset, area_pred, annotation_handles, ft_sz );
 
 % an 'annotation handle' consists of the text, horizontal line, and circle markers
 %  that go with each sequence position.
@@ -358,7 +361,7 @@ for i = length( xsel ):-1:1
       
       h = text( 0.5, xsel(i), txt_to_show );        
       set(h,'HorizontalAlignment','right');
-      set(h,'fontweight','bold','fontsize',6);%,'clipping','on');
+      set(h,'fontweight','bold','fontsize', ft_sz);%,'clipping','on');
       handles = [handles, h ];
 
       mark_points = find( area_pred(seq_idx,:) > 0.5 );      

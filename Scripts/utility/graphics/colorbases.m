@@ -83,8 +83,8 @@ for k=whichres
     xbins =  bottom:top; 
     ybins = left:right;
     for n=1:3
-      imagex_color(xbins,ybins,n) = double(imagex(xbins,ybins,n))*colorplot(n);
-        %imagex_color(xbins,ybins,n) = 255*colorplot(n);
+      %imagex_color(xbins,ybins,n) = double(imagex(xbins,ybins,n))*colorplot(n);
+        imagex_color(xbins,ybins,n) = 255*colorplot(n);
     end
     
     MAKE_BOX_OUTLINE = 0;
