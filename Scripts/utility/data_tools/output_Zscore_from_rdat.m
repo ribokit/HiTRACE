@@ -236,6 +236,7 @@ ylabel( 'mutpos' );
 save( outfile, '-ascii','Z');
 
 set(gcf,'PaperPositionMode','auto');
+set(gcf,'Position',[0, 0, 800, 800]);
 
 if ( print_stuff )
   eps_file = [outfile, '.eps' ];
