@@ -1,70 +1,93 @@
-function [ normalized_reactivity,area_peak_corrected,attenuation_corrected,reactionProb] = get_reactivities( saturated_array,diluted_array,sd_cutoff, bkg_col, ref_peak)
-%Fully automated reactivity referencing workflow, starting from
-%measurements of area_peak.  See "unsaturate" for more details on
-%saturated_array, unsaturated_array, and sd_cutoff.
-
-% bkg_col contains references to the nomod lanes.  Input reactionProbs of lanes
-% corresponding to a single nomod.  Nomod is the first lane of the reactionProb.
-% e.g. for nomods in lanes 1, 5, and 10, bkg_col = [1:4;5:9;10:12]  Enter
-% the lane numbers as they appear in saturated array; even if it is lane 6
-% in your quick_look output, enter it as 1 if it is first in
-% saturated_array.
-
-% ref_peak is the nucleotide to which you want to normalize reactivites,
-% read from the 3' end.
-% 
-
-% NORMALIZED REACTIVITY VALUES ARE RETURNED 5' to 3'.
-
+function [ reactivity, seqpos_out, area_peak_corrected, attenuation_corrected, reactionProb] = get_reactivities( saturated_array, diluted_array, bkg_col, refpos, seqpos, sd_cutoff )
+%  [ reactivity, seqpos_out, area_peak_corrected,attenuation_corrected,reactionProb] = get_reactivities( saturated_array, diluted_array, bkg_col, refpos, seqpos, sd_cutoff )
+%
+% Inputs:
+%
+% saturated_array = band intensities that may have some peaks that are saturating the detector
+%                    must be ordered from 5' to 3'. First position should correspond to fully extended cDNA.
+% diluted_array   = band intensities that may have lower signal-to-noise but no saturated peaks.
+%                   saturated peakes in saturated_array will be replaced by values from this diluted_array (scaled).
+% bkg_col         = If an integer, the number of the 'no mod' trace. [If 0, no background subtraction.]
+%                    If you have different 'no mod' traces, you should specify
+%                    a set of integers that is the same length as the total number of traces,
+%                    containing the positions of the no mod that go with each trace.
+% refpos          = nucleotide(s) to which you want to normalize reactivites.
+% seqpos          = actual sequence positions specified in saturated_array.
+% sd_cutoff       = [optional] standard deviation to use as a cutoff for saturation in 'unsaturate' step. 
+%
+%
+% Outputs:
+%
+% reactivity = array of reactivities, ordered 5' to 3'. The first 
+%
+% Fully automated reactivity referencing workflow, starting from
+% measurements of area_peak.  See "unsaturate" for more details on
+% saturated_array, unsaturated_array, and sd_cutoff.
+%
+% Normalized reactivity values are returned 5' to 3'.
+%
 % Thomas Mann, November 2012.
+
+if nargin == 0; help( mfilename ); return; end;
+
+if ~exist( 'bkg_col' ) bkg_col = 0; end;
+if ~exist( 'refpos' ) refpos = []; end;
+if ~exist( 'seqpos' ) seqpos = [0 : size( saturated_array, 1 ) - 1]; end;
 
 area_peak_corrected = [];
 attenuation_corrected = [];
 reactionProb = [];
-normalized_reactivity = [];
+reactivity = [];
 reactionProb = {};
+seqpos_out = [];
 
-area_peak_corrected = unsaturate(saturated_array,diluted_array,sd_cutoff);
+if ( ~all( size( saturated_array ) == size( diluted_array )) ); fprintf( 'mismatch in size of saturated_array and diluted_array'); return;  end;
+nres   = size( saturated_array, 1);
+ntrace = size( saturated_array, 2 );
+if ( length(seqpos) ~= nres ); fprintf( 'Length of seqpos must match number of residues in saturated_array' ); return; end;
 
-[~, num_cols] = size(area_peak_corrected);
-
-[num_nomod,~] = size(bkg_col); %number of different background conditions to subtract.
-
-%contains all the steps to process data after peak alignment, assignment,
-%and dilution scaling.
-
-area_peak_corrected = flipud(area_peak_corrected); %makes it read 3' to 5'
-
-for i = 1:num_cols;
-    attenuation_corrected(:,i) = attenuation_corrector_v2(area_peak_corrected(:,i))
-end;
-
-[~,num_probs] = size(bkg_col);
-
-reactionProb = [];
-for i = 1:num_nomod;
-    for j = 1:num_probs;
-    reactionProb(:,i) = attenuation_corrected(:,bkg_col(i,j)) - attenuation_corrected(:,bkg_col(i,1));
-    end;
-end;
+if ~exist( 'sd_cutoff' ) sd_cutoff = 1.5; end;
+area_peak_corrected = unsaturate( saturated_array, diluted_array, sd_cutoff, seqpos);
+pause;
 
 
-[prob_rows,prob_cols] = size(reactionProb);
-normalized_reactivity = zeros(prob_rows,prob_cols);
+% contains all the steps to process data after peak alignment, assignment,
+% and dilution scaling.
+attenuation_corrected = correct_for_attenuation( area_peak_corrected, seqpos );
+pause;
 
-for i = 1:prob_cols;
-    for j = 1:length(ref_peak); %allows for user-defined number of reference peaks
-        reactivity(:,j) = reactionProb(:,i) / reactionProb(ref_peak(j),i);
-    end;
+% now do background subtraction.
+reactionProb = attenuation_corrected;
+
+if bkg_col(1) > 0;
+
+  if length( bkg_col ) == 1; bkg_col = bkg_col * ones( ntrace, 1 ); end;
+  reactionProb  = attenuation_corrected - attenuation_corrected(:,bkg_col);
     
-    for k = 1:length(reactivity);
-        ref_averaged = (sum(reactivity(k,:)) / length(ref_peak));
-        normalized_reactivity(k,i) = ref_averaged;
-    end;
-end;
-
-normalized_reactivity = flipud(normalized_reactivity);
-
-
+  image( 1:ntrace, seqpos, reactionProb * 2000 );
+  title( 'background corrected');
+  make_lines;
+  pause;
+  
 end
+
+ref_pos_in_array = [];
+for k = 1:length( refpos )
+  ref_pos_in_array = [ ref_pos_in_array, find( seqpos == refpos(k) ) ];
+end
+
+reactivity = reactionProb/mean(mean(reactionProb));
+if length( ref_pos_in_array ) > 0
+  reactivity = quick_norm( reactionProb, ref_pos_in_array );
+end
+
+image( 1:ntrace, seqpos, reactivity * 40 );
+title( 'final');
+make_lines;
+
+seqpos_out = seqpos(2:end);
+reactivity = reactivity(2:end,:);
+fprintf( 'NOTE! Reactivity does not have  "site 0", the fully extended cDNA.\nUse seqpos_out, which also removes that first data point.\n');
+
+
 
