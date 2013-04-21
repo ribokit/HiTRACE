@@ -168,5 +168,9 @@ hold off;
 set(gca,'ylim',[-0.5 5]);
 axis([ min(xsel_fit)-100 max(xsel_fit)+100 -0.5 max( prof_fit )]);
 
-%pause; 
+%pause;
+
+% beep notice when finished
+beep on; beep; beep off;
+
   

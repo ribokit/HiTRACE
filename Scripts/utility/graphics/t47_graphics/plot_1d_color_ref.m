@@ -69,10 +69,10 @@ if ~exist('shadow_lines','var'); shadow_lines = []; end;
 if ~exist('ref_lines','var'); ref_lines = []; end;
 if ~exist('caption','var'); caption = ''; end;
 if ~exist('if_print','var'); if_print = 1; end;
-if ~exist('filename','var') || isempty('filename'); filename = 'plot'; end;
-if ~exist('ft_sz','var') || isempty('ft_sz') || length(ft_sz) < 2; ft_sz = [25 20]; end;
-if ~exist('line_width','var') || isempty('line_width') || length(line_width) < 5; line_width = [2 2 2 1 2]; end;
-if ~exist('clr','var') || isempty('clr') || length(clr) < 6; clr = {'b', 'r', 'k', 'k', 'g', 'k'}; end;
+if ~exist('filename','var') || isempty(filename); filename = 'plot'; end;
+if ~exist('ft_sz','var') || isempty(ft_sz) || length(ft_sz) < 2; ft_sz = [25 20]; end;
+if ~exist('line_width','var') || isempty(line_width) || length(line_width) < 5; line_width = [2 2 2 1 2]; end;
+if ~exist('clr','var') || isempty(clr) || length(clr) < 6; clr = {'b', 'r', 'k', 'k', 'g', 'k'}; end;
 
 close all;
 h = figure; 

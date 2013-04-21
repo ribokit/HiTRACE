@@ -69,6 +69,9 @@ if PLOT_STUFF
   %make_lines( [0:size(d_out,2)], 'k', 0.25 );
 end
 
+% beep notice when finished
+beep on; beep; beep off;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [d_out,x_transform_all,DP,choice, anchor_nodes] = align_by_DP_block( d_all, refcol, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF );

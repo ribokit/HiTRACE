@@ -53,11 +53,11 @@ function double_mutant_output(d_align, scale_factor, labels, caption, flg, ft_sz
 % by T47, Mar 2013.
 %
 
-if ~exist('caption','var') || isempty('caption'); caption = ''; end;
-if ~exist('flg','var') || isempty('flg') || length(flg) < 5; flg = [1, 1, 1, 1, 0]; end;
-if ~exist('ft_sz','var') || isempty('ft_sz') || length(ft_sz) < 5; ft_sz = [20 12 15 54 .25]; end;
-if ~exist('clr','var') || isempty('clr') || length(clr) < 5; clr = {'k','k','r','b','k'}; end;
-if ~exist('filename','var') || isempty('filename'); filename = 'dbl_mnt'; end;
+if ~exist('caption','var') || isempty(caption); caption = ''; end;
+if ~exist('flg','var') || isempty(flg) || length(flg) < 5; flg = [1, 1, 1, 1, 0]; end;
+if ~exist('ft_sz','var') || isempty(ft_sz) || length(ft_sz) < 5; ft_sz = [20 12 15 54 .25]; end;
+if ~exist('clr','var') || isempty(clr) || length(clr) < 5; clr = {'k','k','r','b','k'}; end;
+if ~exist('filename','var') || isempty(filename); filename = 'dbl_mnt'; end;
 
 % check if label size match d_align
 if size(labels) ~= size(d_align,2)/2; fprintf('Label number mismatch!\n'); end;

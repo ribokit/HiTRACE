@@ -25,9 +25,9 @@ function print_bpp_Z (bpp, Z, scale_factor, filename, if_print)
 % by T47, Apr 2013
 %
 
-if ~exist('scale_factor') || isempty('scale_factor') || scale_factor == 0; scale_factor = -5; end;
-if ~exist('filename') || isempty('filename'); filename = ''; else; filename = ['_', filename]; end;
-if ~exist('if_print') || isempty('if_print'); if_print = 1; end;
+if ~exist('scale_factor') || isempty(scale_factor) || scale_factor == 0; scale_factor = -5; end;
+if ~exist('filename') || isempty(filename); filename = ''; else; filename = ['_', filename]; end;
+if ~exist('if_print') || isempty(if_print); if_print = 1; end;
 fprintf('scale_factor = %d\n', scale_factor);
 
 close all;
