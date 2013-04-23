@@ -24,9 +24,12 @@ end
 %  end
 %end
 
-norm_factor = 1.0 ./ mean( d( bins,:),1);
+for i = 1:size(d,2)
+  norm_factor( i ) = 1.0 ./ mean( d( bins,i) );
+  if isnan( norm_factor(i) ); norm_factor(i) = 0.0; end;
+  d_out(:,i) = d(:,i) * norm_factor( i );
+end
 
-d_out = d * diag( norm_factor );
 
 if do_transpose
   d_out = d_out';

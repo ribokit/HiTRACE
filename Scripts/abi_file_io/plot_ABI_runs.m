@@ -37,8 +37,11 @@ count = 0;
 
 data_in = {};
 for k = 1:length( datafiles );
-  count= count + 1;
+ 
   datafile = datafiles( k ).name;
+  if datafile(1) == '.'; continue;end;
+
+  count= count + 1;
   filenames_in{ count } = datafile( 1:(end-4) ); %remove .ab1 tag.
   datafile = [dirname,'/',datafile];
   filenames_full{ count } = datafile;
