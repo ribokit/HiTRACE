@@ -387,7 +387,9 @@ end
 
 
 %% Clarence Cheng - save all figures as .eps and .fig
-if ~exist( 'Figures','dir' ) mkdir('Figures'); end;
+% if ~exist( 'Figures','dir' ); 
+mkdir('Figures');
+% end;
 print_and_save_figure( 1, ['Figures/',tag,'_1Traces'] );
 print_and_save_figure( 2, ['Figures/',tag,'_2AllData'] );
 print_and_save_figure( 3, ['Figures/',tag,'_3LinearAlign'] );
