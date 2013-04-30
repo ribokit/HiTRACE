@@ -77,8 +77,8 @@ end
 if PLOT_STUFF == 1
   h = figure(3);
   set(h, 'Position', [0, 0, 800, 600]);
-  orient landscape;
-
+  set(h, 'PaperOrientation', 'landscape', 'PaperPositionMode', 'auto', 'color', 'white');
+  
   subplot(1,3,1);
   scalefactor = 40/mean(mean(d_align));
   image( scalefactor * d_align );
@@ -109,6 +109,9 @@ else
     end
         
 end
+
+% beep notice when finished
+beep on; beep; beep off;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -169,8 +172,4 @@ set(gca,'ylim',[-0.5 5]);
 axis([ min(xsel_fit)-100 max(xsel_fit)+100 -0.5 max( prof_fit )]);
 
 %pause;
-
-% beep notice when finished
-beep on; beep; beep off;
-
   

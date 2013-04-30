@@ -62,11 +62,17 @@ if PLOT_STUFF
   scalefactor = 40 / mean(mean(d_all));
   image( scalefactor * d_all )
   show_anchor_nodes( anchor_nodes );
+  title ('Before  align__by__DP');
   %make_lines( [0:size(d_out,2)], 'k', 0.25 );
   
   subplot(1,2,2);
   image( scalefactor * d_out )
+  title ('After  align__by__DP');
   %make_lines( [0:size(d_out,2)], 'k', 0.25 );
+  
+  set(gcf,'Position',[0, 0, 800, 600]);
+  set(gcf, 'PaperOrientation', 'landscape', 'PaperPositionMode', 'auto', 'color', 'white');
+        
 end
 
 % beep notice when finished
