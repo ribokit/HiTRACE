@@ -10,7 +10,10 @@ works = 0;
 if exist( 'matlabpool' )  
   works = 1;
   try
-    if matlabpool( 'size' ) == 0 ;   res = findResource; matlabpool( res.ClusterSize ); end
+    if matlabpool( 'size' ) == 0 ;   
+      fprintf( 'Starting up MATLAB parallelization toolbox...\n' );
+      res = findResource; matlabpool( res.ClusterSize ); 
+    end
   catch me
     fprintf( 'WARNING! NOT RUNNING PARALLELIZATION TOOLBOX!\n');
     fprintf( 'Check out: http://www.mathworks.com/support/bugreports/919688\n');

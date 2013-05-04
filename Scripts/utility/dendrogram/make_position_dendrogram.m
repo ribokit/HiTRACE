@@ -1,4 +1,11 @@
 function [perm_seq_out,perm_mod_out] = make_position_dendrogram( reactivity_final, subset_seq, subset_mod, seqpos, tags_final, sequences, offsets, sources, source_names );
+% MAKE_POSITION_DENDROGRAM
+%
+%  [perm_seq_out,perm_mod_out] = make_position_dendrogram( reactivity_final, subset_seq, subset_mod, seqpos, tags_final, sequences, offsets, sources, source_names );
+%
+% Still under testing.  
+%
+%
 
 if ~exist( 'sources' ) sources = ones(1, length( seqpos ) ); end;
 if ~exist( 'source_names' ) source_names = {}; end;
@@ -6,10 +13,13 @@ clf;
 if ~iscell( sequences ); sequences = { sequences } ; end;
 for i= 1:length(subset_mod); blank_tags{i} = ''; end;
 
-for i = 1:length( sources );
-  normpts = find( sources(subset_seq) == i );
-  r( normpts, :) = quick_norm( max(reactivity_final( subset_seq(normpts),subset_mod),0));
-end
+% may want to put this back in...
+%for i = 1:length( sources );
+ % normpts = find( sources(subset_seq) == i );
+ % r( normpts, :) = quick_norm( max(reactivity_final( subset_seq(normpts),subset_mod),0));
+%end
+
+r = quick_norm( max(remove_offset(reactivity_final( subset_seq,subset_mod) ),0) );
 
 
 
@@ -24,8 +34,11 @@ xticklabel_rotate
 
 
 subplot(2,2,2);
-% take out sequencing ladders!
-dm_seq = pdist( r ,'correlation' );
+
+%r =  100 * max(remove_offset(reactivity_final( subset_seq,subset_mod) ),0);
+%dm_seq = pdist( r ,'correlation' );
+dm_seq = pdist( r ,'mydist' );
+
 z_seq = linkage( dm_seq, 'weighted' );
 %z_seq = linkage( dm_seq, 'ward' );
 seqpos_tags = {};
@@ -58,3 +71,5 @@ xticklabel_rotate;
 
 perm_seq_out = subset_seq(perm_seq);
 perm_mod_out = subset_mod(perm_mod);
+
+set(gcf,'Pointer','fullcross');

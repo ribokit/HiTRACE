@@ -1,34 +1,43 @@
-function [ area_peak_unsaturated, diluted_array_scaled ] = unsaturate( undiluted_array, diluted_array, sd_cutoff, seqpos, exclude_pos )
+function [ area_peak_unsaturated, area_peak_unsaturated_error, diluted_array_scaled ] = unsaturate( undiluted_array, diluted_array, undiluted_array_error, diluted_array_error, sd_cutoff, seqpos, exclude_pos )
 % UNSATURATE: Corrects area_peak arrays for saturating bands.  
 %
-% [ area_peak_unsaturated, diluted_array_scaled ] = unsaturate( undiluted_array, diluted_array, sd_cutoff, seqpos, exclude_pos )
+% [ area_peak_unsaturated, diluted_array_scaled ] = unsaturate( undiluted_array, diluted_array, undiluted_array_error, diluted_array_error, sd_cutoff, seqpos, exclude_pos )
 %
-%Undiluted array is the set of arrays measured at a full concentration; 
-%diluted array is the same samples, in the same order, run at diluted version of the final sample.
-%
-%The diluted samples allow for saturating band quantitation.  REQUIRES THAT
-%THE TWO SETS OF ARRAYS BE IN THE SAME ORDER (e.g. column 1 of
-%undiluted_array corresponds to the same sample as is in column 1 of
-%diluted_array.  ALSO REQUIRES THAT AREA_PEAK ARRAYS BE LISTED WITH n ROWS IN 1
-%COLUMN.
-%
-% sd_cutoff adjusts the number of std. devs a residual has to be from the
-% mean to be rejected as a saturated band.  A higher sd_cutoff requires
-% more deviation from the mean residual for a band to be excluded as an
-% outlier. [default: 1.5]
+% undiluted_array = band intensities that may have some peaks that are saturating the detector
+%                    must be ordered from 5' to 3'. First position should correspond 
+%                    to fully extended cDNA.
+% diluted_array   = band intensities that may have lower signal-to-noise but no saturated peaks.
+%                    saturated peaks in undiluted_array will be replaced by values 
+%                    from this diluted_array (scaled).  Give as empty array '[]' if unknown.
+% undiluted_array_error = [optional] error corresponding to undiluted_array [taken as zero if not given]
+% diluted_array_error   = [optional] error corresponding to undiluted_array [taken as zero if not given]
+% sd_cutoff       = [optional] standard deviation to use as a cutoff for saturation in 'unsaturate' step [default 1.5]. 
+% seqpos          = [optional] sequence numbering (used for plotting) [default is 0,1,2,...]
+% exclude_pos     = [optional] sequence positions to exclude from unsaturation -- just use undiluted_array values here.
 %
 % (c) T. Mann, 2012
 % (c) T. Mann, R. Das, 2013
 %
 
-if nargin == 0;  help( mfilename ); return; end;
+if nargin < 2;  help( mfilename ); return; end;
 
+if ~exist( 'undiluted_array_error', 'var' ) | isempty( undiluted_array_error ); undiluted_array_error = 0 * undiluted_array; end;
+if ~exist( 'diluted_array_error', 'var' ) | isempty( diluted_array_error ); diluted_array_error = 0 * diluted_array; end;
 if ~exist( 'sd_cutoff' ) | isempty( sd_cutoff) | sd_cutoff == 0; sd_cutoff = 1.5; end;
 if ~exist( 'seqpos' ) seqpos = [0 : size( undiluted_array, 1 ) - 1]; end;
+if ~exist( 'exclude_pos' ) exclude_pos = []; end;
 
-if length(undiluted_array) ~= length(diluted_array)
+if ~all( size(undiluted_array) == size(diluted_array) )
   fprintf( 'The undiluted arrays do not equal the number of diluted arrays!\n');
   error('different arrays')
+end;
+if ~all( size(undiluted_array) == size(undiluted_array_error) )
+  fprintf( 'The undiluted_array_error does not match size of undiluted_array!\n');
+  error('different sizes in undiluted_array_error and undiluted_array')
+end;
+if ~all( size(diluted_array) == size(diluted_array_error) )
+  fprintf( 'The diluted_array_error does not match size of diluted_array!\n');
+  error( 'The diluted_array_error does not match size of diluted_array!\n');
 end;
 
 [num_rows, num_cols] = size(undiluted_array);
@@ -55,16 +64,21 @@ for i = 1:num_cols;
     is_saturated_position( saturated_positions, i ) = 1;
     
     diluted_array_scaled(:,i) = scalefactor * diluted_array(:,i);
+    diluted_array_scaled_error(:,i) = scalefactor * diluted_array_error(:,i);
     
     residuals = undiluted_array(:,i) - diluted_array_scaled(:,i);
     stdev = std( residuals );    
+
     saturated_positions = find( abs(residuals) > stdev * sd_cutoff );
+    %saturated_positions = find( residuals < -stdev * sd_cutoff );
     saturated_positions = setdiff( saturated_positions, exclude_idx );
   end
   
 end
 
+
 area_peak_unsaturated = [];
+area_peak_unsaturated_error = [];
 
 %area_peak_unsaturated gets the original value for area_peak if it was deemed
 %to be non-saturating; if the peak was deemed saturating, it gets the value
@@ -74,8 +88,10 @@ for i = 1:num_cols;
   for j = 1:num_rows;
     if is_saturated_position(j,i)
       area_peak_unsaturated(j,i) = diluted_array_scaled(j,i);
+      area_peak_unsaturated_error(j,i) = diluted_array_scaled_error(j,i);
     else
       area_peak_unsaturated(j,i) = undiluted_array(j,i);
+      area_peak_unsaturated_error(j,i) = undiluted_array_error(j,i);
     end;
   end;
 end;
@@ -83,7 +99,7 @@ end;
 % some visual feedback
 if ~exist( 'seqpos' ) seqpos = [0 : size( undiluted_array, 1 ) - 1]; end;
 
-scalefactor = 40 / mean( mean( undiluted_array ) );
+scalefactor = 40 / mean( mean( max(area_peak_unsaturated, 0 ) ) );
 
 subplot(1,3,1); make_image( undiluted_array, is_saturated_position, scalefactor, seqpos );
 title( 'undiluted sample' );

@@ -32,6 +32,8 @@ if length( structure ) ~= length( sequence ); fprintf( 'Sequence length must equ
 
 for k = 1:length( data_types )
 
+  if isempty( data_types{k} ) continue; end;
+  
   switch data_types{k}
    case 'SHAPE'
     for i = 1:length( structure )
