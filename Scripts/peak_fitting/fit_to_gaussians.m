@@ -218,11 +218,9 @@ if PLOT_STUFF;
   hold off;
   set(gca,'ylim',[-0.5 5]);
   axis([ min(xsel_fit)-100 max(xsel_fit)+100 min(prof_fit) max( prof_fit )]);
-  pause;
+  %pause;
 end
 
-% beep notice when finished
-%beep on; beep; beep off;
 return;
 
   

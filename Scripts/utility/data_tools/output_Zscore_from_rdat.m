@@ -194,18 +194,18 @@ end
 % Convert factor
 ZSCORE_SCALING = -1.0;
 
-if length( d.mutpos ) == 0
-  d = fill_mutpos( d );
+if ~exist('d.mutpos','var') || length( d.mutpos ) == 0
+  mutpos = generate_mutpos_from_rdat(d.data_annotations);
 end
 
 NRES = length(d.sequence);
 Zscore_full = zeros( NRES, NRES );
 pos1 = d.seqpos - d.offset;
-pos2 = d.mutpos - d.offset;
+pos2 = mutpos - d.offset;
 
 % look for first library, as marked by MutPos. Note that first column is assumed to be wt.
-for i = 2 : length( d.mutpos )
-  if (i < length( d.mutpos )) & ( isnan( d.mutpos(i+1) ) | d.mutpos(i) > d.mutpos(i+1) ); 
+for i = 2 : length( mutpos )
+  if (i < length( mutpos )) & ( isnan( mutpos(i+1) ) || mutpos(i) > mutpos(i+1) ); 
     break; 
   end
 end
@@ -213,12 +213,12 @@ gp = [2:i];
 
 % Remove mutants that are inputted in "ignore_mut"
 for i = 1:length( ignore_mut )
-  gp = setdiff( gp,   find( d.mutpos == ignore_mut(i)) );
+  gp = setdiff( gp,   find( mutpos == ignore_mut(i)) );
 end
 
 Zscore_full( pos1, pos2(gp) ) = Zscore(:,gp) * ZSCORE_SCALING;
 
-mutpos = d.mutpos( gp );
+mutpos = mutpos( gp );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function plot_and_save(Z, seqplot,  outfile, print_stuff );
@@ -246,10 +246,10 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function  d = fill_mutpos( d );
+function  d = fill_mutpos( d )
 
 % need to figure out where mutations are based on tags like "mutation:G64C" in data_annotation
-d.mutpos = []
+d.mutpos = [];
 for k = 1:length( d.data_annotations )
   d.mutpos(k) = NaN;
   data_annotation = d.data_annotations{k};
