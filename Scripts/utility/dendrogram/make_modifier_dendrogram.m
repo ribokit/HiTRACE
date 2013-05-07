@@ -1,20 +1,27 @@
-function perm_mod = make_modifier_dendrogram( reactivity_final, subset_seq, subset_mod, seqpos, tags_final );
+function perm_mod = make_modifier_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, seqpos, labels );
 % MAKE_MODIFIER_DENDROGRAM
 %
-% perm_mod = make_modifier_dendrogram( reactivity_final, subset_seq, subset_mod, seqpos, tags_final );
+% perm_mod = make_modifier_dendrogram( reactivity, subset_seq, subset_mod, seqpos, labels );
 %
 %  Clustering of deep chemical profiles and a nice big plot.
 %
 clf;
 
-%r = quick_norm( max(reactivity_final( subset_seq,subset_mod),0) );
-r = quick_norm( max(remove_offset(reactivity_final( subset_seq,subset_mod) ),0) );
+%r = quick_norm( max(reactivity( subset_seq,subset_mod),0) );
 
-dm = pdist( r' ,'correlation' );
+r = max(remove_offset(reactivity( subset_seq,subset_mod) ), 0);
+[r, norm_factor, r_error] = quick_norm( r, [], reactivity_error( subset_seq, subset_mod) );
+
+% new: cap_outliers
+%r = min( max( r, 0 ), 5 );
+
+%dm = pdist( r' ,'correlation' );
 %dm = pdist( r' ,'mydist' );
+%dm = pdist( r' ,'distcorr_wrapper' );
+dm = get_chi_squared_dm( r, r_error );
 
 z = linkage( dm, 'weighted' );
-[h,t,perm_mod] = dendrogram( z, 0, 'labels',tags_final( subset_mod) );
+[h,t,perm_mod] = dendrogram( z, 0, 'labels',labels( subset_mod) );
 set(gca,'Position', [0.02 0.85 0.98 0.10] )
 xlim([0.5 length(perm_mod)+0.5]);
 axis off

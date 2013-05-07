@@ -1,7 +1,7 @@
-function [perm_seq_out,perm_mod_out] = make_position_dendrogram( reactivity_final, subset_seq, subset_mod, seqpos, tags_final, sequences, offsets, sources, source_names );
+function [perm_seq_out,perm_mod_out] = make_position_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, seqpos, labels, sequences, offsets, sources, source_names );
 % MAKE_POSITION_DENDROGRAM
 %
-%  [perm_seq_out,perm_mod_out] = make_position_dendrogram( reactivity_final, subset_seq, subset_mod, seqpos, tags_final, sequences, offsets, sources, source_names );
+%  [perm_seq_out,perm_mod_out] = make_position_dendrogram( reactivity, subset_seq, subset_mod, seqpos, labels, sequences, offsets, sources, source_names );
 %
 % Still under testing.  
 %
@@ -16,14 +16,22 @@ for i= 1:length(subset_mod); blank_tags{i} = ''; end;
 % may want to put this back in...
 %for i = 1:length( sources );
  % normpts = find( sources(subset_seq) == i );
- % r( normpts, :) = quick_norm( max(reactivity_final( subset_seq(normpts),subset_mod),0));
+ % r( normpts, :) = quick_norm( max(reactivity( subset_seq(normpts),subset_mod),0));
 %end
 
-r = quick_norm( max(remove_offset(reactivity_final( subset_seq,subset_mod) ),0) );
+%r = quick_norm( max(remove_offset(reactivity( subset_seq,subset_mod) ),0) );
+r = max(remove_offset(reactivity( subset_seq,subset_mod) ), 0);
+%r = 2*r/mean(mean(r));
+[r, norm_factor, r_error] = quick_norm( r, [], reactivity_error( subset_seq, subset_mod) );
 
 
+
+% new: cap_outliers
+%r = min( max( r, 0 ), 5 );
 
 dm = pdist( r' ,'correlation' );
+%dm = get_chi_squared_dm( r, r_error );
+
 z = linkage( dm, 'weighted' );
 [h,t,perm_mod] = dendrogram( z, 0,'labels',blank_tags,'colorthreshold',0.3,'orientation','left' ); 
 for k = 1:length(h); set(h(k),'linew',2); end;
@@ -32,12 +40,15 @@ ylim([0.5 length(perm_mod)+0.5] )
 axis off
 xticklabel_rotate
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% cluster over sequence positions.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 subplot(2,2,2);
-
-%r =  100 * max(remove_offset(reactivity_final( subset_seq,subset_mod) ),0);
 %dm_seq = pdist( r ,'correlation' );
 dm_seq = pdist( r ,'mydist' );
+%dm_seq = pdist( r ,'distcorr_wrapper' );
+%dm_seq = get_chi_squared_dm( r', r_error' );
 
 z_seq = linkage( dm_seq, 'weighted' );
 %z_seq = linkage( dm_seq, 'ward' );
@@ -58,7 +69,7 @@ subplot(2,2,4);
 image(40 * r(perm_seq,perm_mod)' );
 colormap( 1 - gray(100));
 box off
-set(gca,'tickdir','out' ,'ticklength',[0 0], 'ytick',[1:length(perm_mod)],'fontweight','bold','yticklabel',tags_final(subset_mod(perm_mod)),'fontsize',6 );
+set(gca,'tickdir','out' ,'ticklength',[0 0], 'ytick',[1:length(perm_mod)],'fontweight','bold','yticklabel',labels(subset_mod(perm_mod)),'fontsize',6 );
 xlim( [0.5 length(perm_seq)+0.5] );
 ylim( [0.5 length(perm_mod)+0.5] );
 make_lines( [0:length(perm_seq)], 'k', 0.25);

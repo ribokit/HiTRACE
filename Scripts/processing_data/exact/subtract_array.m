@@ -1,7 +1,7 @@
-function  [subtracted, subtracted_err ] = subtract_data( signal, background, signal_err, background_err, seqpos, imagescalefactor )
-% SUBTRACT_DATA: Subtracts two arrays, and also progates errors. Useful for background subtaction.
+function  [subtracted, subtracted_err ] = subtract_array( signal, background, signal_err, background_err, seqpos, imagescalefactor )
+% SUBTRACT_ARRAY: Subtracts two arrays, and also progates errors. Useful for background subtaction.
 %
-%  [subtracted, subtracted_err ] = subtract_data( signal, background, signal_err, background_err, seqpos, imagescalefactor )
+%  [subtracted, subtracted_err ] = subtract_array( signal, background, signal_err, background_err, seqpos, imagescalefactor )
 %
 % Inputs:
 %  signal     = array with signal areas/reactivities.
@@ -11,7 +11,7 @@ function  [subtracted, subtracted_err ] = subtract_data( signal, background, sig
 %  signal_err     = array with errors on signal
 %  background_err = array with errors on background
 %  seqpos         = residue numberings that go with positions [for plotting; default is 0, 1, 2,...].
-%  imagescalefactor = factor by which to multiply data by plotting [default is calculated based on mean intensity]
+%  imagescalefactor = factor by which to multiply array by plotting [default is calculated based on mean intensity]
 %
 % (C) R. Das, 2013.
 %

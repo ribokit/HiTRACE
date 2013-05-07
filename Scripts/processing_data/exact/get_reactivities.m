@@ -84,7 +84,7 @@ image_scalefactor = 2000;
 BACKGROUND_SUBTRACTED = 0;
 if bkg_col(1) > 0;
   if length( bkg_col ) == 1; bkg_col = bkg_col * ones( ntrace, 1 ); end;
-  [reactionProb, reactionProb_err ] = subtract_data( attenuation_corrected, attenuation_corrected(:,bkg_col), attenuation_corrected_error, attenuation_corrected_error(:,bkg_col), seqpos )
+  [reactionProb, reactionProb_err ] = subtract_array( attenuation_corrected, attenuation_corrected(:,bkg_col), attenuation_corrected_error, attenuation_corrected_error(:,bkg_col), seqpos )
   BACKGROUND_SUBTRACTED = 1;
 end
 

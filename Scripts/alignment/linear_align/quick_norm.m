@@ -1,4 +1,4 @@
-function [d_out, norm_factor ] = quick_norm( d, bins );
+function [d_out, norm_factor, d_out_err ] = quick_norm( d, bins, d_err );
 % QUICK_NORM: normalize data based on mean in specified bins
 %
 % [d_out, norm_factor ] = quick_norm( d, bins );
@@ -8,13 +8,15 @@ function [d_out, norm_factor ] = quick_norm( d, bins );
 
 if nargin == 0;  help( mfilename ); return; end;
 
+if ~exist( 'd_err','var') d_err = 0*d; end;
+
 do_transpose = 0;
 if size( d, 1) == 1 && size( d, 2)>1
   d = d';
   do_transpose = 1;
 end
 
-if ~exist('bins')
+if ~exist('bins') | isempty( bins )
   bins = 1:size(d, 1);
 end
 
@@ -26,11 +28,15 @@ end
 
 for i = 1:size(d,2)
   norm_factor( i ) = 1.0 ./ mean( d( bins,i) );
+
   if isnan( norm_factor(i) ); norm_factor(i) = 0.0; end;
+
   d_out(:,i) = d(:,i) * norm_factor( i );
+  d_out_err(:,i) = d_err(:,i) * norm_factor( i );
 end
 
 
 if do_transpose
   d_out = d_out';
+  d_out_err = d_out_err';
 end
