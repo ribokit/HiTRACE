@@ -1,4 +1,4 @@
-function [ area_peak, darea_peak, prof_fit, deviation, derivatives, numerical_derivatives ] = fit_to_gaussians( d_align, xsel, const_width, xsel_error_to_width_ratio, PLOT_STUFF, DERIV_CHECK );
+function [ area_peak, darea_peak, prof_fit, deviation, derivatives, numerical_derivatives ] = fit_to_gaussians( d_align, xsel, const_width, xsel_error_to_width_ratio, PLOT_STUFF, DERIV_CHECK )
 % FIT_TO_GAUSSIANS: Fits electrophoretic traces to sums of Gaussians -- fast due to no optimization of peak positions.
 %
 %  [ area_peak, darea_peak, prof_fit, deviation ] = fit_to_gaussians( d_align, xsel, xsel_error_to_width_ratio, const_width, PLOT_STUFF );
@@ -31,31 +31,31 @@ if nargin < 2;  help( mfilename ); return; end;
 area_peak = [];
 prof_fit = 0 * d_align;
 deviation = [];
-if length( xsel ) == 0; return; end;
+if isempty(xsel); return; end;
 
 % by default, assume that error in peak location is about the same as typical peak width.
-if ~exist( 'xsel_error_to_width_ratio' ) | isempty( xsel_error_to_width_ratio ); xsel_error_to_width_ratio = 0.5; end;
-if ~exist( 'PLOT_STUFF' ) ; PLOT_STUFF = 1; end;
-if ~exist( 'DERIV_CHECK' ); DERIV_CHECK = 0; end;
+if ~exist( 'xsel_error_to_width_ratio', 'var') || isempty( xsel_error_to_width_ratio ); xsel_error_to_width_ratio = 0.5; end;
+if ~exist( 'PLOT_STUFF', 'var') ; PLOT_STUFF = 1; end;
+if ~exist( 'DERIV_CHECK', 'var'); DERIV_CHECK = 0; end;
 
 global verbose;
 verbose = [0 1];
 if size( xsel, 1 ) == 1; xsel = xsel'; end;
-if ~exist( 'const_width' ) | isempty( const_width ) |  const_width == 0.0
+if ~exist( 'const_width', 'var' ) || isempty( const_width ) ||  const_width == 0.0
   const_width = 0.25 * median( abs( diff(xsel) ) );
 end
 fprintf( 'Assuming constant peak width: %5.1f\n', const_width );
-area = [];
+%area = [];
 
-x = 1:size( d_align,1);
-numpeaks = size( xsel, 1 );
+%x = 1:size( d_align, 1);
+%numpeaks = size( xsel, 1 );
 num_xsel_lanes = size( xsel, 2 ) ;
 
 % Fit xsel, using a constant width approximation
-xsel_start = xsel(:,1)';
-widthpeak_start = const_width + 0 *xsel_start;
+xsel_start = xsel(:, 1)';
+widthpeak_start = const_width + 0 * xsel_start;
 
-if ~exist('whichpos');  whichpos = [1 : size(d_align,2)]; end
+if ~exist('whichpos', 'var');  whichpos = 1:size(d_align,2); end;
 
 area_peak = zeros( length( xsel_start ), size( d_align, 2) );
 prof_fit = 0 * d_align;
@@ -75,22 +75,23 @@ for n = 1:size( d_align,2); numerical_derivatives{n} = []; end;
 %%%%%%%%%%%%%%%%%%
 % inner loop
 %%%%%%%%%%%%%%%%%%
-if parallelization_exists() & PLOT_STUFF ~= 3
-  parfor j= whichpos
+if parallelization_exists() && (PLOT_STUFF ~= 3)
+  parfor j = whichpos
     fprintf( 1, 'Fitting profile %d\n',j);
     [ area_peak(:,j), prof_fit(:,j), deviation(j), derivatives{j}, numerical_derivatives{j} ] = do_the_fit_inner_loop( d_align(:,j), xsel(:,j)', widthpeak_start, PLOT_STUFF, DERIV_CHECK );
-  end
+  end;
 else
-  for j= whichpos
+  for j = whichpos
     fprintf( 1, 'Fitting profile %d\n',j);
     [ area_peak(:,j), prof_fit(:,j), deviation(j), derivatives{j}, numerical_derivatives{j} ] = do_the_fit_inner_loop( d_align(:,j), xsel(:,j)', widthpeak_start, PLOT_STUFF, DERIV_CHECK );
-  end
-end  
+  end;
+end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % error estimation
 % amount of uncertainty expected.
 xsel_error = const_width * xsel_error_to_width_ratio;
+darea_peak = [];
 for j = whichpos;   
   darea_peak(:,j) = sqrt( sum( derivatives{j}.^2  * xsel_error^2)  );
 end
@@ -149,15 +150,15 @@ beep on; beep; beep off;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [ area_peak, prof_fit, deviation, derivatives, numerical_derivatives ] = do_the_fit_inner_loop( d_align, xsel_fit, widthpeak, PLOT_STUFF, DERIV_CHECK );
+function [ area_peak, prof_fit, deviation, derivatives, numerical_derivatives ] = do_the_fit_inner_loop( d_align, xsel_fit, widthpeak, PLOT_STUFF, DERIV_CHECK )
 
 tic
 
 %x_allow = [1:size(d_align,1)];
 [ x_disallow, x_allow ] = find_x_disallow( d_align );
 
-[xdummy,xpeak_grid]    = meshgrid(x_allow, xsel_fit);
-[xdummy,widthpeak_grid]= meshgrid(x_allow, widthpeak);
+[xdummy, xpeak_grid]    = meshgrid(x_allow, xsel_fit);
+[xdummy,widthpeak_grid] = meshgrid(x_allow, widthpeak);
 gaussian = exp( -0.5 * ((xdummy-xpeak_grid)./widthpeak_grid).^2 );
 
 A = gaussian * gaussian';
@@ -189,13 +190,13 @@ area = area_peak;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-x = 1:size( d_align,1);
+x = 1:size( d_align, 1);
 profile_fit = 0 * x;
 
-for k=1:N
-  predgaussian(:,k) = getgaussian(x,xsel_fit(k), widthpeak(k),a(k)); 
-  profile_fit = profile_fit + predgaussian(:,k)';
-end
+for k = 1:N
+  predgaussian(:, k) = getgaussian(x, xsel_fit(k), widthpeak(k), a(k)); 
+  profile_fit = profile_fit + predgaussian(:, k)';
+end;
 
 prof_fit = profile_fit;
 
@@ -204,22 +205,22 @@ deviation = sum(( profile_fit( x_allow )' - d_align( x_allow ) ).^2);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if PLOT_STUFF;
   clf;
-  plot( d_align,'k' );
+  plot( d_align, 'k' );
   hold on; 
   for k = 1:N; plot( predgaussian(:,k),'b'); end;
 
   for i = 1:length( xsel_fit )
     if ( round( xsel_fit(i)) < length( profile_fit ) )
       plot( [xsel_fit(i) xsel_fit(i)], [0 profile_fit(round(xsel_fit(i)))],'k' ); hold on;
-    end
-  end
+    end;
+  end;
 
-  plot( prof_fit,'r');
+  plot(prof_fit, 'r');
   hold off;
-  set(gca,'ylim',[-0.5 5]);
+  set(gca, 'ylim', [-0.5 5]);
   axis([ min(xsel_fit)-100 max(xsel_fit)+100 min(prof_fit) max( prof_fit )]);
   %pause;
-end
+end;
 
 return;
 
@@ -240,5 +241,5 @@ for i = 1:length( xsel_fit )
   Ainv = inv( A );
   a = (Ainv * B)';
   area_peak_test = sqrt(2*pi) * a .* widthpeak;
-  numerical_derivatives(:,i) = (area_peak_test - area_peak) / dx;
+  numerical_derivatives(:, i) = (area_peak_test - area_peak) / dx;
 end

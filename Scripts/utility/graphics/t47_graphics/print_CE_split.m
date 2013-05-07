@@ -104,7 +104,11 @@ if ~exist('seqpos','var') || isempty(seqpos)
     fprintf(['seqpos (1 x ',num2str(length(seqpos)),') fetched from d_rdat.\n']); 
 end;
 if ~exist('mutpos','var') || isempty(mutpos)
-    mutpos = d_rdat.mutpos; 
+    if exist('d.mutpos','var');
+        mutpos = d_rdat.mutpos;
+    else
+        mutpos = [];
+    end;
     fprintf(['mutpos (1 x ',num2str(length(mutpos)),') fetched from d_rdat.\n']); 
 end;
 if ~exist('xsel','var') || isempty(xsel)
