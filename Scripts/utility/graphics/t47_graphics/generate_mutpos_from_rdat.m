@@ -12,5 +12,4 @@ mutpos = ones(1, size(cell_array, 2)) * NaN;
 for i = 2:size(mutpos, 2)
     mutpos(i) = str2num(strrep(strrep(strrep(strrep(strrep(cell_array{i}{1}, 'mutation:', ''), 'G', ''), 'A', ''), 'C', ''), 'U', ''));
 end;
-fprintf('\n');
 fprintf(['mutpos (1 x ', num2str(length(mutpos)), ') is generated from d_rdat.data_annotations.\n']);

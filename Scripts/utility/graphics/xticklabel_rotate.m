@@ -93,7 +93,7 @@ if ~exist('xTickLabels'),
   else
     xTickLabels = num2str(XTick);
   end
-end    
+end  
 
 if length(XTick) ~= length(xTickLabels),
     error('xticklabel_rotate : must have smae number of elements in "XTick" and "XTickLabel"')  ;
@@ -146,12 +146,13 @@ end
 
 %CODE below was modified following suggestions from Urs Schwarz
 y=repmat(y,size(XTick,1),1);
-% retrieve current axis' fontsize
+% retrieve original x-axis font size and font color
 fs = get(gca,'fontsize');
+fc = get(gca,'xcolor');
 %fs = 7;
 
 % Place the new xTickLabels by creating TEXT objects
-hText = text(XTick, y, xTickLabels,'fontsize',fs,'fontweight','bold');
+hText = text(XTick, y, xTickLabels,'Fontsize',fs,'Color',fc,'Fontweight','bold');
 
 % Rotate the text objects by ROT degrees
 % set(hText,'Rotation',rot,'HorizontalAlignment','right',varargin{:})
