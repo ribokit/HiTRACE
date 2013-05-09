@@ -101,14 +101,19 @@ if ~exist( 'seqpos' ) seqpos = [0 : size( undiluted_array, 1 ) - 1]; end;
 
 scalefactor = 40 / mean( mean( max(area_peak_unsaturated, 0 ) ) );
 
+set(gcf, 'Name', 'Unsaturation');
+set(gcf, 'Position', [0, 0, 800, 600]);
+set(gcf, 'PaperOrientation', 'Landscape', 'PaperPositionMode', 'Manual', ...
+    'PaperSize', [11 8.5], 'PaperPosition', [-0.65 0.15 12 8], 'Color', 'White');
+
 subplot(1,3,1); make_image( undiluted_array, is_saturated_position, scalefactor, seqpos );
-title( 'undiluted sample' );
+title( 'Undiluted Sample', 'FontSize', 11, 'FontWeight', 'Bold');
 
 subplot(1,3,2); make_image( diluted_array_scaled, is_saturated_position, scalefactor,  seqpos );
-title( 'diluted sample, scaled');
+title( 'Diluted Sample, Scaled', 'FontSize', 11, 'FontWeight', 'Bold');
 
 subplot(1,3,3); make_image( area_peak_unsaturated, is_saturated_position, scalefactor, seqpos );
-title( 'unsaturated');
+title( 'Unsaturated', 'FontSize', 11, 'FontWeight', 'Bold');
 
 return;
 

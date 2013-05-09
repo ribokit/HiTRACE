@@ -1,7 +1,9 @@
 function [ reactivity, reactivity_error, seqpos_out, area_peak_corrected, attenuation_corrected, reactionProb] = get_reactivities( undiluted, diluted, undiluted_error, diluted_error, bkg_col, refpos, seqpos, exclude_pos_for_unsaturation, sd_cutoff )
 % GET_REACTIVITIES: Correct data for saturating bands; subtract background; normalize; and propagate errors.
 %
-%  [ reactivity, seqpos_out, area_peak_corrected,attenuation_corrected,reactionProb] = get_reactivities( undiluted, diluted, undiluted_error, diluted_error, bkg_col, refpos, seqpos, sd_cutoff )
+%  [ reactivity, seqpos_out, area_peak_corrected,attenuation_corrected,reactionProb] = 
+%               GET_REACTIVITIES( undiluted, diluted, undiluted_error, diluted_error, bkg_col, refpos, ...
+%                                 seqpos, sd_cutoff )
 %
 % Required inputs:
 % undiluted = band intensities that may have some peaks that are saturating the detector
@@ -39,10 +41,10 @@ function [ reactivity, reactivity_error, seqpos_out, area_peak_corrected, attenu
 
 if nargin == 0; help( mfilename ); return; end;
 
-if ~exist( 'bkg_col' ) bkg_col = 0; end;
-if ~exist( 'refpos' ) refpos = []; end;
-if ~exist( 'seqpos' ) seqpos = [0 : size( undiluted, 1 ) - 1]; end;
-if ~exist( 'exclude_pos_for_unsaturation' ); exclude_pos_for_unsaturation = []; end;
+if ~exist( 'bkg_col','var' ); bkg_col = 0; end;
+if ~exist( 'refpos','var' ); refpos = []; end;
+if ~exist( 'seqpos','var' ); seqpos = [0 : size( undiluted, 1 ) - 1]; end;
+if ~exist( 'exclude_pos_for_unsaturation','var' ); exclude_pos_for_unsaturation = []; end;
 area_peak_corrected = [];
 attenuation_corrected = [];
 reactionProb = [];
@@ -51,19 +53,32 @@ reactionProb = {};
 seqpos_out = [];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if ( ~isempty( diluted ) &  ~all( size( undiluted ) == size( diluted )) ); fprintf( 'mismatch in size of undiluted and diluted'); return;  end;
-if ( ~isempty( diluted_error ) &  ~all( size( diluted ) == size( diluted_error )) ); fprintf( 'mismatch in size of diluted and diluted_error'); return;  end;
-if ( ~isempty( undiluted_error ) &  ~all( size( undiluted ) == size( undiluted_error )) ); fprintf( 'mismatch in size of undiluted and undiluted_error'); return;  end;
+if ( ~isempty( diluted ) &&  ~all( size( undiluted ) == size( diluted )) ); 
+    fprintf( 'Mismatch in size of undiluted and diluted.\n'); 
+    return;  
+end;
+if ( ~isempty( diluted_error ) &&  ~all( size( diluted ) == size( diluted_error )) ); 
+    fprintf( 'Mismatch in size of diluted and diluted_error.\n'); 
+    return;  
+end;
+if ( ~isempty( undiluted_error ) &&  ~all( size( undiluted ) == size( undiluted_error )) ); 
+    fprintf( 'Mismatch in size of undiluted and undiluted_error.\n'); 
+    return;  
+end;
 nres   = size( undiluted, 1);
 ntrace = size( undiluted, 2 );
-if ( length(seqpos) ~= nres ); fprintf( 'Length of seqpos must match number of residues in undiluted' ); return; end;
-if ~exist( 'sd_cutoff' ) sd_cutoff = 1.5; end;
+if ( length(seqpos) ~= nres ); 
+    fprintf( 'Length of seqpos must match number of residues in undiluted.\n' ); 
+    return; 
+end;
+if ~exist( 'sd_cutoff','var' ) sd_cutoff = 1.5; end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 unsaturated = undiluted;
 UNSATURATED = 0;
 if ~isempty( diluted )
   [unsaturated, unsaturated_error] = unsaturate( undiluted, diluted, undiluted_error, diluted_error, sd_cutoff, seqpos, exclude_pos_for_unsaturation);
+  fprintf('Press any key to continue ...\n');
   pause;
   UNSATURATED = 1;
 end
@@ -73,6 +88,7 @@ end
 % contains all the steps to process data after peak alignment, assignment,
 % and dilution scaling.
 [attenuation_corrected, attenuation_corrected_error] = correct_for_attenuation( unsaturated, unsaturated_error, seqpos );
+fprintf('Press any key to continue ...\n');
 pause;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -99,7 +115,7 @@ end
 reactivity       = reactionProb;
 reactivity_error = reactionProb_error;
 NORMALIZED = 0;
-if length( ref_pos_in ) > 0
+if ~isempty( ref_pos_in )
   [reactivity, norm_scalefactors] = quick_norm( reactionProb, ref_pos_in );
   reactivity_error = reactionProb_error * diag( norm_scalefactors );
   image_scalefactor = 40;
@@ -107,11 +123,11 @@ if length( ref_pos_in ) > 0
 end
 
 image( 1:ntrace, seqpos, reactivity * image_scalefactor );
-title( 'final');
+title( 'Final', 'FontSize', 11, 'FontWeight', 'Bold');
 make_lines;
 
 REMOVED_FULL_EXTENSION_SITE = 0;
-seqpos_out = seqpos(    2:end);
+seqpos_out = seqpos(2:end);
 reactivity = reactivity(2:end,:);
 reactivity_error = reactivity_error(2:end,:);
 REMOVED_FULL_EXTENSION_SITE = 1;

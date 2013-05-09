@@ -54,15 +54,21 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % some visual feedback
-clf
+clf;
+
+set(gcf, 'Name', 'Attenuation Correction');
+set(gcf, 'Position', [0, 0, 800, 600]);
+set(gcf, 'PaperOrientation', 'Landscape', 'PaperPositionMode', 'Manual', ...
+    'PaperSize', [11 8.5], 'PaperPosition', [-0.65 0.15 12 8], 'Color', 'White');
+
 subplot(1,2,1);
 image( [1:size(d_ratios,2)], seqpos, d_ratios*2000 );
-title( 'Before  correct for attenuation' );
+title( 'BEFORE  attenuation correction', 'FontSize', 11, 'FontWeight', 'Bold' );
 make_lines;
 subplot(1,2,2);
 
 image( [1:size(d_ratios,2)], seqpos, d_correct*2000 );
-title( 'After  correct for attenuation' );
+title( 'AFTER  attenuation correction', 'FontSize', 11, 'FontWeight', 'Bold' );
 colormap( 1 - gray(100) );
 make_lines;
 

@@ -114,25 +114,27 @@ end
 
 if PLOT_STUFF == 1
   h = figure(3);
-  set(h, 'Position', [0, 0, 800, 600]);
-  set(h, 'PaperOrientation', 'landscape', 'PaperPositionMode', 'auto', 'color', 'white');
+  set(h, 'Name', 'Fit to Gaussians');
+  set(h, 'Position', [100, 100, 800, 600]);
+  set(h, 'PaperOrientation', 'Landscape', 'PaperPositionMode', 'Manual', ...
+      'PaperSize', [11 8.5], 'PaperPosition', [-0.65 0.15 12 8], 'Color', 'White');
   
   subplot(1,3,1);
   scalefactor = 40/mean(mean(d_align));
   image( scalefactor * d_align );
   ylim( [ min(xsel_start)-100, max(xsel_start)+100 ] );
-  title( 'data' );
+  title( 'Data', 'FontSize', 11, 'FontWeight', 'Bold');
   
   subplot(1,3,2);
   image( scalefactor * prof_fit );
   ylim( [ min(xsel_start)-100, max(xsel_start)+100 ] );
-  title( 'fit' );
+  title( 'Fit', 'FontSize', 11, 'FontWeight', 'Bold' );
   
   subplot(1,3,3);
   image( scalefactor * ( d_align - prof_fit) );
   %easycolorplot( 100*(d_align -prof_fit) );
   ylim( [ min(xsel_start)-100, max(xsel_start)+100 ] );
-  title( 'residuals' );
+  title( 'Residuals', 'FontSize', 11, 'FontWeight', 'Bold' );
   
   
   colormap( 1 - gray(100) );

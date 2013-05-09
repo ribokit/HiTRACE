@@ -235,8 +235,8 @@ xlabel( 'seqpos');
 ylabel( 'mutpos' );
 save( outfile, '-ascii','Z');
 
-set(gcf,'PaperPositionMode','auto');
-set(gcf,'Position',[0, 0, 800, 800]);
+set(gcf,'PaperPositionMode','Auto');
+set(gcf,'Position',[0, 0, 600, 600]);
 
 if ( print_stuff )
   eps_file = [outfile, '.eps' ];

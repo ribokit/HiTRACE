@@ -117,13 +117,13 @@ colorcode = [0 0 1; 0 0.5 0; 1 0.5 0; 1 0 0];
 
 
 if PLOT_STUFF
-  h = figure(1);
-  set(h,'Name','Raw traces');
-  set(h,'Position',[10,10,600,800]);
-  set(gcf, 'PaperPositionMode','auto','color','white');
-  clf;
-  for k = 1:count
-    
+  h = figure(1); clf;
+  set(h, 'Name', 'Raw traces');
+  set(h, 'Position', [0, 0, 600, 800]);
+  set(h, 'PaperOrientation', 'Portrait', 'PaperPositionMode', 'Manual', ...
+      'PaperSize', [8.5 11], 'PaperPosition', [0 1 8.5 10.5], 'Color', 'White');  
+  
+  for k = 1:count  
     whichwell_mod16 = mod(whichwell_sort(k) - 1,16) + 1;
     
     whichrow = mod(whichwell_mod16-1,8)+1;

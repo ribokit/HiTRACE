@@ -31,7 +31,9 @@ if ~exist( 'imagescalefactor', 'var' );
 end;
 
 image( 1:ntrace, seqpos, subtracted * image_scalefactor );
-title( 'background corrected');
+title( 'Background Corrected', 'FontSize', 11, 'FontWeight', 'Bold');
 make_lines;
+
+fprintf('Press any key to continue ...\n'); 
 pause;
 

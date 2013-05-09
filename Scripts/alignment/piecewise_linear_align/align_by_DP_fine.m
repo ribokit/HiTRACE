@@ -1,4 +1,4 @@
-function [d_out,x_transform_all, anchor_nodes] = align_by_DP_fine( d_all, align_blocks_in );
+function [d_out,x_transform_all, anchor_nodes] = align_by_DP_fine( d_all, align_blocks_in, dirnames )
 % ALIGN_BY_DP_FINE: refine alignment by piece-wise-linear transform, optimizing correlation by dynamic programming
 %
 % calls ALIGN_BY_DP using parameter values that permit fine-grained realigment, as is useful
@@ -34,3 +34,23 @@ PLOT_STUFF = 1;
 % maxShift changed from 10 to 20, by T47, tested on 16S mutate-and-map
 
 [d_out, x_transform_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize,  PLOT_STUFF );
+
+
+% output to .eps file
+if ~exist( 'dirnames','var') || isempty(dirnames);
+    tag = '';
+else
+    tag = dirnames{1};
+    if tag(end) == '/'; tag = tag(1:end-1); end; % get rid of final slash
+    %  just get the last directory name.
+    tags = split_string( tag, '/' );
+    tag = tags{ end };
+end;
+
+if ~isempty(tag);
+    if ~exist('Figures','dir'); mkdir('Figures'); end;
+    tag = ['Figures/', tag, '_6DPAlign'];
+    print( gcf, '-depsc2', '-loose', '-r300', [tag, '.eps']);
+    fprintf( ['\nCreated: ', tag, '.eps\n'] );
+    hgsave(gcf, tag);
+end;

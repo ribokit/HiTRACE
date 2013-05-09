@@ -198,11 +198,12 @@ end
 ymin = ylimit(1); ymax = ylimit(end);
 
 if PLOT_STUFF
-  h = figure(2);
-  set(h,'Position',[50,50,600,800]);
-  set(h,'Name','All data');
-  set(gcf, 'PaperPositionMode','auto','color','white');
-  clf
+  h = figure(2); clf;
+  set(h, 'Name', 'All data');
+  set(h, 'Position', [100, 100, 600, 800]);
+  set(h, 'PaperOrientation', 'Landscape', 'PaperPositionMode', 'Manual', ...
+      'PaperSize', [11 8.5], 'PaperPosition', [-0.65 0.15 12 8], 'Color', 'White');
+  
   subplot(1,2,1);
   image( 0.05 * d0_signal);
   
@@ -286,11 +287,11 @@ for m = 1:length(sigchannels) % usually just channel 1.
 end;
 
 if PLOT_STUFF
-  h = figure(3);
-  set(h,'Name','Linear alignment')
-  set(h,'Position',[100,100,600,800]);
-  set(gcf, 'PaperPositionMode','auto','color','white');
-  clf
+  h = figure(3); clf;
+  set(h, 'Name', 'Linear alignment');
+  set(h, 'Position', [100, 100, 600, 800]);
+  set(h, 'PaperOrientation', 'Portrait', 'PaperPositionMode', 'Manual', ...
+      'PaperSize', [8.5 11], 'PaperPosition', [0 1 8.5 10.5], 'Color', 'White');
   
   %subplot(1,2,1);
   image( 50*d );
@@ -334,11 +335,11 @@ d_ref = d_ref( [ymin:ymax], : );
 
 if PLOT_STUFF
   h = figure(4); clf;
-  set(h,'Name','Final (signal)')
-  set(h,'Position',[150,150,600,800]);
-  set(gcf, 'PaperPositionMode','auto','color','white');
-  clf
-  
+  set(h, 'Name', 'Final (signal)')
+  set(h, 'Position', [150, 150, 600, 800]);
+  set(h, 'PaperOrientation', 'Portrait', 'PaperPositionMode', 'Manual', ...
+      'PaperSize', [8.5 11], 'PaperPosition', [0 1 8.5 10.5], 'Color', 'White');
+ 
   %subplot(1,2,1);
   image( 50*d );
   axis( [ 0.5 size( d0_signal, 2 )+0.5 1 size(d,1)] );
@@ -356,9 +357,11 @@ if PLOT_STUFF
 
   
   h = figure(5); clf;
-  set(h,'Name','Final (reference)')
-  set(h,'Position',[200,200,600,800]);
-  set(gcf, 'PaperPositionMode','auto','color','white');
+  set(h, 'Name', 'Final (reference)')
+  set(h, 'Position', [200, 200, 600, 800]);
+  set(h, 'PaperOrientation', 'Portrait', 'PaperPositionMode', 'Manual', ...
+      'PaperSize', [8.5 11], 'PaperPosition', [0 1 8.5 10.5], 'Color', 'White');
+  
   %subplot(1,2,2);
   image( 50*d_ref );
   axis( [ 0.5 size( d0_signal, 2 )+0.5 1 size(d,1)] );
@@ -387,9 +390,7 @@ end
 
 
 %% Clarence Cheng - save all figures as .eps and .fig
-% if ~exist( 'Figures','dir' ); 
-mkdir('Figures');
-% end;
+if ~exist( 'Figures','dir' ); mkdir('Figures'); end;
 print_and_save_figure( 1, ['Figures/',tag,'_1Traces'] );
 print_and_save_figure( 2, ['Figures/',tag,'_2AllData'] );
 print_and_save_figure( 3, ['Figures/',tag,'_3LinearAlign'] );
@@ -463,11 +464,13 @@ while length( remain ) > 0
   cols = [cols, token];
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function  print_and_save_figure( fignum, tag );
 
-print( figure(fignum),'-depsc2',[tag,'.eps']);
+print( figure(fignum), '-depsc2', '-loose', '-r300', [tag,'.eps']);
 fprintf( ['\nCreated: ', tag,'.eps'] );
-hgsave(figure(fignum),tag);
+hgsave(figure(fignum), tag);
 
 
 %%

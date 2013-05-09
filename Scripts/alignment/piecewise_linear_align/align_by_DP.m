@@ -1,4 +1,4 @@
-function [d_out,x_transform_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize,  PLOT_STUFF );
+function [d_out,x_transform_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF)
 % ALIGN_BY_DP: refine alignment by piece-wise-linear transform, optimizing correlation by dynamic programming
 %
 %  [d_out, x_transform_all, anchor_nodes] = align_by_DP( d_all, align_blocks_in, penalizeStretchFactor, slack, maxShift, windowSize,  PLOT_STUFF );
@@ -27,53 +27,57 @@ if nargin == 0;  help( mfilename ); return; end;
 d_out = [];
 
 %if no 'block's are specified, align the whole thing to column 1
-if ~exist( 'align_blocks_in' ) | length( align_blocks_in) == 0;     align_blocks_in = { [1:size(d_all,2) ] }; end
+if ~exist( 'align_blocks_in' ) || isempty( align_blocks_in); align_blocks_in = { [1:size(d_all,2) ] }; end;
 if ~iscell( align_blocks_in ); % might be a single refcol
   if length( align_blocks_in) == 1
     refcol = align_blocks_in;
     align_blocks_in = { [refcol, 1:(refcol-1), (refcol+1):size(d_all,2) ] };
   else
     align_blocks_in = { align_blocks_in };
-  end
-end
+  end;
+end;
 
-if ~exist( 'penalizeStretchFactor' ); penalizeStretchFactor = 10.0; end;
-if ~exist( 'slack' ); slack = 50; end;
-if ~exist( 'maxShift' ); maxShift = 200; end;
-if ~exist( 'windowSize' ); windowSize = 500; end;
-if ~exist( 'PLOT_STUFF' ); PLOT_STUFF = 1; end;
+if ~exist( 'penalizeStretchFactor','var' ); penalizeStretchFactor = 10.0; end;
+if ~exist( 'slack','var' ); slack = 50; end;
+if ~exist( 'maxShift','var' ); maxShift = 200; end;
+if ~exist( 'windowSize','var' ); windowSize = 500; end;
+if ~exist( 'PLOT_STUFF','var' ); PLOT_STUFF = 1; end;
+
 
 % need to double-check that the align_blocks are acceptable...
 nlanes = size( d_all, 2 );
 for j = 1:length( align_blocks_in )
   align_blocks_in{j} = min(max(align_blocks_in{j},1),nlanes );
-end
+end;
 
 d_out = d_all;
 
 for j = 1:length( align_blocks_in )
   [d_align, x_transform_all, DP, choice, anchor_nodes ] = align_by_DP_block( d_out(:, align_blocks_in{j}), 1, penalizeStretchFactor, slack, maxShift, windowSize, PLOT_STUFF );
   d_out(:, align_blocks_in{j} )  = d_align;
-end
+end;
 
 if PLOT_STUFF
-  colormap( 1 - gray(100 ) );
-  subplot(1,2,1);
+  colormap( 1 - gray(100) );
   scalefactor = 40 / mean(mean(d_all));
-  image( scalefactor * d_all )
+
+  set(gcf, 'Name', 'Nonlinear Alignment');
+  set(gcf, 'Position', [0, 0, 800, 600]);
+  set(gcf, 'PaperOrientation', 'Landscape', 'PaperPositionMode', 'Manual', ...
+      'PaperSize', [11 8.5], 'PaperPosition', [-0.65 0.15 12 8], 'Color', 'White');
+
+  subplot(1, 2, 1);
+  image( scalefactor * d_all );
   show_anchor_nodes( anchor_nodes );
-  title ('Before  align__by__DP');
+  title ('BEFORE  align\_by\_DP', 'FontSize', 12, 'FontWeight', 'Bold');
   %make_lines( [0:size(d_out,2)], 'k', 0.25 );
   
-  subplot(1,2,2);
-  image( scalefactor * d_out )
-  title ('After  align__by__DP');
+  subplot(1, 2, 2);
+  image( scalefactor * d_out );
+  title ('AFTER  align\_by\_DP', 'FontSize', 12, 'FontWeight', 'Bold');
   %make_lines( [0:size(d_out,2)], 'k', 0.25 );
   
-  set(gcf,'Position',[0, 0, 800, 600]);
-  set(gcf, 'PaperOrientation', 'landscape', 'PaperPositionMode', 'auto', 'color', 'white');
-        
-end
+end;
 
 % beep notice when finished
 beep on; beep; beep off;
