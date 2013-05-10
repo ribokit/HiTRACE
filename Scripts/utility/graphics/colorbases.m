@@ -287,7 +287,7 @@ end;
 % (t47)
 % add legend label
 % text is rasterized into image
-if makelegend
+if ~makelegend
     ft_sz = round(square_width * font_size);
     if color_scheme == 8
         k = 0;
