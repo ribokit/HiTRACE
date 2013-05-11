@@ -35,10 +35,12 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %    SP LS SO                       intensity scaling, making lines every LS lanes. 
 %    UO LO                          D_ALIGN will be auto-trimmed by UO and LO if asked,
 %    YO XO]                         and axis titles will be placed with offset YO and
-%                                   XO. Format in double array, default [3 3 0 50 10 ...
+%                                   XO. Format in double array, default [0 0 0 50 10 ...
 %                                   -1 75 100 0.01 0.19].
-%                               'H' (height) denotes the number of pages vertically;
-%                               'W' (width) denotes the number of pages horizontally;
+%                               'H' (height) denotes the number of pages vertically,
+%                                   0 means use auto_size if AS in BOOLEAN_FLAG;
+%                               'W' (width) denotes the number of pages horizontally,
+%                                   0 means use auto_size if AS in BOOLEAN_FLAG;
 %                               'SC' (scale_factor) denotes the scaling factor of image,
 %                                   default is calculated to display optimally according 
 %                                   to sc = 22.5 / mean(mean(d_align));
@@ -144,7 +146,7 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 % by T47, Apr 2013 - May 2013.
 %
 
-Script_VER = '2.0';
+Script_VER = '2.1';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % preparation before splitting
@@ -192,7 +194,7 @@ fprintf(['structure ',d_rdat.structure,'\n\n']);
 
 
 % set all auxillary parameters
-num_flg_org = [3 3 0 50 10 -1 75 100 0.01 0.19];
+num_flg_org = [0 0 0 50 10 -1 75 100 0.01 0.19];
 if ~exist('num_flg','var') || isempty(num_flg) ; 
     num_flg = num_flg_org;
 else
@@ -202,8 +204,8 @@ else
     end;
 end;
 num_flg([1:2, 4:7]) = round(num_flg([1:2, 4:7]));
-num_flg(1) = max([num_flg(1), 1]);
-num_flg(2) = max([num_flg(2), 1]);
+num_flg(1) = max([num_flg(1), 0]);
+num_flg(2) = max([num_flg(2), 0]);
 num_flg(3) = max([num_flg(3), 0]);
 if num_flg(4) < 1; num_flg(4) = 50; end;
 if num_flg(5) < 1; num_flg(5) = 10; end;
@@ -277,27 +279,27 @@ color_line_1 = clr{9}; color_line_2 = clr{10}; color_line_3 = clr{11};
 
 
 % auto_size if asked
-if is_auto_size == 1;
-    H_temp = length(seqpos); W_temp = length(mutpos);
-    
+is_auto_size_H = is_auto_size || (page_num_H == 0);
+is_auto_size_W = is_auto_size || (page_num_W == 0);
+is_auto_size_force = (page_num_H == 0) && (page_num_W == 0);
+if is_auto_size_H;
+    H_temp = length(seqpos); 
     H_step = [75 175 250 300 350 400];
     page_num_H = length(find(H_temp > H_step)) + 1;
-    
-    if any(diff(diff(mutpos(2:end)))) == 0;
-        page_num_W = floor(page_num_H * 4 / 3);
-    else
-        W_step = [55 130 185 225 260 300];
-        page_num_W = length(find(W_temp > W_step)) + 1;        
-    end;
+end;
+if is_auto_size_W;
+    W_temp = length(mutpos);
+    W_step = [55 130 185 225 260 300];
+    page_num_W = length(find(W_temp > W_step)) + 1;
 end;
 
 % print out summary
 fprintf(['Divide into ', num2str(page_num_H), ' x ', num2str(page_num_W), ' pages, auto-size (', ...
-    num2yn(is_auto_size), ').\n']);
-fprintf(['Spacer ', num2str(num_sp), ', make lines (', num2yn(is_line),...
-    ') every ', num2str(num_line_sp), ' lanes with offset (', num2str(num_line_offset), ').\n']);
-fprintf(['Show title (', num2yn(is_title), '), show page number (', num2yn(is_page_no), '), print to file (', ...
-    num2yn(is_print), '), squared page (', num2yn(is_square), ').\n']);
+    num2yn(is_auto_size || is_auto_size_force), ').\n']);
+fprintf(['Spacer ', num2str(num_sp), ', make lines (', num2yn(is_line), ') every ', ...
+    num2str(num_line_sp), ' lanes with offset (', num2str(num_line_offset), '), squared page (', num2yn(is_square), ').\n']);
+fprintf(['Show title (', num2yn(is_title), '), show page number (', num2yn(is_page_no), ') show version (', ...
+    num2yn(is_version), '), print to file (', num2yn(is_print), ').\n']);
 
 
 % auto_trim if asked
@@ -594,8 +596,7 @@ for i = 1:page_num_W
         end;
             
         % print to file if asked
-        if is_print == 1; print(h,'-depsc2', '-loose', '-r300',[dir_name, '/', file_name, num2str(fig_num),'.eps']); end;
-    end;
+        if is_print == 1; print_save_figure(h, [file_name, num2str(fig_num)], dir_name, 0); end;
 end;
 
 if is_print == 1; fprintf([num2str(i*j),' pages printed to folder "', dir_name,'".\n']); end;

@@ -55,11 +55,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % some visual feedback
 clf;
-
-set(gcf, 'Name', 'Attenuation Correction');
-set(gcf, 'Position', [0, 0, 800, 600]);
-set(gcf, 'PaperOrientation', 'Landscape', 'PaperPositionMode', 'Manual', ...
-    'PaperSize', [11 8.5], 'PaperPosition', [-0.65 0.15 12 8], 'Color', 'White');
+set_print_page(gcf, 0, [0 0 800 600], 'Attenuation Correction');
 
 subplot(1,2,1);
 image( [1:size(d_ratios,2)], seqpos, d_ratios*2000 );

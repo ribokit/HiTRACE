@@ -118,10 +118,7 @@ colorcode = [0 0 1; 0 0.5 0; 1 0.5 0; 1 0 0];
 
 if PLOT_STUFF
   h = figure(1); clf;
-  set(h, 'Name', 'Raw traces');
-  set(h, 'Position', [0, 0, 600, 800]);
-  set(h, 'PaperOrientation', 'Portrait', 'PaperPositionMode', 'Manual', ...
-      'PaperSize', [8.5 11], 'PaperPosition', [0 1 8.5 10.5], 'Color', 'White');  
+  set_print_page(h, 1, [0 0 600 800], 'Raw traces');
   
   for k = 1:count  
     whichwell_mod16 = mod(whichwell_sort(k) - 1,16) + 1;

@@ -114,10 +114,7 @@ end
 
 if PLOT_STUFF == 1
   h = figure(3);
-  set(h, 'Name', 'Fit to Gaussians');
-  set(h, 'Position', [100, 100, 800, 600]);
-  set(h, 'PaperOrientation', 'Landscape', 'PaperPositionMode', 'Manual', ...
-      'PaperSize', [11 8.5], 'PaperPosition', [-0.65 0.15 12 8], 'Color', 'White');
+  set_print_page(h, 0, [100 100 800 600], 'Fit to Gaussians');
   
   subplot(1,3,1);
   scalefactor = 40/mean(mean(d_align));

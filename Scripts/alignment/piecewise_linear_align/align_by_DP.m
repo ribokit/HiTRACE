@@ -61,10 +61,7 @@ if PLOT_STUFF
   colormap( 1 - gray(100) );
   scalefactor = 40 / mean(mean(d_all));
 
-  set(gcf, 'Name', 'Nonlinear Alignment');
-  set(gcf, 'Position', [0, 0, 800, 600]);
-  set(gcf, 'PaperOrientation', 'Landscape', 'PaperPositionMode', 'Manual', ...
-      'PaperSize', [11 8.5], 'PaperPosition', [-0.65 0.15 12 8], 'Color', 'White');
+  set_print_page(gcf, 0, [0 0 800 600], 'Nonlinear Alignment');
 
   subplot(1, 2, 1);
   image( scalefactor * d_all );

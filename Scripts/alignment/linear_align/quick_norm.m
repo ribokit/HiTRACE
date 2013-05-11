@@ -1,4 +1,4 @@
-function [d_out, norm_factor, d_out_err ] = quick_norm( d, bins, d_err );
+function [d_out, norm_factor, d_out_err ] = quick_norm( d, bins, d_err )
 % QUICK_NORM: normalize data based on mean in specified bins
 %
 % [d_out, norm_factor ] = quick_norm( d, bins );
@@ -16,7 +16,7 @@ if size( d, 1) == 1 && size( d, 2)>1
   do_transpose = 1;
 end
 
-if ~exist('bins') | isempty( bins )
+if ~exist('bins','var') || isempty( bins )
   bins = 1:size(d, 1);
 end
 

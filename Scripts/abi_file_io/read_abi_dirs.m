@@ -27,7 +27,7 @@ data_length = [];
 filenames_all = {};
 count = 0;
 
-if ~exist( 'dye_names_full' ) dye_names_full = {}; end;
+if ~exist( 'dye_names_full','var' ) dye_names_full = {}; end;
 
 for j = 1:length( dirnames )
   % This script calls read_abi.m which has the actual file format.

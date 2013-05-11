@@ -21,11 +21,11 @@ function [ area_peak_unsaturated, area_peak_unsaturated_error, diluted_array_sca
 
 if nargin < 2;  help( mfilename ); return; end;
 
-if ~exist( 'undiluted_array_error', 'var' ) | isempty( undiluted_array_error ); undiluted_array_error = 0 * undiluted_array; end;
-if ~exist( 'diluted_array_error', 'var' ) | isempty( diluted_array_error ); diluted_array_error = 0 * diluted_array; end;
-if ~exist( 'sd_cutoff' ) | isempty( sd_cutoff) | sd_cutoff == 0; sd_cutoff = 1.5; end;
-if ~exist( 'seqpos' ) seqpos = [0 : size( undiluted_array, 1 ) - 1]; end;
-if ~exist( 'exclude_pos' ) exclude_pos = []; end;
+if ~exist( 'undiluted_array_error', 'var' ) || isempty( undiluted_array_error ); undiluted_array_error = 0 * undiluted_array; end;
+if ~exist( 'diluted_array_error', 'var' ) || isempty( diluted_array_error ); diluted_array_error = 0 * diluted_array; end;
+if ~exist( 'sd_cutoff','var' ) || isempty( sd_cutoff) || sd_cutoff == 0; sd_cutoff = 1.5; end;
+if ~exist( 'seqpos','var' ); seqpos = [0 : size( undiluted_array, 1 ) - 1]; end;
+if ~exist( 'exclude_pos','var' ); exclude_pos = []; end;
 
 if ~all( size(undiluted_array) == size(diluted_array) )
   fprintf( 'The undiluted arrays do not equal the number of diluted arrays!\n');
@@ -97,14 +97,11 @@ for i = 1:num_cols;
 end;
 
 % some visual feedback
-if ~exist( 'seqpos' ) seqpos = [0 : size( undiluted_array, 1 ) - 1]; end;
+if ~exist( 'seqpos','var' ); seqpos = [0 : size( undiluted_array, 1 ) - 1]; end;
 
 scalefactor = 40 / mean( mean( max(area_peak_unsaturated, 0 ) ) );
 
-set(gcf, 'Name', 'Unsaturation');
-set(gcf, 'Position', [0, 0, 800, 600]);
-set(gcf, 'PaperOrientation', 'Landscape', 'PaperPositionMode', 'Manual', ...
-    'PaperSize', [11 8.5], 'PaperPosition', [-0.65 0.15 12 8], 'Color', 'White');
+set_print_page(gcf, 0, [0 0 800 600], 'Unsaturation');
 
 subplot(1,3,1); make_image( undiluted_array, is_saturated_position, scalefactor, seqpos );
 title( 'Undiluted Sample', 'FontSize', 11, 'FontWeight', 'Bold');
@@ -119,7 +116,7 @@ return;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function make_image( image_array, is_saturated_position, scalefactor, seqpos );
+function make_image( image_array, is_saturated_position, scalefactor, seqpos )
 
 image( 1:size(image_array,2) , seqpos,  scalefactor * image_array );
 
@@ -137,7 +134,7 @@ colormap( 1 - gray(100));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % put red box at places where information from diluted sample replaced
 % information from concentrated sample -- the saturated positions
-function box_saturated_positions( is_saturated_position, seqpos );
+function box_saturated_positions( is_saturated_position, seqpos )
 
 for i = 1:size( is_saturated_position, 1 );
   for j = 1:size( is_saturated_position, 2 );

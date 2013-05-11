@@ -47,10 +47,4 @@ else
     tag = tags{ end };
 end;
 
-if ~isempty(tag);
-    if ~exist('Figures','dir'); mkdir('Figures'); end;
-    tag = ['Figures/', tag, '_6DPAlign'];
-    print( gcf, '-depsc2', '-loose', '-r300', [tag, '.eps']);
-    fprintf( ['\nCreated: ', tag, '.eps\n'] );
-    hgsave(gcf, tag);
-end;
+if ~isempty(tag); print_save_figure(gcf, [tag,'_6DPAlign'], '', 1); end;
