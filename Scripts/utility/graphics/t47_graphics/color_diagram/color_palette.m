@@ -6,7 +6,9 @@ function color_profile = color_palette(d_plot, color_max, color_min, color_schem
 % Plots reactivities with color scheme (color_scheme) and color range of (color_max and
 %  color_min) as a preview to optimize color saturation values before actual coloring 
 %  the boxes on the image.
-%
+% Two figures will be shown for preview: a background-colored plot and a foreground-
+%  colored bargraph. Black lines denote chosen color_max and color_min as well center
+%  of color range.
 %
 % Input
 % =====
@@ -59,8 +61,11 @@ y_min = min(min(d_plot), color_min);
 y_margin = (y_max - y_min) / 4;
 
 
+%%%%%%%%%%%%%%%%
+% figure of background-colored plot-graph
+
 figure(1); clf;
-set_print_page(gcf, 0, [0 0 800 600], '');
+set_print_page(gcf, 0, [0 0 800 600], 'Background-colored Plot');
 axis([0 length(d_plot) (y_min - y_margin) (y_max + y_margin)]);
 
 for i = y_max:plot_interval:y_min
@@ -78,10 +83,29 @@ make_lines_horizontal(color_center - 0.5); hold on;
 plot(d_plot, 'kd', 'Linewidth', 2); hold off;
 
 
-figure(2); clf;
-set_print_page(gcf, 0, [100 100 800 600], '');
-axis([0 length(d_plot) (y_min - y_margin) (y_max + y_margin)]);
+%%%%%%%%%%%%%%%%
+% figure of foreground-colored bar-graph
 
+figure(2); clf;
+set_print_page(gcf, 0, [100 100 800 600], 'Foreground-colored Bargraph');
+
+h = bar(d_plot);
+h_child = get(h, 'Children');
+
+% custom colormap from getcolor
+my_color = zeros(length(d_plot), 3);
+for i = 1:length(d_plot)
+    my_color(i, :) = getcolor(d_plot(i) - color_center, maxplot, maxplot2, color_scheme);
+end;
+colormap(my_color);
+set(h_child, 'CData', 1:length(d_plot));
+set(h_child, 'EdgeColor', 'none');
+set(h_child, 'CDataMapping', 'direct');
+
+axis([0 length(d_plot) (y_min - y_margin) (y_max + y_margin)]);
+make_lines_horizontal(color_max - 0.5); hold on;
+make_lines_horizontal(color_min - 0.5); hold on;
+make_lines_horizontal(color_center - 0.5); hold off;
 
 
 color_profile = [color_scheme, color_center, maxplot, maxplot2];

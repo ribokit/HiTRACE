@@ -1,7 +1,7 @@
-function [d, d_ref, ylimit, labels] = quick_look( dirnames, ylimit, trace_subset, signals_and_ref, dye_names, moreOptions )
+function [d, d_ref, ylimit, labels] = quick_look( dirnames, ylimit, trace_subset, signals_and_ref, dye_names, lane_names, moreOptions )
 % QUICK_LOOK  basic read-in script for ABI sequencer files for HiTRACE analysis
 %
-%  [d, d_ref, ylimit, labels] = quick_look( dirnames, ylimit, trace_subset, signals_and_ref, dye_names, moreOptions )
+%  [d, d_ref, ylimit, labels] = QUICK_LOOK( dirnames, ylimit, trace_subset, signals_and_ref, dye_names, lane_names, moreOptions )
 %
 %   quick_look() runs scripts to read in directories of .ab1 files from ABI 
 %    do initial data processing, and give feedback.
@@ -20,6 +20,9 @@ function [d, d_ref, ylimit, labels] = quick_look( dirnames, ylimit, trace_subset
 %                  Note: the number of dye names should correspond to the number of signals_and_ref. If dye names is given as {},
 %                    no leakage correction will be applied. (Default: no leakage correction.)
 %                  You can also input your own leakage matrix here (give the filename as a string).
+%     lane_names = Names of lanes to show on x-axis of each figure. Input this as a cell of strings.
+%                  Note: the number of lane names should correspond to the number of total lanes in trace_subset.
+%                    If lane names is given as {}, labels from ABI files will be used.
 %     moreOptions= Any of the following to turn off data processing steps: {'noNormalize', 
 %             'noSmoothBaselineSubtract',  'noLeakageCorrection' 'noLocalAlign'}  [Default: run al processing steps]
 %
@@ -31,7 +34,9 @@ function [d, d_ref, ylimit, labels] = quick_look( dirnames, ylimit, trace_subset
 %     ylimit = [ymin,ymax] which were found by auto-selection (or input by user)
 %     labels = plot labels for each trace, extracted from ABI files.
 %
+%
 % (C) Rhiju Das, 2009-2011, 2013
+% minor modified by CYC, T47, May 2013.
 %
 
 if nargin == 0;  help( mfilename ); return; end;
@@ -77,10 +82,19 @@ sigchannels = signals_and_ref( 1 : end-1 ); % will generalize this in a bit.
 refchannel = signals_and_ref( end );
 fprintf( 'Assuming reference channel: %d\n', refchannel );
 
-
+% format lane_names to correct length
+if ~exist('lane_names','var') || isempty(lane_names); 
+    lane_names = {}; 
+elseif length(lane_names) < length(trace_subset);
+    lane_l_org = length(lane_names);
+    lane_names= [lane_names cell(1, length(trace_subset) - lane_l_org)];
+    lane_names((lane_l_org + 1):length(trace_subset)) = {' '};
+elseif length(lane_names) > length(trace_subset);
+    lane_names = lane_names(1:length(trace_subset));
+end;
 
 % Parse some of these crazy options.
-if ~exist( 'moreOptions','var' ) moreOptions = {}; end;
+if ~exist( 'moreOptions','var' ); moreOptions = {}; end;
 if ~iscell( moreOptions); moreOptions = { moreOptions }; end;
 PLOT_STUFF = 1;
 NORMALIZE = 1;
@@ -188,7 +202,10 @@ for m = 1:length(sigchannels) % usually just channel 1.
 end
 toc
 
-% If user has not  specified ymin,ymax in ylimit, figure it out.
+% decide what labels to use
+if isempty(lane_names); labels_used = labels; else; labels_used = lane_names; end;
+
+% If user has not specified ymin,ymax in ylimit, figure it out.
 AUTOFIND_YLIMIT = 0;
 if isempty( ylimit ) 
   AUTOFIND_YLIMIT = 1;
@@ -209,7 +226,7 @@ if PLOT_STUFF
   
   axis( [ 0.5 size( d0_signal, 2 )+0.5 ymin ymax] );
   set( gca, 'xtick', 1:size( d0_signal,2 ), ...
-	    'xticklabel', char( labels )  );
+	    'xticklabel', char( labels_used )  );
   xticklabel_rotate;
   make_dividers( d0_signal, subset_pos, ymin, ymax );
 
@@ -221,7 +238,7 @@ if PLOT_STUFF
   axis( [ 0.5 size( d0_signal, 2 )+0.5 ymin ymax] );
   make_dividers( d0_signal, subset_pos, ymin, ymax );
     set( gca, 'xtick', 1:size( d0_signal, 2), ...
-	    'xticklabel', char( labels  )  );
+	    'xticklabel', char( labels_used  )  );
   xticklabel_rotate;
   
   colormap( 1- gray(100));
@@ -291,7 +308,7 @@ if PLOT_STUFF
   image( 50*d );
   axis( [ 0.5 size( d0_signal, 2 )+0.5 ymin ymax] );
   set( gca, 'xtick', 1:size( d0_signal, 2 ), ...
-	    'xticklabel', char( labels  )  );
+	    'xticklabel', char( labels_used  )  );
   xticklabel_rotate;
 
   make_dividers( d0_signal, [], ymin, ymax );
@@ -336,7 +353,7 @@ if PLOT_STUFF
   axis( [ 0.5 size( d0_signal, 2 )+0.5 1 size(d,1)] );
   %axis( [ 0.5 size( d0_signal, 2 )+0.5 ymin ymax] );
   set( gca, 'xtick', 1:size( d0_signal, 2 ), ...
-	    'xticklabel', char( labels  )  );
+	    'xticklabel', char( labels_used  )  );
   xticklabel_rotate;
 
   make_dividers( d0_signal, [], 1, size( d, 1 ));
@@ -355,7 +372,7 @@ if PLOT_STUFF
   axis( [ 0.5 size( d0_signal, 2 )+0.5 1 size(d,1)] );
   %xlim( [ 0.5 size( d0_signal, 2 )+0.5 ] );
   set( gca, 'xtick', 1:size( d0_signal, 2 ), ...
-	    'xticklabel', char( labels  )  );
+	    'xticklabel', char( labels_used  )  );
   xticklabel_rotate;
   axis off
   title( 'aligned reference ladders');
