@@ -126,7 +126,7 @@ end
 
 box_saturated_positions( is_saturated_position, seqpos );
 
-make_lines;
+if size( image_array, 2 ) < 40; make_lines; end;
 
 hold off
 colormap( 1 - gray(100));

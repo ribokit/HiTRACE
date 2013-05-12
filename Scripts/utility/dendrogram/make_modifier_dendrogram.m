@@ -12,6 +12,10 @@ clf;
 r = max(remove_offset(reactivity( subset_seq,subset_mod) ), 0);
 [r, norm_factor, r_error] = quick_norm( r, [], reactivity_error( subset_seq, subset_mod) );
 
+if ~isempty( find( sum( r )  == 0 ) )
+  error( 'One of the input traces is zero!' );
+end
+
 % new: cap_outliers
 %r = min( max( r, 0 ), 5 );
 

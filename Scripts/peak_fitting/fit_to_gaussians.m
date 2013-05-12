@@ -144,9 +144,8 @@ elseif PLOT_STUFF == 2
   colormap( 1 - gray(100) );
 end
 
-% beep notice when finished
-beep on; beep; beep off;
-
+% gong notice when finished
+gong
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ area_peak, prof_fit, deviation, derivatives, numerical_derivatives ] = do_the_fit_inner_loop( d_align, xsel_fit, widthpeak, PLOT_STUFF, DERIV_CHECK )

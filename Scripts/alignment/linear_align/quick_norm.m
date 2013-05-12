@@ -29,11 +29,18 @@ end
 for i = 1:size(d,2)
   norm_factor( i ) = 1.0 ./ mean( d( bins,i) );
 
-  if isnan( norm_factor(i) ); norm_factor(i) = 0.0; end;
-
+  if isnan( norm_factor(i) ) | isinf( norm_factor(i) ); norm_factor(i) = 0.0; end;
+  
   d_out(:,i) = d(:,i) * norm_factor( i );
   d_out_err(:,i) = d_err(:,i) * norm_factor( i );
+
+  if ~isempty( find(isnan( d_out(:,i) )) )
+    i
+    norm_factor(i)
+  end
+  
 end
+
 
 
 if do_transpose
