@@ -279,19 +279,8 @@ color_line_1 = clr{9}; color_line_2 = clr{10}; color_line_3 = clr{11};
 
 
 % auto_size if asked
-is_auto_size_H = is_auto_size || (page_num_H == 0);
-is_auto_size_W = is_auto_size || (page_num_W == 0);
 is_auto_size_force = (page_num_H == 0) && (page_num_W == 0);
-if is_auto_size_H;
-    H_temp = length(seqpos); 
-    H_step = [75 175 250 300 350 400];
-    page_num_H = length(find(H_temp > H_step)) + 1;
-end;
-if is_auto_size_W;
-    W_temp = length(mutpos);
-    W_step = [55 130 185 225 260 300];
-    page_num_W = length(find(W_temp > W_step)) + 1;
-end;
+[page_num_H, page_num_W] = auto_size(page_num_H, seqpos, page_num_W, mutpos, is_auto_size);
 
 % print out summary
 fprintf(['Divide into ', num2str(page_num_H), ' x ', num2str(page_num_W), ' pages, auto-size (', ...
@@ -301,21 +290,12 @@ fprintf(['Spacer ', num2str(num_sp), ', make lines (', num2yn(is_line), ') every
 fprintf(['Show title (', num2yn(is_title), '), show page number (', num2yn(is_page_no), ') show version (', ...
     num2yn(is_version), '), print to file (', num2yn(is_print), ').\n']);
 
-
 % auto_trim if asked
 fprintf(['Auto trim (', num2yn(is_auto_trim), ')']);
-d_upper_bound = max([round((min(xsel) - num_up_offset)), 1]);
-d_lower_bound = min([round((max(xsel) + num_low_offset)), size(d_align, 1)]);
-if is_auto_trim == 1;
-    d_align = d_align(d_upper_bound:d_lower_bound, :);
-    xsel = xsel - d_upper_bound + 1;
-    fprintf([', with upper offset (', num2str(num_up_offset), ') and lower offset (', ...
-        num2str(num_low_offset), '), and trimmed to ', num2str(d_upper_bound), ' : ', num2str(d_lower_bound)]);
-end;
+[d_align, xsel] = auto_trim(d_align, xsel, num_up_offset, num_low_offset, is_auto_trim);
 fprintf('.\n');
 fprintf(['Auto title size (', num2yn(is_auto_length), '), Y-axis title offset (', num2str(num_y_offset), ...
     ') and X-axis title offset (', num2str(num_x_offset), ').\n\n']);
-
 
 % calculate auto_scale
 auto_scale = 22.5 / mean(mean(d_align));
@@ -327,14 +307,7 @@ fprintf( 'scale_used = %f\n\n', scale_fc);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % split d_align into h*w sub matrices
 % expand d_align to divisible size by h and w
-h_length = floor(size(d_align, 1)/page_num_H);
-if h_length * page_num_H ~= size(d_align, 1); h_length = h_length + 1; end;
-d_align((size(d_align, 1) + 1):(h_length * page_num_H), :) = 0;
-
-w_length = floor(size(d_align, 2)/page_num_W);
-if w_length * page_num_W ~= size(d_align, 2); w_length = w_length + 1; end;
-d_align(:, (size(d_align, 2) + 1):(w_length * page_num_W)) = 0;
-
+[d_align, h_length, w_length] = d_expand_divisible(d_align, page_num_H, page_num_W);
 fprintf(['In each page, there are ',num2str(w_length),' lanes (X-axis), and ',...
     num2str(h_length),' of traces (Y-axis).\n']);
 
@@ -350,13 +323,7 @@ pause;
 
 % add empty lane on both left and right of each figure
 % add spacer on both top and bottom of each figure
-d = zeros([page_num_W, page_num_H, (h_length + 2 * num_sp), (w_length + 2)]); 
-for i = 1:page_num_W
-    for j = 1:page_num_H
-        d(i, j, ((num_sp + 1):(num_sp + h_length)), 2:(size(d, 4) - 1)) = d_align((h_length * (j - 1) + 1):(h_length * j),...
-            (w_length * (i - 1) + 1):(w_length * i));
-    end;
-end;
+d = d_split_add_spacer(d_align, page_num_H, h_length, num_sp, page_num_W, w_length, 1);
 
 % read in mutants names (X-axis), trim to 'G145C' format
 names = cell(1,size(d_align, 2)); 
@@ -401,37 +368,22 @@ else
 end;
 
 % read in band names (Y-axis)
-bandpos = cell(length(mutpos), 2);
-for i = 1:length(seqpos)
-    bandpos{i, 1} = [sequence(seqpos(i) - offset), num2str(seqpos(i))];
-    bandpos{i, 2} = xsel(i);
-end;
-
 % split band position array into h*h_length array
-band = cell(page_num_H, size(bandpos, 1), 2);
-for i = 1:page_num_H
-    ymin = h_length * (i - 1) + 1; ymax = h_length * i;
-    for j = 1:size(bandpos, 1)
-        if bandpos{j, 2}>=ymin && bandpos{j, 2}<=ymax;
-            band{i, j, 1} = bandpos{j, 1}; 
-            band{i, j, 2} = bandpos{j, 2} + num_sp - (ymin - 1);
-        end;
-    end;
-end;
+[bandpos, band] = xsel_label_split(xsel, seqpos, sequence, offset, page_num_H, h_length, num_sp);
 
 % extend yticks on last column of figures if more than one blank lane there
 extra_blank_lanes = w_length * page_num_W - d_align_size_W_org;
 if extra_blank_lanes > 0;
     for i = 1:page_num_H
-        band_temp = []; ct = 1;
+        xsel_pos_sub = []; ct = 1;
         for j = 1:size(band, 2)
             if ~isempty(band{i, j ,2});
-                band_temp(ct) = band{i, j, 2};
+                xsel_pos_sub(ct) = band{i, j, 2};
                 ct = ct + 1;
             end;
         end;
-        for j = 1:length(band_temp)
-            d(page_num_W, i, (round(band_temp(j)) + [-1 0]), ...
+        for j = 1:length(xsel_pos_sub)
+            d(page_num_W, i, (round(xsel_pos_sub(j)) + [-1 0]), ...
                 (end - extra_blank_lanes):end) = 22.5;
         end;
     end;
@@ -449,22 +401,16 @@ for i = 1:page_num_W
     for j = 1:page_num_H
         
         % extract y-axis information from cell
-        d_temp = []; band_temp = []; label_temp = {}; ct = 2;
+        d_temp = []; 
         d_temp(1:size(d, 3), 1:size(d, 4)) = d(i, j, :, :);
-        for k = 1:size(band, 2)
-            if ~isempty(band{j, k, 2}); 
-                band_temp(ct) = band{j, k, 2};
-                label_temp{ct} = band{j, k, 1};
-                ct = ct + 1;
-            end;
-        end;
-
+        [xsel_pos_sub, xsel_txt_sub] = xsel_label_extract(band, j, 2);
+        
         % add figure number to the top left and bottom right corner
         fig_name = ['[', num2str(j), ', ', num2str(i), '] of [',...
             num2str(page_num_H), ' ,', num2str(page_num_W), ']'];
         if is_page_no == 1;
-            band_temp(1) = round(num_sp / 2);
-            label_temp{1} = strrep(strcat(strtok(fig_name,']'), ']'), ' ', '');
+            xsel_pos_sub(1) = round(num_sp / 2);
+            xsel_txt_sub{1} = strrep(strcat(strtok(fig_name,']'), ']'), ' ', '');
             name{i, w_length + 2} = fig_name;
         end;
         
@@ -515,9 +461,9 @@ for i = 1:page_num_W
         % Y-axis-tick, band positions
         set(gca, 'FontSize', ft_sz_y_tick, 'YColor', color_y_tick);
         if i == page_num_W;
-            set(gca, 'YTick', band_temp(:), 'YTickLabel', char(label_temp(:)), 'YAxisLoc', 'Right');
+            set(gca, 'YTick', xsel_pos_sub(:), 'YTickLabel', char(xsel_txt_sub(:)), 'YAxisLoc', 'Right');
         else
-            set(gca, 'YTick', band_temp(:), 'YTickLabel', char(label_temp(:)), 'YAxisLoc', 'Left');
+            set(gca, 'YTick', xsel_pos_sub(:), 'YTickLabel', char(xsel_txt_sub(:)), 'YAxisLoc', 'Left');
         end;
         
         % X-axis-caption
@@ -597,6 +543,7 @@ for i = 1:page_num_W
             
         % print to file if asked
         if is_print == 1; print_save_figure(h, [file_name, num2str(fig_num)], dir_name, 0); end;
+    end;
 end;
 
 if is_print == 1; fprintf([num2str(i*j),' pages printed to folder "', dir_name,'".\n']); end;
