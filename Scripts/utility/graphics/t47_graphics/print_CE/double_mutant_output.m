@@ -53,6 +53,8 @@ function double_mutant_output(d_align, scale_factor, labels, caption, flg, ft_sz
 % by T47, Mar 2013.
 %
 
+if nargin == 0; help( mfilename ); return; end;
+
 if ~exist('caption','var') || isempty(caption); caption = ''; end;
 if ~exist('flg','var') || isempty(flg) || length(flg) < 5; flg = [1, 1, 1, 1, 0]; end;
 if ~exist('ft_sz','var') || isempty(ft_sz) || length(ft_sz) < 5; ft_sz = [20 12 15 54 .25]; end;

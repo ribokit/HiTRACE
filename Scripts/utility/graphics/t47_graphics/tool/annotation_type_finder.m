@@ -32,6 +32,8 @@ function annotation_subset = annotation_type_finder(annotations, type_string)
 % by T47, May 2013
 %
 
+if nargin == 0; help( mfilename ); return; end;
+
 if ~exist('type_string','var') || isempty(type_string); return; end;
 
 annotation_subset = '';

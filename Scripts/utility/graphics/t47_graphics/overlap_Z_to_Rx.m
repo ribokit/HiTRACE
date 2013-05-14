@@ -14,14 +14,16 @@ function overlap_Z_to_Rx (reactivity, Z, is_invert)
 % by T47, Mar 2013.
 %
 
-if ~exist('is_invert')  is_invert=0; end;
-if is_invert ~= 0   Z = Z*-1;   end;
+if nargin == 0; help( mfilename ); return; end;
+
+if ~exist('is_invert','var'); is_invert=0; end;
+if is_invert; Z = Z*-1; end;
     
 reference = imread(reactivity);
 figure, imshow(reference);
 hold on;
 
-data=Z;
+data = Z;
 h = imshow(data,[]);
 hold off;
 

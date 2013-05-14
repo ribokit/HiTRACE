@@ -22,6 +22,8 @@ function print_save_figure(fig, file_name, dir_name, flg)
 % by CYC, T47, May 2013.
 %
 
+if nargin == 0; help( mfilename ); return; end;
+
 file_name = strrep(strrep(file_name, '/', ''), ' ', '');
 
 if ~exist('dir_name', 'var') || isempty(dir_name); dir_name = 'Figures'; end;

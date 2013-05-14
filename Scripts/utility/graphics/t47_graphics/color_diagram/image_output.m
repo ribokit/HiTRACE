@@ -18,6 +18,8 @@ function image_output(imagex, file_name, res)
 % by T47, May 2013.
 %
 
+if nargin == 0; help( mfilename ); return; end;
+
 if ~exist('file_name','var') || isempty(file_name); file_name = 'color_diagram_output.tiff'; end;
 if ~exist('res','var') || isempty(res); res = 300; end;
 

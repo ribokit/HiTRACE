@@ -24,6 +24,8 @@ function ft_sz = optimal_font_size(text_obj, max_l, max_h)
 % by T47, May 2013.
 %
 
+if nargin == 0; help( mfilename ); return; end;
+
 if max_l == 0 && max_h == 0;
     ft_sz = 0;
     return;

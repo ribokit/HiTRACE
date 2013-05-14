@@ -9,6 +9,8 @@ function [color_scheme, d_offset, max_color, min_color] = parse_color_profile(co
 % by T47, May 2013.
 %
 
+if nargin == 0; help( mfilename ); return; end;
+
 color_scheme = color_profile(1);
 d_offset = color_profile(2);
 max_color = color_profile(3);

@@ -146,6 +146,7 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 % by T47, Apr 2013 - May 2013.
 %
 
+if nargin == 0; help( mfilename ); return; end;
 Script_VER = '2.1';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -317,12 +318,7 @@ pause;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-% d(i, j, k, l):
-% (i, j) denotes the subplot coordinate
-% (k, l) denotes the band coordinate within one subplot
-
-% add empty lane on both left and right of each figure
-% add spacer on both top and bottom of each figure
+% add spacers on each border of each figure
 d = d_split_add_spacer(d_align, page_num_H, h_length, num_sp, page_num_W, w_length, 1);
 
 % read in mutants names (X-axis), trim to 'G145C' format
@@ -336,7 +332,6 @@ name = cell(page_num_W, (w_length + 2));
 for i = 1:page_num_W
     name(i, 2:(w_length + 1)) = names((w_length * (i - 1) + 1):(w_length * i));    
 end;
-
 
 % flip seqpos and xsel to correct order
 % xsel be increasing, seqpos be decreasing, mutpos be increasing
@@ -375,13 +370,7 @@ end;
 extra_blank_lanes = w_length * page_num_W - d_align_size_W_org;
 if extra_blank_lanes > 0;
     for i = 1:page_num_H
-        xsel_pos_sub = []; ct = 1;
-        for j = 1:size(band, 2)
-            if ~isempty(band{i, j ,2});
-                xsel_pos_sub(ct) = band{i, j, 2};
-                ct = ct + 1;
-            end;
-        end;
+        [xsel_pos_sub, ~] = parse_xsel_label(band, i, 1);
         for j = 1:length(xsel_pos_sub)
             d(page_num_W, i, (round(xsel_pos_sub(j)) + [-1 0]), ...
                 (end - extra_blank_lanes):end) = 22.5;
@@ -394,16 +383,13 @@ end;
 % plot each figure
 close all;
 
-% make a folder to store print files
-if is_print == 1; mkdir(dir_name); end;
-
 for i = 1:page_num_W
     for j = 1:page_num_H
         
         % extract y-axis information from cell
         d_temp = []; 
         d_temp(1:size(d, 3), 1:size(d, 4)) = d(i, j, :, :);
-        [xsel_pos_sub, xsel_txt_sub] = xsel_label_extract(band, j, 2);
+        [xsel_pos_sub, xsel_txt_sub] = parse_xsel_label(band, j, 2);
         
         % add figure number to the top left and bottom right corner
         fig_name = ['[', num2str(j), ', ', num2str(i), '] of [',...

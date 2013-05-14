@@ -10,7 +10,9 @@ function histo_Z_compare (Z1, Z2, counts)
 % by T47, Mar 2013.
 %
 
-if ~exist('counts') counts=2000;    end;
+if nargin == 0; help( mfilename ); return; end;
+
+if ~exist('counts','var'); counts=2000; end;
 
 Zsub = Z1 - Z2;
 Zplot = reshape(Zsub, 1, numel(Zsub));

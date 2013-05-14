@@ -20,6 +20,8 @@ function set_print_page(fig, orient, pos, txt)
 % by T47, May 2013.
 %
 
+if nargin == 0; help( mfilename ); return; end;
+
 if exist('txt','var');
     set(fig, 'Name', txt);
 end;

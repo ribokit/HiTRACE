@@ -17,6 +17,8 @@ function out = is_valid_boolean (in)
 % by T47, May 2013.
 %
 
+if nargin == 0; help( mfilename ); return; end;
+
 out = in;
 if (in ~= 0) && (in ~= 1);
     out = 0;

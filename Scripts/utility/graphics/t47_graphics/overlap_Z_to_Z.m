@@ -18,13 +18,16 @@ function overlap_im = overlap_Z_to_Z (Z1, Z2, fuse_method, im_method)
 % by T47, Mar 2013.
 %
 
-if ~exist('fuse_method') fuse_method = 'falsecolor'; end;
-if ~exist('im_method')  im_method = 0; end;
+if nargin == 0; help( mfilename ); return; end;
+
+if ~exist('fuse_method','var'); fuse_method = 'falsecolor'; end;
+if ~exist('im_method','var');  im_method = 0; end;
 
 c = imfuse(Z1, Z2, fuse_method);
-if im_method
+if im_method;
     imagesc(c);
 else
     image(c);
 end;
+
 overlap_im = c;

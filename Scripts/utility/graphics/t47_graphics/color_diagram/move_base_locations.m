@@ -32,6 +32,8 @@ function base_locations = move_base_locations(residue_locations, direction_cell,
 %   base_locations         Specifies base_locations output. Format in 2xN double array.
 %   
 
+if nargin == 0; help( mfilename ); return; end;
+
 if ~exist('square_width_correct','var'); square_width_correct = 0; end;
 if ~exist('direction_cell','var'); direction_cell = {[], [], [], []}; end;
 

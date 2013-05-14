@@ -14,6 +14,9 @@ function [num_flag, str_flag] = check_monotone(d_array)
 %
 % by T47, Apr 2013
 %
+
+if nargin == 0; help( mfilename ); return; end;
+
 num_flag = NaN; str_flag = '';
 
 array_monotone = [(all(diff(d_array) <= 0)),...     % increase

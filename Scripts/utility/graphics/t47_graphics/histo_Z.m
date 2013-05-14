@@ -10,7 +10,9 @@ function histo_Z (Z, counts)
 % by T47, Mar 2013.
 %
 
-if ~exist('counts') counts=1000;    end;
+if nargin == 0; help( mfilename ); return; end;
+
+if ~exist('counts','var'); counts = 1000; end;
 Zplot = reshape(Z, 1, numel(Z));
 
 figure;

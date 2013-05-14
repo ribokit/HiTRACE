@@ -63,6 +63,8 @@ function plot_1d_color_ref (seqpos, sat_array, dil_array, ref_array, axs, mdfr, 
 % by T47, Apr 2013
 %
 
+if nargin == 0; help( mfilename ); return; end;
+
 if ~exist('axs','var'); axs = []; end;
 if ~exist('mdfr','var'); mdfr = ''; end;
 if ~exist('shadow_lines','var'); shadow_lines = []; end;

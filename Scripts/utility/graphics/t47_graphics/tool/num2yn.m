@@ -8,6 +8,8 @@ function str = num2yn(num)
 % by T47, Apr 2013
 %
 
+if nargin == 0; help( mfilename ); return; end;
+
 if num == 1; 
     str = 'YES'; 
 elseif num == 0;
