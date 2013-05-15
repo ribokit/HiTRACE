@@ -44,11 +44,9 @@ axis([0 y_image_size 0 x_image_size]);
 
 if size(which_res, 1) > 1; which_res = which_res'; end;
 
+if ~exist('color_profile','var'); color_profile = []; end;
 color_profile_org = [17, 0, mean(what2plot) + 3 * std(what2plot), mean(what2plot) - 3 * std(what2plot)];
-if ~exist('color_profie','var') || length(color_profile) < length(color_profile_org);
-    color_profile_org(1:length(color_profile)) = color_profile;
-    color_profile = color_profile_org;
-end;
+color_profile = is_valid_flag(color_profile, color_profile_org);
 [color_scheme, d_offset, max_color, min_color] = parse_color_profile(color_profile);
 if ~exist('square_width','var'); square_width = 12; end;
 
@@ -69,12 +67,12 @@ end;
 fprintf('\n');
 fprintf(['input image = ', num2str(x_image_size), ' x ', num2str(y_image_size), ' x ' ...
     num2str(z_image_size), ' matrix.\n']);
-fprintf(['offset = ', '', ', base_locations = ', num2str(size(base_locations, 1)), ' x ', num2str(size(base_locations, 2)), ...
+fprintf(['base_locations = ', num2str(size(base_locations, 1)), ' x ', num2str(size(base_locations, 2)), ...
     ' matrix, residue_locations = ', num2str(size(residue_locations, 1)), ' x ', num2str(size(residue_locations, 2)), ' matrix.\n']);
 fprintf(['which_res = 1 x ', num2str(length(which_res)),' matrix, what2plot = 1 x ', num2str(length(what2plot)), ' matrix.\n']);
 fprintf('\n');
 fprintf(['color_scheme = ', num2str(color_scheme), '.\n']);
-fprintf(['square_width = ', num2str(square_width * 4), '.\n']);
+fprintf(['square_width = ', num2str(square_width), '.\n']);
 fprintf('\n');
 
 imagex_color = double(imagex);
@@ -117,4 +115,5 @@ for k = which_res
     count = count + 1;
 end;
 
-hold off; image(imagex_color / 256); hold on; axis equal; axis off;
+image_diagram(imagex_color);
+

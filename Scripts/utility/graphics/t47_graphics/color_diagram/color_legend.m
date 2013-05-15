@@ -36,10 +36,11 @@ function imagex_color = color_legend(imagex, color_profile, square_width, orient
 %                                      'SIZE' specifies the length of legend bar, in units of
 %                                        square_width.
 %   labels             Optional        Provides labels for color saturation value. Default is
-%   {min_label,                         {'color_min', 'color_max'} from color_profile.
-%    max_label}                        'MIN_LABEL' specifies the low-end color saturation value.
-%                                      'MAX_LABEL' specifies the high-end color saturation 
+%   {min_label,                         {'color_min', 'color_max', 'Legend'} from color_profile.
+%    max_label,                        'MIN_LABEL' specifies the low-end color saturation value.
+%    title}                            'MAX_LABEL' specifies the high-end color saturation 
 %                                        value.
+%                                      'TITLE' specifies the legend title.
 %   font_size          Optional        Provides the legend label font size, in units of 
 %                                       square_width. Default is 0.8.
 %
@@ -62,41 +63,32 @@ axis([0 y_image_size 0 x_image_size]);
 min_color = abs(min_color);
 if ~exist('square_width','var'); square_width = 12; end;
 
-orientation_org = [1 1];
-if ~exist('orientation','var') || isempty(orientation) ; 
-    orientation = orientation_org;
-else
-    if length(orientation) < length(orientation_org);
-        orientation_org(1:length(orientation)) = orientation;
-        orientation = orientation_org;
-    end;
-end;
+if ~exist('orientation','var'); orientation = []; end;
+orientation = is_valid_flag(orientation, [1 1]);
 legend_orient = orientation(1); legend_direct = orientation(2);
 if legend_direct == 0; legend_direct = -1; end;
 
-position_org = [0 2 2 4];
-if ~exist('position','var') || isempty(position) ; 
-    position = position_org;
-else
-    if length(position) < length(position_org);
-        position_org(1:length(position)) = position;
-        position = position_org;
-    end;
-end;
+if ~exist('position','var'); position = []; end;
+position = is_valid_flag(position, [0 2 2 4]);
 legend_corner = position(1); legend_x_offset = position(2);
 legend_y_offset = position(3); legend_size = position(4);
 
-if ~exist('labels', 'var') || length(labels) < 2; 
-    max_label = ['+', num2str(max_color + color_center)];
-    min_label = ['-', num2str(- min_color + color_center)];
+if ~exist('labels', 'var') || length(labels) < 3; 
+    max_label = num2str(max_color + color_center);
+    min_label = num2str(- min_color + color_center);
+    title_label = 'Legend';
+    if (max_color + color_center) > 0 && (- min_color + color_center) < 0;
+        max_label = ['+', max_label];
+    end;
 else
-    max_label = labels{2};
-    min_label = labels{1};
+    max_label = labels{2}; min_label = labels{1}; title_label = labels{3};
 end;
 if ~exist('font_size','var'); font_size = 0.8; end;
 
 label_orient = {'vertical', 'horizontal'};
 color_orient = {'dark (hot)', '', 'light (cool)'};
+fprintf(['\ncolor_scheme = ', num2str(color_scheme), '.\n']);
+fprintf(['square_width = ', num2str(square_width), '.\n\n']);
 fprintf(['Legend with ', label_orient{legend_orient + 1}, ' orientation, color from ', ...
     color_orient{2-legend_direct}, ' to ', color_orient{2+legend_direct}, '.\n']);
 label_pos = {'top-left', 'top-right', 'bottom-left', 'bottom-right'};
@@ -161,27 +153,25 @@ if legend_orient
     label_pos_1 = [x_offset + square_width, y_offset - square_width / 2];
     label_pos_2 = [x_offset + square_width, y_offset + (legend_size / 2 - 0.5) * square_width];
     label_pos_3 = [x_offset + square_width, y_offset + (legend_size - 0.5) * square_width];
+    label_pos_4 = [x_offset - square_width / 2, y_offset - square_width * 2];
 else
     label_pos_1 = [x_offset - square_width, y_offset + square_width];
     label_pos_2 = [x_offset + (legend_size / 2 - 0.5) * square_width, y_offset + square_width];
     label_pos_3 = [x_offset + (legend_size - 0.5) * square_width, y_offset + square_width];    
+    label_pos_4 = [x_offset + (legend_size / 2 - 1.5) * square_width, y_offset - square_width * 3 / 2];
 end;
 
 % add legend label
 % text is rasterized into image
 ft_sz = round(square_width * font_size);
 if color_scheme == 8
-    H = vision.TextInserter('0');
-    H.Color = [0 0 0]; H.Location = label_pos_2; H.FontSize = ft_sz;
-    imagex_color = step(H, imagex_color);
+    imagex_color = add_rasterized_text(imagex_color, label_pos_2, '0', ft_sz, 'k');
 else
-    H = vision.TextInserter(min_label);
-    H.Color = [0 0 0]; H.Location = label_pos_3; H.FontSize = ft_sz;
-    imagex_color = step(H, imagex_color);
+    imagex_color = add_rasterized_text(imagex_color, label_pos_3, min_label, ft_sz, 'k');
 end;
-H = vision.TextInserter(max_label);
-H.Color = [0 0 0]; H.Location = label_pos_1; H.FontSize = ft_sz;
-imagex_color = step(H, imagex_color);
+imagex_color = add_rasterized_text(imagex_color, label_pos_1, max_label, ft_sz, 'k');
+imagex_color = add_rasterized_text(imagex_color, label_pos_4, title_label, ft_sz, 'k');
 
-hold off; image(imagex_color / 256); hold on; axis equal; axis off;
+image_diagram(imagex_color);
+
 

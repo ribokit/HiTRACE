@@ -73,12 +73,6 @@ if PLOT_STUFF
   image( scalefactor * d_out );
   title ('AFTER  align\_by\_DP', 'FontSize', 12, 'FontWeight', 'Bold');
   %make_lines( [0:size(d_out,2)], 'k', 0.25 );
-  
-  set(gcf,'Position',[0, 0, 800, 600]); 
-  
-  % t47 commentted out temporarily, errors occur
-  %set(h,'interp','none');
-  set(gcf, 'PaperOrientation', 'landscape', 'PaperPositionMode', 'auto', 'color', 'white');
         
 end;
 

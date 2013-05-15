@@ -61,11 +61,12 @@ y_min = min(min(d_plot), color_min);
 y_margin = (y_max - y_min) / 4;
 
 
-%%%%%%%%%%%%%%%%
-% figure of background-colored plot-graph
 
-figure(1); clf;
-set_print_page(gcf, 0, [0 0 800 600], 'Background-colored Plot');
+figure; clf;
+set_print_page(gcf, 0, [0 0 800 600], 'Color Palette Plot');
+
+% figure of background-colored plot-graph
+subplot(2,1,1);
 axis([0 length(d_plot) (y_min - y_margin) (y_max + y_margin)]);
 
 for i = y_max:plot_interval:y_min
@@ -82,12 +83,8 @@ make_lines_horizontal(color_min - 0.5); hold on;
 make_lines_horizontal(color_center - 0.5); hold on;
 plot(d_plot, 'kd', 'Linewidth', 2); hold off;
 
-
-%%%%%%%%%%%%%%%%
 % figure of foreground-colored bar-graph
-
-figure(2); clf;
-set_print_page(gcf, 0, [100 100 800 600], 'Foreground-colored Bargraph');
+subplot(2,1,2);
 
 h = bar(d_plot);
 h_child = get(h, 'Children');

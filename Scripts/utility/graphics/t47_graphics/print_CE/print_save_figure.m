@@ -26,10 +26,10 @@ if nargin == 0; help( mfilename ); return; end;
 
 file_name = strrep(strrep(file_name, '/', ''), ' ', '');
 
-a = pwd;
+current_dir = pwd;
 
 if ~exist('dir_name', 'var') || isempty(dir_name); dir_name = 'Figures'; end;
-dir_name = strcat(a, '/', dir_name);
+dir_name = strcat(current_dir, '/', dir_name);
 if ~exist(dir_name, 'dir'); mkdir(dir_name); end;
 
 full_path = [dir_name, '/', file_name,'.eps'];

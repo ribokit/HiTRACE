@@ -1,4 +1,4 @@
-function ft_sz = optimal_font_size(text_obj, max_l, max_h)
+function ft_sz = auto_font_size(text_obj, max_l, max_h)
 
 % ft_sz = OPTIMAL_FONT_SIZE(text_obj, max_l, max_h);
 %

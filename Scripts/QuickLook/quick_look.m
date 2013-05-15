@@ -77,7 +77,6 @@ if ~ischar( dye_names ) && ~isempty( dye_names ) && length( signals_and_ref ) ~=
 %  we know that there are at least 4 color channels, and that the 1st and 4th are specified so
 % dye_names_full = { 'FAM', '', '', 'ROX'} carries that information concisely.
 dye_names_full = get_dye_names_full( dye_names, signals_and_ref );
-
 sigchannels = signals_and_ref( 1 : end-1 ); % will generalize this in a bit.
 refchannel = signals_and_ref( end );
 fprintf( 'Assuming reference channel: %d\n', refchannel );

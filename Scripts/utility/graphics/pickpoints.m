@@ -16,6 +16,7 @@ if nargin == 0;  help( mfilename ); return; end;
 figure(1); subplot(1,1,1); hold off; image(imagex); hold on
 [xsize,ysize,zsize]=size(imagex);
 axis([0 ysize 0 xsize]); zoomedin = 0;
+figure_full_screen(); axis equal;
 
 if ~exist('square_width')
   square_width = 40;

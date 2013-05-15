@@ -195,15 +195,8 @@ fprintf(['structure ',d_rdat.structure,'\n\n']);
 
 
 % set all auxillary parameters
-num_flg_org = [0 0 0 50 10 -1 75 100 0.01 0.19];
-if ~exist('num_flg','var') || isempty(num_flg) ; 
-    num_flg = num_flg_org;
-else
-    if length(num_flg) < length(num_flg_org);
-        num_flg_org(1:length(num_flg)) = num_flg;
-        num_flg = num_flg_org;
-    end;
-end;
+if ~exist('num_flg','var'); num_flg = []; end;
+num_flg = is_valid_flag(num_flg, [0 0 0 50 10 -1 75 100 0.01 0.19]);
 num_flg([1:2, 4:7]) = round(num_flg([1:2, 4:7]));
 num_flg(1) = max([num_flg(1), 0]);
 num_flg(2) = max([num_flg(2), 0]);
@@ -216,15 +209,8 @@ num_sp = num_flg(4); num_line_sp = num_flg(5); num_line_offset = num_flg(6);
 num_up_offset = num_flg(7); num_low_offset = num_flg(8);
 num_y_offset = num_flg(9); num_x_offset = num_flg(10);
 
-bol_flg_org = [1 1 1 1 1 0 1 1 1];
-if ~exist('bol_flg','var') || isempty(bol_flg) ; 
-    bol_flg = bol_flg_org;
-else
-    if length(bol_flg) < length(bol_flg_org);
-        bol_flg_org(1:length(bol_flg)) = bol_flg;
-        bol_flg = bol_flg_org;
-    end;
-end;
+if ~exist('bol_flg','var'); bol_flg = []; end;
+bol_flg = is_valid_flag(bol_flg, [1 1 1 1 1 0 1 1 1]);
 for i = length(bol_flg)
     bol_flg(i) = is_valid_boolean(bol_flg(i));
 end;
@@ -232,15 +218,8 @@ is_auto_trim = bol_flg(1); is_auto_size = bol_flg(2); is_auto_length = bol_flg(3
 is_line = bol_flg(4); is_print = bol_flg(5); is_square = bol_flg(6);
 is_title = bol_flg(7); is_version = bol_flg(8); is_page_no = bol_flg(9); 
 
-str_flg_org = {'', 'print_CE_split_output', '', '', datestr(date, 'mmm yyyy'), ''};
-if ~exist('str_flg','var') || isempty(str_flg)
-    str_flg = str_flg_org;
-else
-    if length(str_flg) < length(str_flg_org);
-        str_flg_org(1:length(str_flg)) = str_flg;
-        str_flg = str_flg_org;
-    end;
-end;
+if ~exist('str_flg','var'); str_flg = {}; end;
+str_flg = is_valid_flag(str_flg, {'', 'print_CE_split_output', '', '', datestr(date, 'mmm yyyy'), ''});
 file_name = str_flg{1}; dir_name = str_flg{2}; mdfr_str = str_flg{3};
 author_str = str_flg{4}; date_str = [' @ ' str_flg{5}]; ver_hitrace = str_flg{6};
 if ~isempty(file_name); file_name = [file_name '_']; end;
@@ -249,29 +228,15 @@ if ~isempty(author_str); author_str = [' by ' author_str]; end;
 if isempty(date_str); date_str = datestr(date, 'mmm yyyy'); end;
 if isempty(ver_hitrace); ver_hitrace = 'N/A'; end;
 
-ft_sz_org = [25 15 15 9 20 8 20 10];
-if ~exist('ft_sz','var') || isempty(ft_sz);
-    ft_sz = ft_sz_org;
-else
-    if length(ft_sz) < length(ft_sz_org);
-        ft_sz_org(1:length(ft_sz)) = ft_sz;
-        ft_sz = ft_sz_org;
-    end;
-end;
+if ~exist('ft_sz','var'); ft_sz = []; end;
+ft_sz = is_valid_flag(ft_sz, [25 15 15 9 20 8 20 10]);
 ft_sz_title_1 = ft_sz(1); ft_sz_title_2 = ft_sz(2); ft_sz_title_3 = ft_sz(3);
 ft_sz_ver = ft_sz(4);
 ft_sz_y_title = ft_sz(5); ft_sz_y_tick = ft_sz(6);
 ft_sz_x_title = ft_sz(7); ft_sz_x_tick = ft_sz(8);
 
-clr_org = {'k', 'r', 'b', 'k', 'g', 'k', 'g', 'k', 'r', 'b', 'k'};
-if ~exist('clr','var') || isempty(clr);
-    clr = clr_org;
-else
-    if length(clr) < length(clr_org);
-        clr_org(1:length(clr)) = clr;
-        clr = clr_org;
-    end;
-end;
+if ~exist('clr','var'); clr = {}; end;
+clr = is_valid_flag(clr, {'k', 'r', 'b', 'k', 'g', 'k', 'g', 'k', 'r', 'b', 'k'});
 color_title_1 = clr{1}; color_title_2 = clr{2}; color_title_3 = clr{3};
 color_ver = clr{4};
 color_y_title = clr{5}; color_y_tick = clr{6};
@@ -335,32 +300,10 @@ end;
 
 % flip seqpos and xsel to correct order
 % xsel be increasing, seqpos be decreasing, mutpos be increasing
-[xsel_num_flag, xsel_str_flag] = check_monotone(xsel);
-xsel_str_flag = lower(xsel_str_flag);
 fprintf('\n');
-fprintf(['Input xsel (1 x ',num2str(length(xsel)),') is ', xsel_str_flag]);
-if xsel_num_flag == -2;
-    fprintf(', FLIPPED for use.\n');
-    xsel = fliplr(xsel);
-elseif xsel_num_flag == 2;
-    fprintf(', unchanged for use.\n');
-else
-    fprintf(', please check.\n');
-    fprintf('** Strict monotonicity required! **\n');
-end;
-
-[seqpos_num_flag, seqpos_str_flag] = check_monotone(seqpos);
-seqpos_str_flag = lower(seqpos_str_flag);
-fprintf(['Input seqpos (1 x ',num2str(length(seqpos)),') is ', seqpos_str_flag]);
-if seqpos_num_flag == 2;
-    fprintf(', FLIPPED for use.\n');
-    seqpos = fliplr(seqpos);
-elseif seqpos_num_flag == -2;
-    fprintf(', unchanged for use.\n');
-else
-    fprintf(', please check.\n');
-    fprintf('** Strict monotonicity required! **\n');
-end;
+xsel = auto_flip_monotone(xsel, 1, 'xsel');
+seqpos = auto_flip_monotone(seqpos, -1, 'seqpos');
+fprintf('\n');
 
 % read in band names (Y-axis)
 % split band position array into h*h_length array
@@ -477,7 +420,7 @@ for i = 1:page_num_W
                     'FontWeight', 'Bold', 'FontSize', ft_sz_title_1, 'FontName', 'Courier', 'Color', color_title_1);
                 tit = get(gca, 'Title'); pos = get(tit, 'Position');
                 set(tit, 'Position', [0 (pos(2) + title_offset) pos(3)]);
-                if is_auto_length == 1; optimal_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
+                if is_auto_length == 1; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
 
             % title of second top page, for experiment details    
             elseif (j == 1 && i == 2);
@@ -495,7 +438,7 @@ for i = 1:page_num_W
                     'FontSize', ft_sz_title_2, 'FontName', 'Courier', 'Color', color_title_2);
                 tit = get(gca, 'Title'); pos = get(tit, 'Position');
                 set (tit, 'Position', [1 (pos(2) + title_offset) pos(3)]);
-                if is_auto_length == 1; optimal_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
+                if is_auto_length == 1; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
 
             % title of right-top corner, for experiment date and authorship
             elseif (j == 1 && i == page_num_W)
@@ -505,7 +448,7 @@ for i = 1:page_num_W
                     'FontWeight', 'Bold', 'FontSize', ft_sz_title_3, 'FontName', 'Courier', 'Color', color_title_3);
                 tit = get(gca, 'Title'); pos = get(tit, 'Position');
                 set (tit, 'Position', [1 (pos(2) + title_offset) pos(3)]);
-                if is_auto_length == 1; optimal_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
+                if is_auto_length == 1; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
                 
             end;
         end;

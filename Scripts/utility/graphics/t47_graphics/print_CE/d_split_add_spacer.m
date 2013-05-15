@@ -40,7 +40,6 @@ if ~exist('w_sp','var') || isempty(w_sp); w_sp = 1; end;
 
 d_spl = zeros(W, H, (h_length + 2 * h_sp), (w_length + 2 * w_sp)); 
 
-fprintf([num2str(size(d_org)),'\n']);
 for i = 1:W
     for j = 1:H
         d_spl(i, ...
