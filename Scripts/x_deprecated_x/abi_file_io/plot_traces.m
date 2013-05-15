@@ -8,7 +8,7 @@ function [a] = plot_traces( sarray, refarray, lanes, xrange, legends, plottitle,
 %   sarray:     Name of array containing analyzed data (e.g. x)**
 %   refarray:   Name of array containing analyzed reference data (e.g. xref)**
 %   lanes:      Specify the lanes for which to view traces (e.g. [1,2:4])
-%   xrange:     Specify the minimum and maximum time points to plot (e.g. [300 3500])
+%   xrange:     Specify the minimum and maximum time points to plot (e.g. [300 3500])       % need to edit so that entering a range (e.g. 300:3500) will prompt script to print those values as x-axis
 %   legends:    Enter a list of legend names (e.g. {'leg1','leg2','leg3',...}, otherwise enter 'off'
 %   plottitle:  Enter a string title
 %   refplot (option):   Enter 1 to plot reference trace; 0, '', or omit otherwise
@@ -16,7 +16,7 @@ function [a] = plot_traces( sarray, refarray, lanes, xrange, legends, plottitle,
 %   newfig (option):    Enter 1 to open in new figure; 0, '', or omit otherwise
 %   filename (option):  Saves plot as PostScript and MatLab figure under given string filename, omit for no save
 %
-%   **if calling a cell array, as those produced by quick_lookMC, reference the cell corresponding to the desired
+%   **if calling a cell array, as those produced by quick_look with multiple color channels, reference the cell corresponding to the desired
 %     channel (e.g. x{1,1} for channel 1, x{1,2} for channel 2, etc)
 %
 %   Examples: plot_traces(xarray,xarray_ref,1:5,[1 3000],{'label1','label2'},'Plot Title',0,0,0,'Filename');
@@ -51,7 +51,7 @@ if NORM == 1
 elseif NORM == 0
     if refplot == 1         %Optionally plot reference trace with each sample trace
         hold on
-        plot(sarray(:,lanes));
+        plot(sarray(:,lanes));          %xrange(1):xrange(2),
         plot(refarray(:,lanes),'--r');
         hold off
     elseif refplot == 0
@@ -64,7 +64,7 @@ xlim(xrange);
 
 
 %Display legend with desired text in upper-LH corner
-legend(legends, 'Location', 'NorthWest');
+legend(legends, 'Location', 'SouthOutside','Orientation','horizontal');
 
 %Display desired title
 title(plottitle);
