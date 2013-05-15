@@ -225,8 +225,8 @@ while ~stop_sel
             case {'x','X'}
                 seqpos = length(sequence) - [1:length(xsel)] + 1 + offset;
                 
-                % um, a guess. Probably could think of a better one...
-                peak_spacing = size( d_align, 1 )/ length(  sequence );
+                % um, a guess. Probably could think of a better one... yes, look inside auto_assign_sequence
+                peak_spacing = 0; %size( d_align, 1 )/ length(  sequence );
                 
                 if ~exist( 'area_pred','var' ) || isempty( area_pred )
                     fprintf( 'You need to input data_types or area_pred if you want to use auto-assign!\n' )

@@ -19,33 +19,42 @@ exist_talepeak = true;
 FALSEPEAK_CUT = 8;
 gee = zeros(1,num_lanes);
 spread = floor(num_pixels / (size( area_pred, 1 )-1) )/2;
+
+% getting rid of 'tale peaks' [fully extended band] which
+% can dominate fit.
 for i = 1:num_lanes
-    %peaks = localMaximum( image_x(:,i) );
-    %vals = image_x( peaks, i );
-    %[vals_norm, scalefactor ] = SHAPE_normalize( vals );
-    scalefactor = mean( image_x(:,i) );
-    image_x(:,i) = image_x(:,i)/scalefactor/2;
+  % scale image
+  scalefactor = mean( image_x(:,i) );
+  image_x(:,i) = image_x(:,i)/scalefactor/2;
     
-    peaks = localMaximum( image_x(:,i), spread );
-    peaks = peaks(image_x(peaks,i) > median(image_x(peaks,i))/2);
-    tmp = find(image_x(peaks,i) == max(image_x(peaks(end-5:end),i))) - 1;
-    tmp = tmp(1);
-    if (image_x(peaks(tmp),i) < FALSEPEAK_CUT/12 && num_pixels > 10000)
-        gee(i) = num_pixels;
-        msg = 'a tale peak is not found';
-        exist_talepeak = false;
-    else
-        gee(i) = peaks(tmp);
-    end
+  % find all peaks.
+  peaks = localMaximum( image_x(:,i), spread );
+  peaks = peaks( image_x(peaks,i) > median(image_x(peaks,i))/2 );
+
+  % get maximum peak of last five peaks. originally went to peak right before this one [ - 1].
+  tmp = find( image_x(peaks,i) == max( image_x(peaks(end-5:end),i)) ) - 1;
+  %tmp = find( image_x(peaks,i) == max( image_x(peaks(end-5:end),i)) );
+
+  if (image_x(peaks(tmp),i) < FALSEPEAK_CUT/12 && num_pixels > 10000)
+    gee(i) = num_pixels;
+    msg = 'a tale peak is not found';
+    exist_talepeak = false;
+  else
+    gee(i) = peaks(tmp);
+  end
 end
 
 if (max(gee) < num_pixels)
     talepeakrange = (1:num_pixels) > (max(gee)+1);
-    %image_x(talepeakrange,:) = []; num_pixels = max(gee)+1;
-    image_x(talepeakrange,:) = 0;
+    image_x(talepeakrange,:) = 0.0;
 end
 
-if ~( exist('ideal_spacing','var') && ~isempty(ideal_spacing) ), ideal_spacing = floor(num_pixels / (size( area_pred, 1 )-1) ); end;
+
+
+if ~exist('ideal_spacing','var') | ~isempty(ideal_spacing)  | ideal_spacing == 0
+  ideal_spacing = guess_ideal_spacing( image_x );
+  if ( ideal_spacing == 0 );  ideal_spacing = floor(num_pixels / (size( area_pred, 1 )-1) );  end;
+end;
 
 n = num_lanes - 1;
 falsepeaks = find(image_x(peaks(1:tmp),n) > FALSEPEAK_CUT);
@@ -60,29 +69,22 @@ if ~isempty(falsepeaks)
     image_x(falsepeakrange,:) = 0;
 end
 
-
 if PLOT_STUFF
   %after normalization
   subplot(1,2,1);
   image( image_x*50 ) 
 end
 
-
 s = area_pred;
-%s = zeros( length(sequence)+1, num_lanes );
-%for i = 1:num_lanes
-%  gp = find( marks(:,1) == mutpos(i) );
-%  for m = gp';
-%    s( find( seqpos == marks(m,2) ), i ) = 1.0;
-%  end
-%end
 
-s(1,:)      = 10;
-s(nres,:)   =  5;
+% note that this was from a time when we used to list sequence 
+% positions backward. Probably should fix this...
+s(1,:)    = 10;
+s(nres,:) = 1;
 sequence_at_bands = sequence( end:-1:1 );
 if exist_talepeak
-    s(nres+1,:) = 10;
-    sequence_at_bands = [sequence_at_bands, 'X'];
+  s(nres+1,:) = 10;
+  sequence_at_bands = [sequence_at_bands, 'X'];
 end
 s( s == 0.0 ) = 0.01;
 
@@ -96,5 +98,27 @@ end
 
 xsel = xsel_fit(1:end);
 if exist_talepeak
-    xsel(end) = [];
+  fprintf( 'Assigned fully extended band... one before nominal beginning of sequence.\n' );
+  %    xsel(end) = []; % keep this band!
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function ideal_spacing = guess_ideal_spacing( image_x )
+% look for closely spaced peaks using autocorrelation
+max_spacing = 50;
+possible_spacings = [];
+for i = 1:size( image_x, 2 )
+  spacings = localMaximum( autocorr( image_x(:,i), max_spacing ) );
+
+  % the first peak is always at 1 -- ignore that one and go to the next tightest spacing
+  if length( spacings ) > 1;
+    possible_spacings = [ possible_spacings, spacings(2) ];
+  end
+end
+
+if length( possible_spacings ) == 0
+  ideal_spacing = 0; % no clue.
+else
+  ideal_spacing = median( possible_spacings ); 
+end
+
