@@ -1,7 +1,11 @@
 function [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds, data_types )
 % [ xsel_fit, D ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds, data_types );
 %
+% Check autoassign_notes_on_leastsquares_DP_rhiju.pdf  (checked into HiTRACE repository in same directory as this script)
+% for description of the 'scorefunction'.
 %
+
+
 
 if nargin == 0;  help( mfilename ); return; end;
 
@@ -18,15 +22,15 @@ N = size( alpha_ideal, 1 );
 x = (1:num_pixels)';
 
 % Define a model for peak separations
-MIN_SEP = round(ideal_spacing/2);
+MIN_SEP = round(ideal_spacing/2); % this doesn't make sense -- optimal_SEP = ideal_spacing/3?
+%MIN_SEP = round(ideal_spacing/3);
 MAX_SEP = round(ideal_spacing*1.5);
-beta_SEP = 0.1 * ones(N, 1);
-optimal_SEP = ideal_spacing * ones(N, 1);
-
+beta_SEP = 0.1 * ones(N, 1); % weights for each spacing bonus
+optimal_SEP = ideal_spacing * ones(N, 1); % ideal spacing for each spacing bonus
 % band compression at G's.
 for n = 1:(N-1);
   if ( sequence_at_bands( n ) == 'G' )
-    beta_SEP( n+1 ) = beta_SEP( n+1 ) / 2;
+    %beta_SEP( n+1 )    = beta_SEP( n+1 ) / 2;
     optimal_SEP( n+1 ) = optimal_SEP( n+1 ) / 3;
   end
 end
@@ -100,15 +104,17 @@ f = f( xmid + (0:num_pixels-1), : );
 I_data_2 = sum( sum( I_data.^2 ) );
 BIG_NUMBER = 4*I_data_2 + sum( beta_SEP ) * MAX_SEP^2;
 D = BIG_NUMBER * ones( num_pixels, N );
-prev_pos_best = zeros(size(D));
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+prev_pos_best = zeros( size(D) ); % what the hell is this?
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialize matrix.
 % I_data^2 + I_pred^2 - 2 * I_data*I_pred
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 start_vals = I_data_2  +   sum(alpha_ideal(1,:).^2) * g0  -  2 * alpha_ideal(1,:) * f(x,:)' + PEAK_WEIGHT*peak_bonus';
 
-if ( START_POS > 0 )
+% first peak position.
+if ( START_POS > 0 ) % only one value filled.
   D(START_POS,1) = start_vals( START_POS );  
 else
   D(:,1) = start_vals;
@@ -116,61 +122,63 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Fill matrix
-sum_n = sum(alpha_ideal.^2, 2);
-overlap_n_nminus1 = sum(alpha_ideal .* [zeros(1,num_lanes); alpha_ideal(1:(end-1),:)], 2);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% used for calculating peak^2 [for predicted profiles]
+sum_n = sum(alpha_ideal.^2, 2);
+% used for calculating peak-peak overlap [for predicted profiles]
+overlap_n_nminus1 = sum(alpha_ideal .* [zeros(1,num_lanes); alpha_ideal(1:(end-1),:)], 2); 
 D_overlap1 = sum_n * g0;
 D_overlap2 = 2 * overlap_n_nminus1;
 
-D_test = 10 * BIG_NUMBER * ones(1,num_pixels);
 
 min_pos_raw = 0;
 max_pos_raw = num_pixels - sum(optimal_SEP) + optimal_SEP(1);
+
 for n = 2:N
   
   fprintf( 'Checking band position: %d\n', n )
   
-    min_pos_raw = min_pos_raw + optimal_SEP(n-1);
-    max_pos_raw = max_pos_raw + optimal_SEP(n);
+  min_pos_raw = min_pos_raw + optimal_SEP(n-1);
+  max_pos_raw = max_pos_raw + optimal_SEP(n);
     
-    min_pos = floor(min_pos_raw);
-    reasonable_pixel_range = min_pos:floor(max_pos_raw);
+  min_pos = floor(min_pos_raw);
+  reasonable_pixel_range = [ min_pos : floor(max_pos_raw) ];
+  
+  
+  prev_pos_min = max(reasonable_pixel_range - MAX_SEP, 1)';
+  prev_pos_max = max(reasonable_pixel_range - MIN_SEP, 1)';
+  
+  D_datapred_peak_peakpred = nan * ones( 1, num_pixels );
+  D_datapred_peak_peakpred( reasonable_pixel_range ) = ...
+      - (2 / num_lanes) * f(reasonable_pixel_range,:) * alpha_ideal(n,:)' ... % score for Idata*Ipred
+      + PEAK_WEIGHT * peak_bonus(reasonable_pixel_range) ... % bonus for being at a peak location.
+      + num_lanes * peak_bonus_matrix(reasonable_pixel_range,:) * alpha_ideal(n,:)'; % score for peak*Ipred
     
-    prev_pos_min = max(reasonable_pixel_range - MAX_SEP, 1)';
-    prev_pos_max = max(reasonable_pixel_range - MIN_SEP, 1)';
+  % following could probably be sped up as a meshgrid calculation
+  for i = 1:length(reasonable_pixel_range)
     
-    D_datapred_peak_peakpred = ...
-        - 2 / num_lanes * f(reasonable_pixel_range,:) * alpha_ideal(n,:)' ... % score for Idata*Ipred
-        + PEAK_WEIGHT * peak_bonus(reasonable_pixel_range) ... % bonus for being at a peak location.
-        + num_lanes * peak_bonus_matrix(reasonable_pixel_range,:) * alpha_ideal(n,:)'; % score for peak*Ipred
-    
-    reasonable_pixel_range = reasonable_pixel_range - min_pos + 1;
-    
-    for i = reasonable_pixel_range
+    new_peak_pos = reasonable_pixel_range( i );
 
-        rawindex = i + min_pos - 1;
-        
-        % look at possible 'previous positions'
-        prev_pos = prev_pos_min(i):prev_pos_max(i);
-        tmpindex = rawindex - prev_pos';
-        
-        %D_overlap = ...
-        %    + D_overlap1(n) ... % score for Ipred^2
-        %    + ( D_overlap2(n) * g(tmpindex) ); % score for Ipred^2
-        
-        %D_barrier = beta_SEP(n) * ( tmpindex - optimal_SEP(n) ).^2; % Score to maintain 'optimal' separation
-        
-        D_test(prev_pos) = ...
-            D( prev_pos, n-1 ) ...
-            + (D_overlap1(n) + D_overlap2(n) * g(tmpindex)) / num_lanes ...
-            + beta_SEP(n) * ( tmpindex - optimal_SEP(n) ).^2 / num_lanes ...
-            + D_datapred_peak_peakpred(i);
-        
-        [ D(rawindex,n), prev_pos_best(rawindex,n) ] = min( D_test );
-        
-        D_test(prev_pos) = 10 * BIG_NUMBER;
-        
-    end
+    % look at possible 'previous positions' -- this is in global coordinates
+    prev_pos = [prev_pos_min(i) : prev_pos_max(i)];
+
+    % check where prev_pos is non nan!!!!!!!
+    prev_pos = prev_pos(  ~isnan( find( D(prev_pos,n-1) ) ) );
+
+    spacings = new_peak_pos - prev_pos'; % these are spacings.
+    D_test = nan * ones(1,num_pixels);
+
+    D_test( prev_pos ) = ...
+	D( prev_pos, n-1 ) ...
+	+ (D_overlap1(n) + D_overlap2(n) * g( spacings )) / num_lanes ...
+	+ beta_SEP(n) * ( spacings - optimal_SEP(n) ).^2 / num_lanes ...
+	+ D_datapred_peak_peakpred( new_peak_pos );
+    
+    [ D(new_peak_pos,n),  best_idx ] = min( D_test(prev_pos) );
+    prev_pos_best(new_peak_pos,n) = prev_pos( best_idx );
+       
+  end
     
 end
 
@@ -210,20 +218,25 @@ if false
 end
 
 
-
-
-
-
-
 % Checks ... 
-%if exist( 'xsel' )
-%
-%  for j = 1:num_lanes
-%    for i = 1:length( xsel );
-%      I_pred(:,j) = I_pred(:,j) + alpha_ideal(i,j) * get_gaussian( x, xsel(i), width );
-%    end
-%  end
-%  
+PLOT_FIT = 0;
+if PLOT_FIT
+xsel= xsel_fit;
+I_pred = 0 * I_data;
+for j = 1:num_lanes
+  for i = 1:length( xsel );
+    I_pred(:,j) = I_pred(:,j) + alpha_ideal(i,j) * get_gaussian( x, xsel(i), width );
+  end
+end
+
+subplot( 1, 2, 1 );
+image( I_data * 50 );
+
+subplot( 1, 2, 2 );
+image( I_pred* 50 );
+end
+
+
 %  % Check dot product
 %  subplot(2,1,2)
 %  plot( f );
