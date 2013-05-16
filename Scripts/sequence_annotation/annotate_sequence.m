@@ -104,7 +104,7 @@ update_ylim = 1;
 update_contrast = 1;
 
 set(gcf, 'PaperPositionMode','auto','color','white','pointer','fullcross');
-figure_full_screen();
+%figure_full_screen();
 
 while ~stop_sel
     
