@@ -147,12 +147,14 @@ end
 %CODE below was modified following suggestions from Urs Schwarz
 y=repmat(y,size(XTick,1),1);
 % retrieve original x-axis font size and font color
+fn = get(gca,'fontname');
 fs = get(gca,'fontsize');
 fc = get(gca,'xcolor');
+fw = get(gca,'fontweight');
 %fs = 7;
 
 % Place the new xTickLabels by creating TEXT objects
-hText = text(XTick, y, xTickLabels,'Fontsize',fs,'Color',fc,'Fontweight','bold');
+hText = text(XTick, y, xTickLabels,'Fontsize',fs,'Color',fc,'Fontweight',fw,'FontName',fn);
 
 % Rotate the text objects by ROT degrees
 % set(hText,'Rotation',rot,'HorizontalAlignment','right',varargin{:})

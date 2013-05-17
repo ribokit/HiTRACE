@@ -57,20 +57,7 @@ end
 
 % fill out area_pred, based on data_types.
 numlanes = size(d_align,2);
-if isempty( data_types ) % no input.
-    area_pred = zeros( length(sequence), numlanes );
-elseif iscell( data_types ) % input is a matrix
-    for m = length( data_types )+1 : numlanes; data_types{m} = ''; end; % pad to number of lanes.
-    area_pred = get_area_pred( sequence, data_types, offset, structure );
-else
-    if size( data_types, 1 ) == length( sequence )
-        area_pred = data_types;
-    else
-        fprintf( 'Problem: input area_pred/data_types does not have same size [%d] as sequence [%d]\n', size(data_types,1),  length( sequence ) );
-        return;
-    end
-    data_types = [];
-end
+area_pred = generate_area_pred (sequence, structure, offset, data_types, numlanes);
 
 if ~exist('JUST_PLOT','var'); JUST_PLOT = 0; end
 

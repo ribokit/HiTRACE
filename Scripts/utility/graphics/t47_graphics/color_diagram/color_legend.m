@@ -170,6 +170,10 @@ else
     imagex_color = add_rasterized_text(imagex_color, label_pos_3, min_label, ft_sz, 'k');
 end;
 imagex_color = add_rasterized_text(imagex_color, label_pos_1, max_label, ft_sz, 'k');
+% old using computer vision system toolbox
+% H = vision.TextInserter(max_label);
+% H.Color = [0 0 0]; H.Location = label_pos_1; H.FontSize = ft_sz;
+% imagex_color = step(H, imagex_color);
 imagex_color = add_rasterized_text(imagex_color, label_pos_4, title_label, ft_sz, 'k');
 
 image_diagram(imagex_color);

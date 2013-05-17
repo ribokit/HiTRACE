@@ -67,16 +67,7 @@ for i = length( xsel ):-1:1
             
             % eterna colors. :)
             seqchar = sequence( seq_idx   );
-            switch seqchar
-                case {'A','a'}
-                    mycolor = [0 0 1];
-                case {'C','c'}
-                    mycolor = [0 0.5 0];
-                case {'U','T','u','t'}
-                    mycolor = [1 0.5 0];
-                case {'G','g'}
-                    mycolor = [1 0 0];
-            end
+            mycolor = get_residue_color(seqchar);
             set(h(1),'color',mycolor);
             
             txt_to_show = seqchar;

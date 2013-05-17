@@ -49,7 +49,7 @@ end;
 % split band position array into h*h_length array
 xsel_split = cell(H, size(xsel_all, 1), 2);
 for i = 1:H
-    ymin = h_length * (i - 1) + 1; ymax = h_length * i;
+    ymin = h_length * (i - 1) + 1e-5; ymax = h_length * i;
     for j = 1:size(xsel_all, 1)
         if xsel_all{j, 2}>=ymin && xsel_all{j, 2}<=ymax;
             xsel_split{i, j, 1} = xsel_all{j, 1}; 

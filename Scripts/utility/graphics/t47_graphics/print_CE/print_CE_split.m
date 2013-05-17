@@ -1,10 +1,13 @@
 function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset, num_flg, bol_flg, str_flg, ft_sz, clr)
 
+%
 % PRINT_CE_SPLIT(d_align, d_rdat, [seqpos], [mutpos], [xsel], [sequence], [offset], ...
 %               [number_flag], [boolean_flag], [string_flag], [font_size], [color_code])
 %
+%
 % Prints mutate-and-map electrophoregram in H x W splitted figures, with X-axis
-%    labelled with mutants' name, Y-axis labelled with each nucleotides' position.
+%    labelled with mutant names, Y-axis labelled with nucleotide positions.
+%
 %
 % Arguments
 % =========
@@ -13,8 +16,8 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %   d_rdat          Required    Provides d_rdat, at least for mutants names, e.g. G145C. 
 %                                   Format in RDAT file. Provides SEQPOS, MUTPOS, XSEL, 
 %                                   SEQUENCE, OFFSET if not included in arguments.                                   
-%   [seqpos]        Optional    Provides bands annotation array. Format in string. If 
-%                                   not provided, will be read out from D_RDAT.SEQPOS.  
+%   [seqpos]        Optional    Provides bands annotation array. Format in double array.  
+%                                   If not provided, will be read out from D_RDAT.SEQPOS.  
 %                                   Should be strictly monotonic decreasing, increasing  
 %                                   array will be flipped automatically.
 %   [mutpos]        Optional    Provides mutant position array. Format in double array. 
@@ -119,8 +122,8 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %       XL XT                   'T1' font color of title (name) on page (1, 1);
 %    L1 L2 L3]                  'T2' font color of title (conditions) on page (1, 2);
 %                               'T3' font color of title (date) on page (1, 3);
-%                               'YL' font color of y-axis title (Sequence Position);
 %                               'VE' font color of version label on last page;
+%                               'YL' font color of y-axis title (Sequence Position);
 %                               'YT' font color of y-axis tick label;
 %                               'XL' font color of x-axis title (Mutation Position);
 %                               'XT' font color of x-axis tick label;
@@ -136,32 +139,35 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %
 % Notes
 % =====
-% Open all .eps files in single Preview window and print usin a color printer.
+% Open all .eps files in single Preview window and print using a color printer.
 %   Deselect auto-rotate and auto-scale in the print dialog, make sure scale 
 %   is 100%. Spaces on each border are included for easy splicing. Cut at red 
 %   lines on each page. Assemble rows first, then put together the entire image.
 % 
 % ALL current opened figures will be LOST! Save before run.
 %
+%
 % by T47, Apr 2013 - May 2013.
 %
 
 if nargin == 0; help( mfilename ); return; end;
-Script_VER = '2.1';
+Script_VER = '2.3';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % preparation before splitting
 % read offset, sequence, seqpos, mutpos, xsel from d_rdat if not exist
 fprintf(['print_CE_split version ', Script_VER, '.\n']);
 fprintf(['RDAT format version ', d_rdat.version,'.\n\n']);
-fprintf(['d_align (',num2str(size(d_align,1)),' x ',num2str(size(d_align,2)),') read in.\n']);
+fprintf(['d_align (',num2str(size(d_align,1)),' x ',num2str(size(d_align,2)),') provided by user.\n']);
 d_align_size_H_org = size(d_align, 1);
 d_align_size_W_org = size(d_align, 2);
-fprintf(['d_rdat (', d_rdat.name, ') read in.\n']);
+fprintf(['d_rdat (', d_rdat.name, ') provided by user.\n']);
 
 if ~exist('seqpos','var') || isempty(seqpos)
     seqpos = d_rdat.seqpos;
     fprintf(['seqpos (1 x ',num2str(length(seqpos)),') fetched from d_rdat.\n']); 
+else
+    fprintf(['seqpos (1 x ',num2str(length(seqpos)),') provided by user.\n']); 
 end;
 if ~exist('mutpos','var') || isempty(mutpos)
     if exist('d.mutpos','var');
@@ -170,6 +176,8 @@ if ~exist('mutpos','var') || isempty(mutpos)
         mutpos = [];
     end;
     fprintf(['mutpos (1 x ',num2str(length(mutpos)),') fetched from d_rdat.\n']); 
+else
+    fprintf(['mutpos (1 x ',num2str(length(mutpos)),') provided by user.\n']);     
 end;
 
 % generate mutpos if not supplied by either argument or d_rdat
@@ -179,19 +187,25 @@ end;
 
 if ~exist('xsel','var') || isempty(xsel)
     xsel = d_rdat.xsel; 
-    fprintf(['xsel (1 x ',num2str(length(xsel)),') fetched from d_rdat.\n']); 
+    fprintf(['xsel (1 x ',num2str(length(xsel)),') fetched from d_rdat.\n']);
+else
+    fprintf(['xsel (1 x ',num2str(length(xsel)),') provided by user.\n']);
 end;
 if ~exist('sequence','var') || isempty(sequence)
     sequence = d_rdat.sequence;
     fprintf(['sequence (1 x ',num2str(length(sequence)),') fetched from d_rdat.\n']); 
+else
+    fprintf(['sequence (1 x ',num2str(length(sequence)),') provided by user.\n']);     
 end;
 if ~exist('offset','var') || isempty(offset)
     offset = d_rdat.offset; 
     fprintf(['offset (',num2str(offset),') fetched from d_rdat.\n']); 
+else
+    fprintf(['offset (',num2str(offset),') provided by user.\n']); 
 end;
 offset = round(offset);
-fprintf('\n'); fprintf(['sequence  ',d_rdat.sequence,'\n']);
-fprintf(['structure ',d_rdat.structure,'\n\n']);
+fprintf('\n'); fprintf(['sequence  ', sequence, '\n']);
+fprintf(['structure ', d_rdat.structure, '\n\n']);
 
 
 % set all auxillary parameters
@@ -225,7 +239,7 @@ author_str = str_flg{4}; date_str = [' @ ' str_flg{5}]; ver_hitrace = str_flg{6}
 if ~isempty(file_name); file_name = [file_name '_']; end;
 if isempty(dir_name); dir_name = 'print_CE_split_output'; end;
 if ~isempty(author_str); author_str = [' by ' author_str]; end;
-if isempty(date_str); date_str = datestr(date, 'mmm yyyy'); end;
+if strcmp(date_str, ' @ '); date_str = datestr(date, 'mmm yyyy'); end;
 if isempty(ver_hitrace); ver_hitrace = 'N/A'; end;
 
 if ~exist('ft_sz','var'); ft_sz = []; end;
@@ -267,24 +281,18 @@ fprintf(['Auto title size (', num2yn(is_auto_length), '), Y-axis title offset ('
 auto_scale = 22.5 / mean(mean(d_align));
 if scale_fc == 0; scale_fc = auto_scale; end;
 fprintf( 'auto_scale_factor = %f\n', auto_scale);
-fprintf( 'scale_used = %f\n\n', scale_fc);
+fprintf( 'scale_used = %f\n', scale_fc);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % split d_align into h*w sub matrices
+
 % expand d_align to divisible size by h and w
 [d_align, h_length, w_length] = d_expand_divisible(d_align, page_num_H, page_num_W);
-fprintf(['In each page, there are ',num2str(w_length),' lanes (X-axis), and ',...
-    num2str(h_length),' of traces (Y-axis).\n']);
 
-% pause point
-fprintf('\n'); fprintf('Press any key to continue...\n');
-pause;
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % add spacers on each border of each figure
 d = d_split_add_spacer(d_align, page_num_H, h_length, num_sp, page_num_W, w_length, 1);
+
 
 % read in mutants names (X-axis), trim to 'G145C' format
 names = cell(1,size(d_align, 2)); 
@@ -298,6 +306,7 @@ for i = 1:page_num_W
     name(i, 2:(w_length + 1)) = names((w_length * (i - 1) + 1):(w_length * i));    
 end;
 
+
 % flip seqpos and xsel to correct order
 % xsel be increasing, seqpos be decreasing, mutpos be increasing
 fprintf('\n');
@@ -308,6 +317,7 @@ fprintf('\n');
 % read in band names (Y-axis)
 % split band position array into h*h_length array
 [bandpos, band] = xsel_label_split(xsel, seqpos, sequence, offset, page_num_H, h_length, num_sp);
+h_l = get_figure_h_array(band, page_num_H);
 
 % extend yticks on last column of figures if more than one blank lane there
 extra_blank_lanes = w_length * page_num_W - d_align_size_W_org;
@@ -320,6 +330,14 @@ if extra_blank_lanes > 0;
         end;
     end;
 end;
+
+% pause point
+fprintf(['In each page, there are ',num2str(w_length),' lanes (X-axis), and ',...
+    num2str(h_length),' of traces (Y-axis):\n']);
+fprintf([' ', strrep(num2str(h_l), '  ', ', ') ,' sequence positions on each page row.\n']);
+fprintf('\n'); fprintf('Press any key to continue...\n');
+pause;
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -337,10 +355,14 @@ for i = 1:page_num_W
         % add figure number to the top left and bottom right corner
         fig_name = ['[', num2str(j), ', ', num2str(i), '] of [',...
             num2str(page_num_H), ' ,', num2str(page_num_W), ']'];
-        if is_page_no == 1;
+        if is_page_no;
             xsel_pos_sub(1) = round(num_sp / 2);
             xsel_txt_sub{1} = strrep(strcat(strtok(fig_name,']'), ']'), ' ', '');
             name{i, w_length + 2} = fig_name;
+        else
+            xsel_pos_sub(1) = 1;
+            xsel_txt_sub{1} = '';
+            name{i, w_length + 2} = '';
         end;
         
         fig_num = (i - 1) * page_num_H + j;
@@ -350,7 +372,7 @@ for i = 1:page_num_W
         fig_w = 600; title_size_fc = 0.775; title_h = 0.45;
         set(gcf, 'PaperOrientation', 'Portrait', 'PaperPositionMode', 'Manual', ...
             'PaperSize', [8.5 11], 'Color', 'White');
-        if is_square == 1; 
+        if is_square; 
             set(gcf, 'PaperPosition', [0 2 8.5 8.5]);
             fig_h = 600; title_offset = 0.025;
         else 
@@ -363,7 +385,7 @@ for i = 1:page_num_W
         
         % make lines
         % blue thick lines per LS
-        if is_line == 1
+        if is_line
             
             % find mutpos divisible by 10
             if num_line_offset == -1;
@@ -395,6 +417,12 @@ for i = 1:page_num_W
             set(gca, 'YTick', xsel_pos_sub(:), 'YTickLabel', char(xsel_txt_sub(:)), 'YAxisLoc', 'Left');
         end;
         
+        % both side of y-axis if only 1 column of pages 
+        if page_num_W == 1;
+            y_1 = gca; y_2 = copyobj(y_1, gcf);
+            set(y_2, 'YAxisLocation', 'Left');
+        end;
+        
         % X-axis-caption
         xlabel('Mutation Position', 'Color', color_x_title); 
         if j == page_num_H;
@@ -408,7 +436,7 @@ for i = 1:page_num_W
         set(ylabh, 'Position', get(ylabh, 'Position') + [num_y_offset 0 0]);
         
         % add title if asked
-        if is_title == 1;
+        if is_title;
             
             % modifier info from rdat if not specified
             if isempty(mdfr_str); mdfr_str = annotation_type_finder(d_rdat.annotations, 'modifier'); end;
@@ -420,7 +448,7 @@ for i = 1:page_num_W
                     'FontWeight', 'Bold', 'FontSize', ft_sz_title_1, 'FontName', 'Courier', 'Color', color_title_1);
                 tit = get(gca, 'Title'); pos = get(tit, 'Position');
                 set(tit, 'Position', [0 (pos(2) + title_offset) pos(3)]);
-                if is_auto_length == 1; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
+                if is_auto_length; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
 
             % title of second top page, for experiment details    
             elseif (j == 1 && i == 2);
@@ -438,7 +466,7 @@ for i = 1:page_num_W
                     'FontSize', ft_sz_title_2, 'FontName', 'Courier', 'Color', color_title_2);
                 tit = get(gca, 'Title'); pos = get(tit, 'Position');
                 set (tit, 'Position', [1 (pos(2) + title_offset) pos(3)]);
-                if is_auto_length == 1; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
+                if is_auto_length; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
 
             % title of right-top corner, for experiment date and authorship
             elseif (j == 1 && i == page_num_W)
@@ -448,7 +476,7 @@ for i = 1:page_num_W
                     'FontWeight', 'Bold', 'FontSize', ft_sz_title_3, 'FontName', 'Courier', 'Color', color_title_3);
                 tit = get(gca, 'Title'); pos = get(tit, 'Position');
                 set (tit, 'Position', [1 (pos(2) + title_offset) pos(3)]);
-                if is_auto_length == 1; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
+                if is_auto_length; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
                 
             end;
         end;
@@ -456,24 +484,15 @@ for i = 1:page_num_W
         % version label of right-bottom corner
         if (j == page_num_H && i == page_num_W && is_version)
             ver_str = ['HiTRACE rev. ', num2str(ver_hitrace), ' / RDAT ver. ', d_rdat.version, ...
-                ' / print\_CE\_split ver. ', Script_VER, '  '];
-            
+                ' / print\_CE\_split ver. ', Script_VER, '   '];
             ylim = get(gca, 'YLim'); xlim = get(gca, 'XLim');
-            if is_square == 1; 
-                ver_offset_all = [220 110 90 70 50 40];
-                ver_offset = ver_offset_all(page_num_H); 
-            else
-                ver_offset_all = [170 90 70 50 40 35];
-                ver_offset = ver_offset_all(page_num_H); 
-            end;
-            tit = text(xlim(2), ylim(2) + ver_offset, ver_str);
-            set(tit, 'HorizontalAlignment', 'Right', 'VerticalALignment', 'Top', 'FontSize', ft_sz_ver, 'Color', color_ver);
+            text(xlim(2), ylim(2), ver_str, 'HorizontalAlignment', 'Right', 'VerticalALignment', 'Bottom', 'FontSize', ft_sz_ver, 'Color', color_ver);
         end;
             
         % print to file if asked
-        if is_print == 1; print_save_figure(h, [file_name, num2str(fig_num)], dir_name, 0); end;
+        if is_print; print_save_figure(h, [file_name, num2str(fig_num)], dir_name, 0); end;
     end;
 end;
 
-if is_print == 1; fprintf([num2str(i*j),' pages printed to folder "', dir_name,'".\n']); end;
+if is_print; fprintf([num2str(i*j),' pages printed to folder "', dir_name,'".\n']); end;
 
