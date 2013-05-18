@@ -1,4 +1,4 @@
-function [xsel, D, msg] = auto_assign_sequence( image_x, sequence, seqpos, offset, area_pred, ideal_spacing, input_bounds, PLOT_STUFF, data_types )
+function [xsel, D, msg] = auto_assign_sequence( image_x, sequence, offset, area_pred, ideal_spacing, input_bounds, PLOT_STUFF, data_types )
 % AUTO_ASSIGN_SEQUENCE: (still experimental) automatic assignment of bands, given expected locations of marks
 %
 %
@@ -8,7 +8,7 @@ function [xsel, D, msg] = auto_assign_sequence( image_x, sequence, seqpos, offse
 if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist('PLOT_STUFF','var'), PLOT_STUFF = 1; end
-if ~exist('ideal_spacing','var') | ~isempty(ideal_spacing)  | ideal_spacing == 0
+if ~exist('ideal_spacing','var') | isempty(ideal_spacing) | ideal_spacing == 0
   ideal_spacing = guess_ideal_spacing( image_x );
   if ( ideal_spacing == 0 );  ideal_spacing = floor(num_pixels / (size( area_pred, 1 )-1) );  end;
 end;
@@ -84,11 +84,13 @@ for i = 1:num_lanes
   peaks = localMaximum( image_x(:,i), spread );
   peaks = peaks( image_x(peaks,i) > median(image_x(peaks,i))/2 );
 
-  % get maximum peak of last five peaks. originally went to peak right before this one [ - 1].
-  tmp = find( image_x(peaks,i) == max( image_x(peaks(end-5:end),i)) ) - 1;
+  % get maximum peak of last six peaks. originally went to peak right before this one [ - 1].
+  if length( peaks ) < 6; peaks( end:6) = peaks(end); end;
+  tmp = find( image_x(peaks,i) == max( image_x(peaks( end-5:end ),i)) ) - 1;
   %tmp = find( image_x(peaks,i) == max( image_x(peaks(end-5:end),i)) );
-
-  if (image_x(peaks(tmp),i) < FALSEPEAK_CUT/12 && num_pixels > 10000)
+  tmp = tmp(1);
+  
+  if (image_x(peaks(tmp),i) < FALSEPEAK_CUT/12 & num_pixels > 10000)
     gee(i) = num_pixels;
     msg = 'a tale peak is not found';
     exist_talepeak = false;
@@ -103,15 +105,15 @@ if (max(gee) < num_pixels)
 end
 
 % Remove 'false peaks'
-n = num_lanes - 1;
+n = num_lanes - 1; % what? why the second to last lane? That seems arbitrary.
 falsepeaks = find(image_x(peaks(1:tmp),n) > FALSEPEAK_CUT);
 falsepeaks((peaks(falsepeaks) < 0.25*num_pixels) | (peaks(falsepeaks) > 0.8*num_pixels)) = [];
 if ~isempty(falsepeaks)
-    falsepeakindex = peaks(falsepeaks(end));
-    falsepeakrange = intersect(find(image_x(:,n) > FALSEPEAK_CUT/6), falsepeakindex-30:falsepeakindex+30);
-    if ~isempty(msg)
-        msg = [msg ' & '];
-    end
-    msg = [msg 'detected false peak at (' num2str(min(falsepeakrange)) '~' num2str(max(falsepeakrange)) ') in baseline signal'];
-    image_x(falsepeakrange,:) = 0;
+  falsepeakindex = peaks(falsepeaks(end));
+  falsepeakrange = intersect(find(image_x(:,n) > FALSEPEAK_CUT/6), falsepeakindex-30:falsepeakindex+30);
+  if ~isempty(msg)
+    msg = [msg ' & '];
+  end
+  msg = [msg 'detected false peak at (' num2str(min(falsepeakrange)) '~' num2str(max(falsepeakrange)) ') in baseline signal'];
+  image_x(falsepeakrange,:) = 0;
 end

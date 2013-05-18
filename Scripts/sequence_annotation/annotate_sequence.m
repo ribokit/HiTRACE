@@ -209,24 +209,21 @@ while ~stop_sel
             case {'r', 'R'}
                 xsel = []; % reset
                 update_plot = 1;
-            case {'x','X'}
-                seqpos = length(sequence) - [1:length(xsel)] + 1 + offset;
-                
-                % um, a guess. Probably could think of a better one... yes, look inside auto_assign_sequence
+            case {'x','X'}                
                 peak_spacing = 0; %size( d_align, 1 )/ length(  sequence );
                 
                 if ~exist( 'area_pred','var' ) || isempty( area_pred )
                     fprintf( 'You need to input data_types or area_pred if you want to use auto-assign!\n' )
                 else
-                    input_bounds = [];
-                    if length( xsel ) == 2;
-                        input_bounds = sort(xsel);
-                        peak_spacing = ( input_bounds(2) - input_bounds(1) ) / length( sequence );
-                    end;
-                    area_pred_reverse = area_pred(end:-1:1,:); % should fix auto_assign to reverse.
-                    fprintf( 'Running auto-assign. This might take a minute.\n');
-                    xsel = auto_assign_sequence( d_align, sequence, seqpos, offset, area_pred_reverse, peak_spacing, input_bounds, 0, data_types );
-                    xsel = reverse_sort( xsel ); % should fix auto_assign to reverse.
+		  input_bounds = [];
+		  if length( xsel ) == 2;
+		    input_bounds = sort(xsel);
+		    peak_spacing = ( input_bounds(2) - input_bounds(1) ) / length( sequence );
+		  end;
+		  area_pred_reverse = area_pred(end:-1:1,:); % should fix auto_assign to reverse.
+		  fprintf( 'Running auto-assign. This might take a minute.\n');
+		  xsel = auto_assign_sequence( d_align, sequence, offset, area_pred_reverse, peak_spacing, input_bounds, 0, data_types );
+		  xsel = reverse_sort( xsel ); % should fix auto_assign to reverse.
                 end
                 update_plot = 1;
         end
