@@ -1,201 +1,119 @@
-function [xsel,DP_SCORE, choice] = auto_assign_sequence_OLD( image_x, xsel, ...
-				      nres, offset, ...
-				      marks, mutpos );
+function [xsel, D, msg] = auto_assign_sequence_OLD( image_x, sequence, offset, area_pred, ideal_spacing, input_bounds, PLOT_STUFF, data_types )
 % AUTO_ASSIGN_SEQUENCE: (still experimental) automatic assignment of bands, given expected locations of marks
 %
-% [xsel,DP_SCORE, choice] = auto_assign_sequence( image_x, xsel,nres, offset, marks, mutpos );
 %
-% (C) R. Das, 2010-2011
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Note: this assumes that first residues in sequence show up
-% *later* in the profiles. Important when making use of "marks" as
-% fiducial markers.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-numpeaks = nres;
-numpixels = size( image_x, 1 );
+% (C) R. Das, Hanjoo Kim, Sungroh Yoon, 2010-2011
+% (C) R. Das, 2013.
 
-% Scaling of intensity (peak-finding) contribution to score.
-alpha = 0.001; 
+if nargin == 0;  help( mfilename ); return; end;
 
-% Scaling of landmark finding contribution to score.
-beta = 0.01;
+if ~exist('PLOT_STUFF','var'), PLOT_STUFF = 1; end
+if ~exist('ideal_spacing','var') | isempty(ideal_spacing) | ideal_spacing == 0
+  ideal_spacing = guess_ideal_spacing( image_x );
+  if ( ideal_spacing == 0 );  ideal_spacing = floor(num_pixels / (size( area_pred, 1 )-1) );  end;
+end;
+if ~exist('input_bounds','var'), input_bounds = []; end
+if ~exist( 'data_types', 'var' ), data_types = []; end;
 
-% to avoid sensitivity to input normalization:
-image_x = image_x / mean( mean( abs( image_x ) ) );
-%image_x = max( min( image_x, 2.0) , 0.0 );
-%image_x = peakify( 100*image_x );
-%image_x = image_x / mean( mean( abs( image_x ) ) );
+FALSEPEAK_CUT = 8;
+[exist_talepeak, image_x, msg] = remove_tale_and_false_peaks( image_x, area_pred, FALSEPEAK_CUT );
 
+% note that this was from a time when we used to list sequence 
+% positions backward. Probably should fix this...
+s = area_pred;
+nres = length( sequence );
+s(1,:)    = 10;
+s(nres,:) = 1;
+sequence_at_bands = sequence( end:-1:1 );
+if exist_talepeak
+  s(nres+1,:) = 10;
+  sequence_at_bands = [sequence_at_bands, 'X'];
+end
+s( s == 0.0 ) = 0.01;
 
-STEP_SIZE = 1;
+tic
+[xsel, D] = solve_xsel_by_DP_OLD( image_x, s, sequence_at_bands, ideal_spacing, input_bounds, data_types );
+toc % read out time required for fit.
 
-% Ideal peak spacing.
-% Later need to make this computed on the fly.
-IDEAL_DELTAX = 24.0; 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% initialize.
-%intensity_score = sum( image_x, 2 );
-intensity_score = image_x(:,2);
-
-BIG_NEGATIVE_NUMBER = -9999999999999;
-
-DP_SCORE = BIG_NEGATIVE_NUMBER * ones( numpixels, numpeaks );
-
-DP_SCORE( :, 1 ) = alpha * intensity_score + ...
-    beta * landmark_score( 1, nres, offset, image_x, marks, mutpos );
-
-% Disallow points that are too close to end -- this should decrease the
-% time of computation by a lot.
-min_pos = 1;
-max_pos = numpixels;
-
-min_pos1 = min_pos;
-max_pos1 = max_pos - (IDEAL_DELTAX*0.9) * nres;
-
-if length( xsel ) >= 2
-  min_pos = round( xsel(1) );
-  max_pos = round( xsel(end) );
-  IDEAL_DELTAX = (xsel(end) - xsel(1) )/ nres;
-  min_pos1 = xsel(1);
-  max_pos1 = xsel(1);
+if exist_talepeak
+  fprintf( 'Assigned fully extended band... one before nominal beginning of sequence.\n' );
+  %    xsel(end) = []; % keep this band!
 end
 
 
-min_pos1 = max( min( round(min_pos1), max_pos-1 ), min_pos );
-max_pos1 = max( min( round(max_pos1), max_pos ),   min_pos+1 );
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function ideal_spacing = guess_ideal_spacing( image_x )
+% look for closely spaced peaks using autocorrelation
+max_spacing = 50;
+possible_spacings = [];
+for i = 1:size( image_x, 2 )
+  spacings = localMaximum( autocorr( image_x(:,i), max_spacing ) );
 
-DP_SCORE( (max_pos1+1):end, 1 ) = BIG_NEGATIVE_NUMBER;
-DP_SCORE( 1:(min_pos1-1) ,  1 ) = BIG_NEGATIVE_NUMBER;
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Fill rest of dynamic programming matrix
-
-for j = 2:numpeaks
-  
-  fprintf( 1, 'Doing peak: %d\n', j );
-
-  prev_points_good = find( DP_SCORE(:,j-1) > BIG_NEGATIVE_NUMBER );
-  
-  minpixel_prev = min(prev_points_good);
-  minpixel = round( minpixel_prev + IDEAL_DELTAX * 0.75 );
-  minpixel = max( minpixel, min_pos );
-
-  maxpixel_prev = max(prev_points_good);
-  maxpixel = round( maxpixel_prev + IDEAL_DELTAX * 1.5 ); 		 
-  maxpixel = min( maxpixel, max_pos );
-    
-  good_range = [ minpixel:STEP_SIZE:maxpixel ]';
-  %good_range = [2:numpixels]';
-  
-  %[ j minpixel maxpixel ]
-  
-  % Following could probably be sped up using meshgrid.
-  for i = good_range'
-
-    min_possible_previous_pos = max( minpixel_prev+1, ...
-    				     round( i - IDEAL_DELTAX * 1.5)   );
-    %min_possible_previous_pos = minpixel_prev + 1;
-    
-    good_range_prev = [ min_possible_previous_pos:(i-1) ]';
-    %good_range_prev = [ 1:(i-1) ]';
-
-    score_from_previous_peaks = DP_SCORE( good_range_prev, j-1 );
-    score_separation = -1.0 * (( i - good_range_prev - IDEAL_DELTAX ) / IDEAL_DELTAX).^2;
-    score_from_previous_peaks = score_from_previous_peaks + score_separation;
-  
-    % also subtact intensity score at a location *between* this peak and previous one
-    midpoints = 0.5 * ( i + good_range_prev );
-
-    %score_from_previous_peaks = score_from_previous_peaks - ...
-    %   alpha * interp1( [1:numpixels]', intensity_score, midpoints );
-
-    score_from_previous_peaks = score_from_previous_peaks - alpha * intensity_score( round(midpoints) );
-  
-    [max_score_from_previous_peaks, max_index ] = max( score_from_previous_peaks );
-      
-    DP_SCORE( i, j ) = max_score_from_previous_peaks;
-    choice( i, j ) = good_range_prev( max_index );
-    
+  % the first peak is always at 1 -- ignore that one and go to the next tightest spacing
+  if length( spacings ) > 1;
+    possible_spacings = [ possible_spacings, spacings(2) ];
   end
-  
-  %DP_SCORE( good_range,j ) = DP_SCORE( good_range,j ) + alpha * ...
-  %    intensity_score( good_range );
-  
-  ls = landmark_score( j, nres, offset, image_x, marks, mutpos );
-  DP_SCORE( good_range,j ) = DP_SCORE( good_range,j ) + alpha * intensity_score( good_range ) + ...
-      beta * ls( good_range );
-
-
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Backtrack.
-
-if length( xsel ) >= 2
-  xsel( numpeaks ) = round( xsel( end ) );
+if length( possible_spacings ) == 0
+  ideal_spacing = 0; % no clue.
 else
-  [ dummy, xsel( numpeaks ) ] = max( DP_SCORE( :, numpeaks ) );
+  ideal_spacing = median( possible_spacings ); 
 end
 
-for j = (numpeaks-1):-1:1
-  xsel( j ) = choice( xsel(j+1), j+1 );
-end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plot results...
-cla;
-image( image_x * 20 );
-colormap( 1 - gray(100 ) );
 
-hold on
-for j = 1:numpeaks
-  plot( [0.5  size(image_x,2)+0.5], [xsel(j) xsel(j)],'r');
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [exist_talepeak, image_x, msg] = remove_tale_and_false_peaks( image_x, area_pred, FALSEPEAK_CUT );
 
-if(~isempty(marks))
-    for m = 1:size(image_x,2);
-        if( m <= length(mutpos))
-          goodpos = find( marks(:,1) ==  mutpos(m)  );
-          for k = goodpos'
-            which_xsel = nres - marks( k, 2 ) + 1 + offset;
-            if ( which_xsel >= 1 & which_xsel <= length(xsel) )
-              plot( m, xsel(which_xsel),'ro' );
-            end
-          end
-        end
-    end
-end
+exist_talepeak = true;
+msg = [];
 
-hold off
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function score = landmark_score( peak_number, nres, offset, image_x, ...
-				 marks, mutpos )
+% getting rid of data at and beyond 'tale peaks' [fully extended band] which
+% can dominate fit.
+[num_pixels, num_lanes] = size( image_x );
+gee = zeros(1,num_lanes);
+spread = floor(num_pixels / (size( area_pred, 1 )-1) )/2;
+for i = 1:num_lanes
+  % scale image
+  scalefactor = mean( image_x(:,i) );
+  image_x(:,i) = image_x(:,i)/scalefactor/2;
+    
+  % find all peaks.
+  peaks = localMaximum( image_x(:,i), spread );
+  peaks = peaks( image_x(peaks,i) > median(image_x(peaks,i))/2 );
 
-seqpos = (nres - peak_number + 1) + offset;
-if(~isempty(marks))
-    gp = find( seqpos == marks(:,2) );
-else
-    gp = [];
-end
-score = zeros( size( image_x, 1 ), 1 );
-
-if length( gp ) > 0
-
-  relevant_mutpos = marks( gp,1 );
+  % get maximum peak of last six peaks. originally went to peak right before this one [ - 1].
+  if length( peaks ) < 6; peaks( end:6) = peaks(end); end;
+  tmp = find( image_x(peaks,i) == max( image_x(peaks( end-5:end ),i)) ) - 1;
+  %tmp = find( image_x(peaks,i) == max( image_x(peaks(end-5:end),i)) );
+  tmp = tmp(1);
   
-  for m = 1: length( relevant_mutpos )
-    relevant_lanes = find( mutpos == relevant_mutpos( m ) );
-    relevant_lanes = intersect( relevant_lanes, [1:size(image_x,2)] );
-    if length( relevant_lanes ) > 0 
-      score = score + abs( mean( image_x( :, relevant_lanes ), 2 ) - ...
-			   mean( image_x,2 ) )./std(image_x,0,2);
-
-    end
-    %score = smooth( score, 10 );
+  if (image_x(peaks(tmp),i) < FALSEPEAK_CUT/12 & num_pixels > 10000)
+    gee(i) = num_pixels;
+    msg = 'a tale peak is not found';
+    exist_talepeak = false;
+  else
+    gee(i) = peaks(tmp);
   end
-  
+end
+
+if (max(gee) < num_pixels)
+    talepeakrange = (1:num_pixels) > (max(gee)+1);
+    image_x(talepeakrange,:) = 0.0;
+end
+
+% Remove 'false peaks'
+n = num_lanes - 1; % what? why the second to last lane? That seems arbitrary.
+falsepeaks = find(image_x(peaks(1:tmp),n) > FALSEPEAK_CUT);
+falsepeaks((peaks(falsepeaks) < 0.25*num_pixels) | (peaks(falsepeaks) > 0.8*num_pixels)) = [];
+if ~isempty(falsepeaks)
+  falsepeakindex = peaks(falsepeaks(end));
+  falsepeakrange = intersect(find(image_x(:,n) > FALSEPEAK_CUT/6), falsepeakindex-30:falsepeakindex+30);
+  if ~isempty(msg)
+    msg = [msg ' & '];
+  end
+  msg = [msg 'detected false peak at (' num2str(min(falsepeakrange)) '~' num2str(max(falsepeakrange)) ') in baseline signal'];
+  image_x(falsepeakrange,:) = 0;
 end
