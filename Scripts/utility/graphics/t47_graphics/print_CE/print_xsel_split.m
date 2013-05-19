@@ -1,4 +1,4 @@
-function print_xsel_split(d_align, xsel, seqpos, sequence, offset, area_pred, labels, num_flg, bol_flg, str_flg, ft_sz, clr)
+function print_xsel_split(d_align, xsel, seqpos, sequence, offset, area_pred, labels, num_flg, bol_flg, str_flg, ft_sz, clr_cd)
 
 %
 % PRINT_XSEL_SPLIT(d_align, xsel, seqpos, sequence, offset, area_pred, labels...
@@ -41,15 +41,15 @@ function print_xsel_split(d_align, xsel, seqpos, sequence, offset, area_pred, la
 %                                   default is calculated to display optimally according
 %                                   to sc = 27.5 / mean(mean(d_align));
 %                               'UO' (upper_bound) denotes the excess D_ALIGN image
-%                                   shown above the first SEQPOS label.
+%                                   shown above the first SEQPOS label;
 %                               'LO' (lower_bound) denotes the excess D_ALIGN image
-%                                   shown under the last SEQPOS label.
+%                                   shown under the last SEQPOS label;
 %                               'L1S:L1I:L1E' (line_1 start:interval:end) denotes the
 %                                   positions for separating line set 1. All 0 means
-%                                   not drawing.
+%                                   not drawing;
 %                               'L2S:L2I:L2E' (line_2 start:interval:end) denotes the
 %                                   positions for separating line set 2. All 0 means
-%                                   not drawing. This set is bold.
+%                                   not drawing.
 %   [boolean_flag]  Optional    Provides the layout format that whether auto-trim
 %   [AT AS AL PR                    vertical boundaries, whether auto decide overall size,
 %    TL VR PN]                      whether auto decide text length for titles, whether
@@ -58,46 +58,56 @@ function print_xsel_split(d_align, xsel, seqpos, sequence, offset, area_pred, la
 %                                   [1 1 1 1 1 1 1].
 %                               'AT' (is_auto_trim) denotes whether to auto trim top and
 %                                   bottom of D_ALIGN for optimal display. Excess image
-%                                   size is denoted by UO and LO in NUMBER_FLAG.
+%                                   size is denoted by UO and LO in NUMBER_FLAG;
 %                               'AS' (is_auto_size) denotes whether to auto decide number
 %                                   of pages based on D_ALIGN and SEQUENCE. This will
-%                                   override H and W in NUMBER_FLAG.
+%                                   override H and W in NUMBER_FLAG;
 %                               'AL' (is_auto_length) denotes whether auto-decide font
 %                                   size of titles to fit in page margins. This will
-%                                   override T1, T2, and T3 in FONT_SIZE.
+%                                   override T1, T2, and T3 in FONT_SIZE;
 %                               'PR' (if_print) denotes whether to print to .eps files,
 %                                   prints will be saved in folder DN of STRING_FLAG;
 %                               'TL' (is_title) denotes whether title is added to figure;
 %                               'VR' (is_version) denotes whether version label is
-%                                   added to bottom right corner.
+%                                   added to bottom right corner;
 %                               'PN' (is_page_number) denotes whether page number is
 %                                   added to the corners of each figure;
 %                               1 equals TRUE; 0 equals FALSE.
 %   [string_flag]   Optional    Provides the title name, string input for output .eps file
 %   [TI FN DN                       name, folder name, authorship and date onp rintout.
-%    AU DT VR]                      Format in string cell, default {'', '', ...
-%                                   'print_xsel_split_output', '', 'mmm yyyy', ''}.
-%                               'TI' (title_name) denotes the title to display.
-%                               'FN' (file_name) denotes file name for print files.
+%    AU DT VR                       Also provides font weight options. Format in string 
+%    T1 T2 VE                       cell, default is {'', '', 'print_xsel_split_output', ...
+%    YT XT]                         '', 'mmm yyyy', '', 'Bold', 'Bold', 'Normal', ...
+%                                   'Normal', 'Normal'}.
+%                               'TI' (title_name) denotes the title to display;
+%                               'FN' (file_name) denotes file name for print files;
 %                                   Numbers, underscore, and '.eps' extension will
-%                                   automatically append.
+%                                   automatically append;
 %                               'DN' (dir_name) denotes folder name for all files.
 %                               'AU' (author_name) denotes authorship series. 'by' and
-%                                   '@' will automatically append.
+%                                   '@' will automatically append;
 %                               'DT' (date_string) denotes date string appearing on top
-%                                   right corner. Default will use current date.
-%                               'VR' (hitrace_ver) denotes current HiTRACE subversion.
-%   [font_size]     Optional    Provides font size values for figures. Format in double
-%   [T1 T2 VE                       array, default is [25 15 9 8 11].
-%    YT XT]                     'T1' font size of title;
-%                               'T2' font size of date and author label;
+%                                   right corner. Default will use current date;
+%                               'VR' (hitrace_ver) denotes current HiTRACE subversion;
+%                               'T1' font weight of title;
+%                               'T2' font weight of date and author label;
+%                               'VE' font weight of version label;
+%                               'YT' font weight of y-axis tick label;
+%                               'XT' font weight of x-axis tick label;
+%   [size_flag]     Optional    Provides font size and line width values for figures. Format 
+%   [T1 T2 VE                       in double array, default is [25 15 9 8 11 1 2 2].
+%    YT XT                      'T1' font size of title;
+%    LB L1 L2]                  'T2' font size of date and author label;
 %                               'VE' font size of version label;
 %                               'YT' font size of y-axis tick label;
 %                               'XT' font size of x-axis tick label;
-%   [color_code]    Optional    Provides color codes for figures. Format in string cell,
-%   [T1 T2 VE                       default {'k', 'b', 'k', 'k', 'k', 'y', 'b', 'm'}.
-%    YT XT LB                   'T1' font color of title;
-%    L1 L2]                     'T2' font color of date and author label;
+%                               'LB' line width of borders on each page;
+%                               'L1' line width of separating line set 1;
+%                               'L2' line width of separating line set 2;
+%   [color_flag]    Optional    Provides color codes for figures. Format in string, default 
+%   [T1 T2 VE                       is 'kbkkkymb'.
+%    YT XT                      'T1' font color of title;
+%    LB L1 L2]                  'T2' font color of date and author label;
 %                               'VE' font color of version label;
 %                               'YT' font color of y-axis tick label;
 %                               'XT' font color of x-axis tick label;
@@ -183,9 +193,13 @@ is_auto_trim = bol_flg(1); is_auto_size = bol_flg(2); is_auto_length = bol_flg(3
 is_print = bol_flg(4); is_title = bol_flg(5); is_version = bol_flg(6); is_page_no = bol_flg(7);
 
 if ~exist('str_flg','var'); str_flg = {}; end;
-str_flg = is_valid_flag(str_flg, {'', '', 'print_xsel_split_output', '', datestr(date, 'mmm yyyy'), ''});
+str_flg = is_valid_flag(str_flg, {'', '', 'print_xsel_split_output', '', datestr(date, 'mmm yyyy'), '', ...
+    'Bold', 'Bold', 'Normal', 'Normal', 'Normal'});
 title_name = str_flg{1}; file_name = str_flg{2}; dir_name = str_flg{3};
 author_str = str_flg{4}; date_str = [' @ ' str_flg{5}]; ver_hitrace = str_flg{6};
+ft_w_title_1 = str_flg{7}; ft_w_title_2 = str_flg{8};
+ft_w_ver = str_flg{9};
+ft_w_y_tick = str_flg{10}; ft_w_x_tick = str_flg{11};
 if ~isempty(file_name); file_name = [file_name '_']; end;
 if isempty(dir_name); dir_name = 'print_xsel_split_output'; end;
 if ~isempty(author_str); author_str = [' by ' author_str]; end;
@@ -193,12 +207,17 @@ if strcmp(date_str, ' @ '); date_str = datestr(date, 'mmm yyyy'); end;
 if isempty(ver_hitrace); ver_hitrace = 'N/A'; end;
 
 if ~exist('ft_sz','var'); ft_sz = []; end;
-ft_sz = is_valid_flag(ft_sz, [25 15 9 8 11]);
+ft_sz = is_valid_flag(ft_sz, [25 15 9 8 11 1 2 2]);
 ft_sz_title_1 = ft_sz(1); ft_sz_title_2 = ft_sz(2);
 ft_sz_ver = ft_sz(3); ft_sz_y_tick = ft_sz(4); ft_sz_x_tick = ft_sz(5);
+ln_wt_border = ft_sz(6); ln_wt_1 = ft_sz(7); ln_wt_2 = ft_sz(8);
 
-if ~exist('clr','var'); clr = {}; end;
-clr = is_valid_flag(clr, {'k', 'b', 'k', 'k', 'k', 'y', 'b', 'm'});
+if ~exist('clr_cd','var'); clr_cd = ''; end;
+clr = parse_color_string(clr_cd);
+clr = is_valid_flag(clr, {'k', 'b', 'k', 'k', 'k', 'y', 'm', 'b'});
+for i = 1:length(clr)
+    if clr{i} == 'g'; clr{i} = [0 0.5 0]; end;
+end;
 color_title_1 = clr{1}; color_title_2 = clr{2};
 color_ver = clr{3}; color_y_tick = clr{4}; color_x_tick = clr{5};
 color_line_border = clr{6}; color_line_1 = clr{7}; color_line_2 = clr{8};
@@ -295,7 +314,7 @@ for i = 1:page_num_W
             xsel_txt_sub{1} = '';
             name{i, w_length + 2} = '';
         end;
-        name = fill_space_label(name, 0);
+        name(i) = fill_space_label(name(i), 0);
         xsel_txt_sub = fill_space_label(xsel_txt_sub, 1);
         
         fig_num = (i - 1) * page_num_H + j;
@@ -313,31 +332,31 @@ for i = 1:page_num_W
         
         % make lines
         % separating line set 1 and 2
-        make_lines; hold on;
+        make_lines([], 'k', 0.5); hold on;
         if ~all([num_l1_s, num_l1_i, num_l1_e] == 0);
-            make_lines((num_l1_s + 1):num_l1_i:(num_l1_e + 1), color_line_1, 1);
+            make_lines((num_l1_s + 1):num_l1_i:(num_l1_e + 1), color_line_1, ln_wt_1);
         end;
         if ~all([num_l2_s, num_l2_i, num_l2_e] == 0);
-            make_lines((num_l2_s + 1):num_l2_i:(num_l2_e + 1), color_line_2, 2);
+            make_lines((num_l2_s + 1):num_l2_i:(num_l2_e + 1), color_line_2, ln_wt_2);
         end;
         hold on;
         
         % yellow border lines
-        make_lines_horizontal(num_sp - 0.5, color_line_border, 1);
-        make_lines_horizontal(size(d_temp,1) - num_sp - 0.5, color_line_border, 1);
-        make_lines(1, color_line_border, 1);
-        make_lines(size(d_temp, 2)-1, color_line_border, 1);
+        make_lines_horizontal(num_sp - 0.5, color_line_border, ln_wt_border);
+        make_lines_horizontal(size(d_temp,1) - num_sp - 0.5, color_line_border, ln_wt_border);
+        make_lines(1, color_line_border, ln_wt_border);
+        make_lines(size(d_temp, 2)-1, color_line_border, ln_wt_border);
         hold on;
         
         % axis labeling
         % X-axis-tick, mutant names
-        set(gca, 'FontSize', ft_sz_x_tick);
+        set(gca, 'FontSize', ft_sz_x_tick, 'FontWeight', ft_w_x_tick);
         set(gca, 'XTick', 1:size(name, 2), 'XTickLabel', char(name{i, :}), 'XColor', color_x_tick);
         xticklabel_rotate();
         hold on;
         
         % Y-axis-tick, band positions
-        set(gca, 'FontSize', ft_sz_y_tick, 'YColor', color_y_tick);
+        set(gca, 'FontSize', ft_sz_y_tick, 'FontWeight', ft_w_y_tick, 'YColor', color_y_tick);
         set(gca, 'YTick', xsel_pos_sub(:), 'YTickLabel', char(xsel_txt_sub(:)), 'YAxisLoc', 'Right');
         hold on;
         
@@ -345,7 +364,7 @@ for i = 1:page_num_W
         for k = 2:length(xsel_pos_sub)
             res_lbl = char(xsel_txt_sub(k)); res_id = res_lbl(1);
             res_clr = get_residue_color(res_id);
-            make_lines_horizontal(xsel_pos_sub(k) - 0.5, res_clr, 1);
+            make_lines_horizontal(xsel_pos_sub(k) - 0.5, res_clr, 0.5);
         end;
         hold on;
         
@@ -357,7 +376,9 @@ for i = 1:page_num_W
         xsel_sub = xsel_sub(2:end);
         for m = 1:size(area_pred_sub, 1)
             mark_points = find( area_pred_sub(m, :) > 0.5 );
-            plot(mark_points + 1, xsel_sub(m), 'ro');
+            if ~isempty(mark_points);
+                plot(mark_points + 1, xsel_sub(m), 'ro');
+            end;
             hold on;
         end;
         
@@ -365,7 +386,8 @@ for i = 1:page_num_W
         if (is_version && j == page_num_H && i == page_num_W)
             ver_str = ['HiTRACE rev. ', num2str(ver_hitrace), ' / print\_xsel\_split ver. ', Script_VER, '   '];
             ylim = get(gca, 'YLim'); xlim = get(gca, 'XLim');
-            text(xlim(2), ylim(2), ver_str, 'HorizontalAlignment', 'Right', 'VerticalALignment', 'Bottom', 'FontSize', ft_sz_ver, 'Color', color_ver);
+            text(xlim(2), ylim(2), ver_str, 'HorizontalAlignment', 'Right', 'VerticalALignment', 'Bottom', ...
+                'FontWeight', ft_w_ver, 'FontSize', ft_sz_ver, 'Color', color_ver);
         end;
 
         % second y-axis labels
@@ -376,7 +398,7 @@ for i = 1:page_num_W
         % add title if asked
         if (is_title && j == 1 && i == page_num_W);
             title([' ' title_name ' '], 'HorizontalAlignment', 'Left', 'VerticalAlignment', 'Bottom',...
-                'FontWeight', 'Bold', 'FontSize', ft_sz_title_1, 'FontName', 'Courier', 'Color', color_title_1);
+                'FontWeight', ft_w_title_1, 'FontSize', ft_sz_title_1, 'FontName', 'Courier', 'Color', color_title_1);
             tit = get(gca, 'Title'); pos = get(tit, 'Position');
             set(tit, 'Position', [0 (pos(2) + title_offset) pos(3)]);
             if is_auto_length && ~isempty(title_name); auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc * 0.8, title_h); end;
@@ -385,7 +407,7 @@ for i = 1:page_num_W
             xlim = get(gca, 'XLim');
             txt = text(xlim(2), 0, comment);
             set(txt, 'HorizontalAlignment', 'Right', 'VerticalAlignment', 'Bottom',...
-                'FontWeight', 'Bold', 'FontSize', ft_sz_title_2, 'FontName', 'Courier', 'Color', color_title_2);
+                'FontWeight', ft_w_title_2, 'FontSize', ft_sz_title_2, 'FontName', 'Courier', 'Color', color_title_2);
             if is_auto_length; auto_font_size(txt, min((get(gcf,'PaperSize'))) * title_size_fc * 0.2, title_h / 2); end;
         end;
         hold off;

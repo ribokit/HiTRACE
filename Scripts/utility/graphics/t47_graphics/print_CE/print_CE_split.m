@@ -1,4 +1,4 @@
-function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset, num_flg, bol_flg, str_flg, ft_sz, clr)
+function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset, num_flg, bol_flg, str_flg, ft_sz, clr_cd)
 
 %
 % PRINT_CE_SPLIT(d_align, d_rdat, [seqpos], [mutpos], [xsel], [sequence], [offset], ...
@@ -53,13 +53,13 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %                                   lines;
 %                               'SO' (line_offset) denotes the offset of blue thick 
 %                                   lines. Default -1 means starts with MUTPOS 
-%                                   divisible by 10.
+%                                   divisible by 10;
 %                               'UO' (upper_bound) denotes the excess D_ALIGN image 
-%                                   shown above the first SEQPOS label. 
+%                                   shown above the first SEQPOS label; 
 %                               'LO' (lower_bound) denotes the excess D_ALIGN image 
-%                                   shown under the last SEQPOS label. 
+%                                   shown under the last SEQPOS label; 
 %                               'YO' (y_title_offset) denotes the distance of y-axis
-%                                   title to the axis.
+%                                   title to the axis;
 %                               'XO' (x_title_offset) denotes the distance of x-axis
 %                                   title to the axis.
 %   [boolean_flag]  Optional    Provides the layout format that whether auto-trim 
@@ -70,13 +70,13 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %                                   in double array, default [1 1 1 1 1 0 1 1 1].
 %                               'AT' (is_auto_trim) denotes whether to auto trim top and 
 %                                   bottom of D_ALIGN for optimal display. Excess image 
-%                                   size is denoted by UO and LO in NUMBER_FLAG.
+%                                   size is denoted by UO and LO in NUMBER_FLAG;
 %                               'AS' (is_auto_size) denotes whether to auto decide number 
 %                                   of pages based on D_ALIGN and SEQUENCE. This will 
-%                                   override H and W in NUMBER_FLAG.
+%                                   override H and W in NUMBER_FLAG;
 %                               'AL' (is_auto_length) denotes whether auto-decide font 
 %                                   size of titles to fit in page margins. This will
-%                                   override T1, T2, and T3 in FONT_SIZE.
+%                                   override T1, T2, and T3 in FONT_SIZE;
 %                               'LN' (is_line) denotes whether to make lines every LS of 
 %                                   NUMBER_FLAG lanes or not;
 %                               'PR' (if_print) denotes whether to print to .eps files, 
@@ -84,44 +84,56 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %                               'SQ' (is_square) denotes whether each page is squared;
 %                               'TL' (is_title) denotes whether title is added to figure;
 %                               'VR' (is_version) denotes whether version label is 
-%                                   added to bottom right corner.
+%                                   added to bottom right corner;
 %                               'PN' (is_page_number) denotes whether page number is 
 %                                   added to the corners of each figure;
 %                               1 equals TRUE; 0 equals FALSE.
 %   [string_flag]   Optional    Provides the string input for output .eps file name, 
 %   [FN DN MF                       folder name, modifier label, authorship and date on
-%    AU DT VR]                      printout. Format in string cell, default {'', ...
-%                                   'print_CE_split_output', {modifier}, '', ...
-%                                   'mmm yyyy', ''}.
-%                               'FN' (file_name) denotes file name for print files.  
+%    AU DT VR]                      printout. Also provides font weight options. Format
+%    T1 T2 T3                        in string cell, default {'', 'print_CE_split_output', ...
+%    VE YL YT                       {modifier}, '', 'mmm yyyy', '', 'Bold', 'Normal', ...
+%       XL XT]                      'Bold', 'Normal', 'Normal', 'Normal', 'Normal', 'Normal'}.
+%                               'FN' (file_name) denotes file name for print files;  
 %                                   Numbers, underscore, and '.eps' extension will 
-%                                   automatically append.
-%                               'DN' (dir_name) denotes folder name for all files.
+%                                   automatically append;
+%                               'DN' (dir_name) denotes folder name for all files;
 %                               'MF' (modifier_name) denotes modifier label. Default 
 %                                   will use modifier entry from
 %                                   D_RDAT.DATA_ANNOTATIONS. Useful when specifying 
-%                                   SHAPE reagent with concentration used.
+%                                   SHAPE reagent with concentration used;
 %                               'AU' (author_name) denotes authorship series. 'by' and 
-%                                   '@' will automatically append.
+%                                   '@' will automatically append;
 %                               'DT' (date_string) denotes date string appearing on top 
-%                                   right corner. Default will use current date.
-%                               'VR' (hitrace_ver) denotes current HiTRACE subversion.
-%   [font_size]     Optional    Provides font size values for figures. Format in double
-%   [T1 T2 T3                       array, default [25 15 15 9 20 8 20 10].
-%    VE YL YT                   'T1' font size of title (name) on page (1, 1);
-%       XL XT]                  'T2' font size of title (conditions) on page (1, 2);
+%                                   right corner. Default will use current date;
+%                               'VR' (hitrace_ver) denotes current HiTRACE subversion;
+%                               'T1' font weight for title (name) on page (1, 1);
+%                               'T2' font weight for title (conditions) on page (1, 2);
+%                               'T3' font weight for title (date) on page (1, 3);
+%                               'VE' font weight of version label on last page;
+%                               'YL' font weight of y-axis title (Sequence Position);
+%                               'YT' font weight of y-axis tick label;
+%                               'XL' font weight of x-axis title (Mutation Position);
+%                               'XT' font weight of x-axis tick label;
+%   [size_flag]     Optional    Provides font size and line width values for figures; 
+%   [T1 T2 T3                       Format in double array, default [25 15 15 9 20 8 ...
+%    VE YL YT                       20 10 1 2 0.5].
+%       XL XT                   'T1' font size of title (name) on page (1, 1);
+%    L1 L2 L3]                  'T2' font size of title (conditions) on page (1, 2);
 %                               'T3' font size of title (date) on page (1, 3);
 %                               'VE' font size of version label on last page;
 %                               'YL' font size of y-axis title (Sequence Position);
 %                               'YT' font size of y-axis tick label;
 %                               'XL' font size of x-axis title (Mutation Position);
 %                               'XT' font size of x-axis tick label;
-%   [color_code]    Optional    Provides color codes for figures. Format in string cell,
-%   [T1 T2 T3                       default {'k', 'r', 'b', 'k', 'g', 'k', 'g', ...
-%    VE YL YT                       'k', 'r', 'b', 'k'}.
-%       XL XT                   'T1' font color of title (name) on page (1, 1);
-%    L1 L2 L3]                  'T2' font color of title (conditions) on page (1, 2);
-%                               'T3' font color of title (date) on page (1, 3);
+%                               'L1' line width of borders on each page;
+%                               'L2' line width of all LS of NUMBER_FLAG thick lines;
+%                               'L3' line width of borders on each lane.
+%   [color_flag]    Optional    Provides color codes for figures. Format in string,
+%   [T1 T2 T3                       default 'krbkgkgkrbk'.
+%    VE YL YT                   'T1' font color of title (name) on page (1, 1);    
+%       XL XT                   'T2' font color of title (conditions) on page (1, 2);
+%    L1 L2 L3]                  'T3' font color of title (date) on page (1, 3);
 %                               'VE' font color of version label on last page;
 %                               'YL' font color of y-axis title (Sequence Position);
 %                               'YT' font color of y-axis tick label;
@@ -129,7 +141,7 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %                               'XT' font color of x-axis tick label;
 %                               'L1' line color of borders on each page;
 %                               'L2' line color of all LS of NUMBER_FLAG thick lines;
-%                               'L3' line color of border on each lane.
+%                               'L3' line color of borders on each lane.
 %
 %
 % e.g. PRINT_CE_SPLIT(d_align, d_rdat);
@@ -233,24 +245,34 @@ is_line = bol_flg(4); is_print = bol_flg(5); is_square = bol_flg(6);
 is_title = bol_flg(7); is_version = bol_flg(8); is_page_no = bol_flg(9); 
 
 if ~exist('str_flg','var'); str_flg = {}; end;
-str_flg = is_valid_flag(str_flg, {'', 'print_CE_split_output', '', '', datestr(date, 'mmm yyyy'), ''});
+str_flg = is_valid_flag(str_flg, {'', 'print_CE_split_output', '', '', datestr(date, 'mmm yyyy'), '', ...
+    'Bold', 'Normal', 'Bold', 'Normal', 'Normal', 'Normal', 'Normal', 'Normal'});
 file_name = str_flg{1}; dir_name = str_flg{2}; mdfr_str = str_flg{3};
 author_str = str_flg{4}; date_str = [' @ ' str_flg{5}]; ver_hitrace = str_flg{6};
+ft_w_title_1 = str_flg{7}; ft_w_title_2 = str_flg{8}; ft_w_title_3 = str_flg{9};
+ft_w_ver = str_flg{10}; 
+ft_w_y_title = str_flg{11}; ft_w_y_tick = str_flg{12};
+ft_w_x_title = str_flg{13}; ft_w_x_tick = str_flg{14};
 if ~isempty(file_name); file_name = [file_name '_']; end;
 if isempty(dir_name); dir_name = 'print_CE_split_output'; end;
 if ~isempty(author_str); author_str = [' by ' author_str]; end;
-if strcmp(date_str, ' @ '); date_str = datestr(date, 'mmm yyyy'); end;
+if strcmp(date_str, ' @ '); date_str = [' @ ' datestr(date, 'mmm yyyy')]; end;
 if isempty(ver_hitrace); ver_hitrace = 'N/A'; end;
 
 if ~exist('ft_sz','var'); ft_sz = []; end;
-ft_sz = is_valid_flag(ft_sz, [25 15 15 9 20 8 20 10]);
+ft_sz = is_valid_flag(ft_sz, [25 15 15 9 20 8 20 10 1 2 0.5]);
 ft_sz_title_1 = ft_sz(1); ft_sz_title_2 = ft_sz(2); ft_sz_title_3 = ft_sz(3);
 ft_sz_ver = ft_sz(4);
 ft_sz_y_title = ft_sz(5); ft_sz_y_tick = ft_sz(6);
 ft_sz_x_title = ft_sz(7); ft_sz_x_tick = ft_sz(8);
+ln_wt_1 = ft_sz(9); ln_wt_2 = ft_sz(10); ln_wt_3 = ft_sz(11);
 
-if ~exist('clr','var'); clr = {}; end;
+if ~exist('clr_cd','var'); clr_cd = ''; end;
+clr = parse_color_string(clr_cd);
 clr = is_valid_flag(clr, {'k', 'r', 'b', 'k', 'g', 'k', 'g', 'k', 'r', 'b', 'k'});
+for i = 1:length(clr)
+    if clr{i} == 'g'; clr{i} = [0 0.5 0]; end;
+end;
 color_title_1 = clr{1}; color_title_2 = clr{2}; color_title_3 = clr{3};
 color_ver = clr{4};
 color_y_title = clr{5}; color_y_tick = clr{6};
@@ -392,25 +414,25 @@ for i = 1:page_num_W
                 num_line_offset = mod(mutpos(2), num_line_sp);
             end;
             
-            make_lines(0:1:w_length, color_line_3, 1);
+            make_lines(0:1:w_length, color_line_3, ln_wt_3);
             line_start = mod(num_line_offset + num_line_sp + 1 - mod(w_length * (i - 1), num_line_sp), num_line_sp);
-            make_lines(line_start:num_line_sp:(w_length + 1), color_line_2, 2);
+            make_lines(line_start:num_line_sp:(w_length + 1), color_line_2, ln_wt_2);
         end;
         
         % red border lines
-        make_lines_horizontal(num_sp, color_line_1, 1);
-        make_lines_horizontal(size(d_temp,1) - num_sp, color_line_1, 1);
-        make_lines(1, color_line_1, 1);
-        make_lines(size(d_temp, 2)-1, color_line_1, 1);
+        make_lines_horizontal(num_sp, color_line_1, ln_wt_1);
+        make_lines_horizontal(size(d_temp,1) - num_sp, color_line_1, ln_wt_1);
+        make_lines(1, color_line_1, ln_wt_1);
+        make_lines(size(d_temp, 2)-1, color_line_1, ln_wt_1);
         
         % axis labeling
         % X-axis-tick, mutant names
-        set(gca, 'FontSize', ft_sz_x_tick);
+        set(gca, 'FontSize', ft_sz_x_tick, 'FontWeight', ft_w_x_tick);
         set(gca, 'XTick', 1:size(name, 2), 'XTickLabel', char(name{i, :}), 'XColor', color_x_tick);
         xticklabel_rotate(); 
         
         % Y-axis-tick, band positions
-        set(gca, 'FontSize', ft_sz_y_tick, 'YColor', color_y_tick);
+        set(gca, 'FontSize', ft_sz_y_tick, 'FontWeight', ft_w_y_tick, 'YColor', color_y_tick);
         if i == page_num_W;
             set(gca, 'YTick', xsel_pos_sub(:), 'YTickLabel', char(xsel_txt_sub(:)), 'YAxisLoc', 'Right');
         else
@@ -426,13 +448,13 @@ for i = 1:page_num_W
         % X-axis-caption
         xlabel('Mutation Position', 'Color', color_x_title); 
         if j == page_num_H;
-            xlabh = get(gca, 'XLabel'); set(xlabh, 'FontSize', ft_sz_x_title);
+            xlabh = get(gca, 'XLabel'); set(xlabh, 'FontSize', ft_sz_x_title, 'FontWeight', ft_w_x_title);
             set(xlabh, 'Position', get(xlabh, 'Position') + [0 (num_x_offset + title_offset) 0]);
         end;
         
         % Y-axis-caption
         ylabel('Sequence Position', 'Color', color_y_title);
-        ylabh = get(gca, 'YLabel'); set(ylabh, 'FontSize', ft_sz_y_title);
+        ylabh = get(gca, 'YLabel'); set(ylabh, 'FontSize', ft_sz_y_title, 'FontWeight', ft_w_y_title);
         set(ylabh, 'Position', get(ylabh, 'Position') + [num_y_offset 0 0]);
         
         % add title if asked
@@ -445,7 +467,7 @@ for i = 1:page_num_W
             if (i == 1 && j == 1);
                 
                 title([' ' d_rdat.name ' '], 'HorizontalAlignment', 'Left', 'VerticalAlignment', 'Bottom',...
-                    'FontWeight', 'Bold', 'FontSize', ft_sz_title_1, 'FontName', 'Courier', 'Color', color_title_1);
+                    'FontWeight', ft_w_title_1, 'FontSize', ft_sz_title_1, 'FontName', 'Courier', 'Color', color_title_1);
                 tit = get(gca, 'Title'); pos = get(tit, 'Position');
                 set(tit, 'Position', [0 (pos(2) + title_offset) pos(3)]);
                 if is_auto_length; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
@@ -463,7 +485,7 @@ for i = 1:page_num_W
                 if page_num_W == 2; note{3} = [mdfr_str author_str date_str '  ']; end;
                 
                 title(note, 'HorizontalAlignment', 'Right', 'VerticalAlignment', 'Bottom',...
-                    'FontSize', ft_sz_title_2, 'FontName', 'Courier', 'Color', color_title_2);
+                    'FontWeight', ft_w_title_2, 'FontSize', ft_sz_title_2, 'FontName', 'Courier', 'Color', color_title_2);
                 tit = get(gca, 'Title'); pos = get(tit, 'Position');
                 set (tit, 'Position', [1 (pos(2) + title_offset) pos(3)]);
                 if is_auto_length; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
@@ -473,7 +495,7 @@ for i = 1:page_num_W
                 comment = [mdfr_str author_str date_str '  '];
                 
                 title(comment, 'HorizontalAlignment', 'Right', 'VerticalAlignment', 'Bottom',...
-                    'FontWeight', 'Bold', 'FontSize', ft_sz_title_3, 'FontName', 'Courier', 'Color', color_title_3);
+                    'FontWeight', ft_w_title_3, 'FontSize', ft_sz_title_3, 'FontName', 'Courier', 'Color', color_title_3);
                 tit = get(gca, 'Title'); pos = get(tit, 'Position');
                 set (tit, 'Position', [1 (pos(2) + title_offset) pos(3)]);
                 if is_auto_length; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
@@ -486,7 +508,8 @@ for i = 1:page_num_W
             ver_str = ['HiTRACE rev. ', num2str(ver_hitrace), ' / RDAT ver. ', d_rdat.version, ...
                 ' / print\_CE\_split ver. ', Script_VER, '   '];
             ylim = get(gca, 'YLim'); xlim = get(gca, 'XLim');
-            text(xlim(2), ylim(2), ver_str, 'HorizontalAlignment', 'Right', 'VerticalALignment', 'Bottom', 'FontSize', ft_sz_ver, 'Color', color_ver);
+            text(xlim(2), ylim(2), ver_str, 'HorizontalAlignment', 'Right', 'VerticalALignment', 'Bottom', ...
+                'FontWeight', ft_w_ver, 'FontSize', ft_sz_ver, 'Color', color_ver);
         end;
             
         % print to file if asked

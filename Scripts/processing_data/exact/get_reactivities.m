@@ -1,9 +1,10 @@
 function [ reactivity, reactivity_error, seqpos_out, area_peak_corrected, attenuation_corrected, reactionProb] = get_reactivities( undiluted, diluted, undiluted_error, diluted_error, bkg_col, refpos, seqpos, exclude_pos_for_unsaturation, sd_cutoff )
 % GET_REACTIVITIES: Correct data for saturating bands; subtract background; normalize; and propagate errors.
 %
-%  [ reactivity, seqpos_out, area_peak_corrected,attenuation_corrected,reactionProb] = 
-%               GET_REACTIVITIES( undiluted, diluted, undiluted_error, diluted_error, bkg_col, refpos, ...
-%                                 seqpos, sd_cutoff )
+%  [reactivity, reactivity_error, seqpos_out, ...
+%   area_peak_corrected, attenuation_corrected, reactionProb] = 
+%       GET_REACTIVITIES(undiluted, diluted, undiluted_error, diluted_error,  ...
+%                        bkg_col, refpos, seqpos, sd_cutoff)
 %
 % Required inputs:
 % undiluted = band intensities that may have some peaks that are saturating the detector
@@ -35,8 +36,22 @@ function [ reactivity, reactivity_error, seqpos_out, area_peak_corrected, attenu
 %
 % Normalized reactivity values are returned 5' to 3'.
 %
+% ######
+% Example of bkg_col
+%
+% Dataset of
+%  {'nomod-1','SHAPE-1','DMS-1','CMCT-1',...
+%   'nomod-2','SHAPE-2','DMS-2','CMCT-2',...
+%   'nomod-3','SHAPE-3','DMS-3','CMCT-3'}
+% In which -1/2/3 means different conditions and each number group should
+%  be subtracted by its own nomod.
+% bkg_col for this dataset should be:
+%  [1,1,1,1,5,5,5,5,9,9,9,9]
+%  in which 1,5,9 are the numbers of 'nomod-1/2/3' in the dataset.
+% ######
+%
 % Thomas Mann, November 2012.
-% Updated, R. Das & S. Tian, 2013
+% Updated, R. Das & S. Tian, Apr - May 2013
 %
 
 if nargin == 0; help( mfilename ); return; end;

@@ -1,10 +1,10 @@
-function color_profile = color_palette(d_plot, color_max, color_min, color_scheme)
+function color_profile = color_palette(d_plot, color_max, color_min, color_scheme, seqpos, sequence)
 
 %
-% color_profile = COLOR_PALETTE(d_plot, color_max, color_min, color_scheme)
+% color_profile = COLOR_PALETTE(d_plot, color_max, color_min, color_scheme, seqpos, sequence)
 %
 % Plots reactivities with color scheme (color_scheme) and color range of (color_max and
-%  color_min) as a preview to optimize color saturation values before actual coloring 
+%  color_min) as a preview to optimize color saturation values before actual coloring
 %  the boxes on the image.
 % Two figures will be shown for preview: a background-colored plot and a foreground-
 %  colored bargraph. Black lines denote chosen color_max and color_min as well center
@@ -19,23 +19,27 @@ function color_profile = color_palette(d_plot, color_max, color_min, color_schem
 %                                    Default is average minus 3 standard deviation.
 %   color_scheme    Optional        Provides the color scheme. See getcolor for more
 %                                    details. Default is 17 (rainbow).
+%   seqpos          Optional        Provides the seqpos for x-axis labeling. Default 
+%                                    is [], means natural numbering will be used.
+%   sequence        Optional        Provides the sequence for x-axis labeling. Default 
+%                                    is '', means natural numbering will be used.
 %
 % Output
 % ======
-%   color_profile                   Gives the integrated color_profile for following 
+%   color_profile                   Gives the integrated color_profile for following
 %   [color_scheme, d_offset,         coloring steps.
 %    max_color, min_color]          'COLOR_SCHEME' specifies the color scheme, same
 %                                     as input.
-%                                   'D_OFFSET" specifies the vertical offset value all 
+%                                   'D_OFFSET" specifies the vertical offset value all
 %                                     reactivities subtract by to make it centered at 0
 %                                     when coloring.
-%                                   'MAX_COLOR' specifies the color saturation value at 
-%                                     high-end based on d_offset directly used by 
+%                                   'MAX_COLOR' specifies the color saturation value at
+%                                     high-end based on d_offset directly used by
 %                                     getcolor when coloring.
-%                                   'MIN_COLOR' specifies the color saturation value at 
-%                                     low-end based on d_offset directly used by 
+%                                   'MIN_COLOR' specifies the color saturation value at
+%                                     low-end based on d_offset directly used by
 %                                     getcolor when coloring.
-%                                 
+%
 %
 % by T47, May 2013.
 %
@@ -50,6 +54,12 @@ if ~exist('color_min','var') || isempty(color_min) || isnan(color_min);
 end;
 if ~exist('color_scheme','var') || isempty(color_scheme); color_scheme = 17; end;
 
+if ~exist('sequence','var') || isempty(sequence) || ...
+        ~exist('seqpos','var') || isempty(seqpos);
+    is_x_label = 0;
+else
+    is_x_label = 1;
+end;
 
 color_center = mean([color_max color_min]);
 maxplot = color_max - color_center;
@@ -104,5 +114,15 @@ make_lines_horizontal(color_max - 0.5); hold on;
 make_lines_horizontal(color_min - 0.5); hold on;
 make_lines_horizontal(color_center - 0.5); hold off;
 
+% X-axis-tick, seqpos
+if is_x_label;
+    name = cell(1, length(seqpos));
+    for i = seqpos
+        name{i} = [num2str(i) sequence(i)];
+    end;
+    set(gca, 'FontSize', 8);
+    set(gca, 'XTick', 1:length(seqpos), 'XTickLabel', char(name));
+    xticklabel_rotate();
+end;
 
 color_profile = [color_scheme, color_center, maxplot, maxplot2];

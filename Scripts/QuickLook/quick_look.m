@@ -352,7 +352,7 @@ if PLOT_STUFF
   axis( [ 0.5 size( d0_signal, 2 )+0.5 1 size(d,1)] );
   %axis( [ 0.5 size( d0_signal, 2 )+0.5 ymin ymax] );
   set( gca, 'xtick', 1:size( d0_signal, 2 ), ...
-	    'xticklabel', char( labels_used  )  );
+	    'xticklabel', char( labels_used  ) ,'FontSize',8 );
   xticklabel_rotate;
 
   make_dividers( d0_signal, [], 1, size( d, 1 ));
