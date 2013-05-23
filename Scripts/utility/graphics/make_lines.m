@@ -28,18 +28,19 @@ if ~exist('line_pos','var') || isempty( line_pos )
   line_pos = round([xlimits(1):xlimits(2)]);
 end;
 if ~exist('color_code','var'); color_code = 'k'; end;
-if ~exist('line_width','var'); line_width = 1; end;
+if ~exist('line_width','var'); line_width = 0.5; end;
 if ~exist('low_bd','var'); low_bd = 1; end;
 if ~exist('high_bd','var'); high_bd = 1; end;
 
 ylim = get(gca,'ylim');
+if low_bd == 1; y_bd(1) = ylim(1); end;
+if low_bd == 0; y_bd(1) = 0; end;
+if high_bd == 1; y_bd(2) = ylim(2); end;
+if high_bd == 0; y_bd(2) = 0; end;
+  
 hold on;
 for i = 1:length( line_pos );
   hold on;
-  if low_bd == 1; y_bd(1) = ylim(1); end;
-  if low_bd == 0; y_bd(1) = 0; end;
-  if high_bd == 1; y_bd(2) = ylim(2); end;
-  if high_bd == 0; y_bd(2) = 0; end;
   plot( 0.5+line_pos(i)*[1 1], [y_bd(1) y_bd(2)],'-','color',color_code,'linewidth',line_width); 
 end;
 hold off;
