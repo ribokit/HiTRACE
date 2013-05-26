@@ -100,8 +100,7 @@ anchor_nodes = zeros( length( nodes )+1, size( d_all, 2) );
 
 % parallelization! yea!
 if parallelization_exists()
-  %for i = which_lanes;
-  parfor i = which_lanes;
+ parfor i = which_lanes;
     [x_transform_all(:,i), anchor_nodes(:,i)]    = align_by_DP_inner_loop( i, refcol, d_all, penalizeStretchFactor, slack, maxShift, windowSize, num_pixels );
   end
 else
@@ -127,10 +126,14 @@ else
   
   d_ref = process_profile( d_all(:,refcol) );
   d_ali = process_profile( d_all(:,     i) );
-    
-  %plot( [d_ref d_ali] ); pause;
-  
+      
   [d_transform, x_transform, DP, choice, anchor_nodes] = refine_by_transforming( d_ref, d_ali, penalizeStretchFactor, slack, maxShift, windowSize );    
+
+  % diagnostics.
+  %sum( (d_ali - d_ref ).^2 )
+  %sum( (d_ali - d_transform' ).^2 )
+  %clf; plot( [d_ref d_ali d_transform'] ); pause;
+
   %toc
 end
 
@@ -286,7 +289,6 @@ DP_matrix( :, NUM_WINDOWS+1) = 0.0;
 %tic
 for n = NUM_WINDOWS:-1:1 
 
-
   %fprintf('Dynamic programming for window: %d of %d\n',n, NUM_WINDOWS);
 
   start_nodes = start_nodes_ali_all{ n };
@@ -306,8 +308,8 @@ for n = NUM_WINDOWS:-1:1
       % New -- prevent transforming if there's not much information.
       stretch_score = 0 * prev_score;
       potential_block_stretches = ( final_nodes(k, goodpoints) - start_nodes(k) ) - ( final_nodes_ref(n) - start_nodes_ref(n) );
-      if ( n < NUM_WINDOWS )
-	%stretch_score = PENALIZE_STRETCH * abs(potential_block_stretches - best_block_stretch( final_nodes(k, goodpoints)+1, n+1 )');
+      if ( n < NUM_WINDOWS-1  & n > 2) % do not penalize extreme edge windows!
+	%stretch_score = PENALIZE_STRETCH * abs(potential_block_stretches - best_block_stretch( final_nodes(k, goodpoints)+1, n+1 )'); % L1 norm rather than L2 norm.
 	stretch_score = PENALIZE_STRETCH * (potential_block_stretches - best_block_stretch( final_nodes(k, goodpoints)+1, n+1 )').^2;
       end
       
@@ -405,7 +407,15 @@ d = 20 * (max( d, 0) );
 d = d - mode( round(smooth(d)) );
 
 % get interquartile range, and use it to cap outliers.  
-d = cap_outliers( d );
+
+%d = cap_outliers( d );
+d = window_normalize( d, 50 );
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function d = process_profile_window( d ); % not in use -- just a test function
+d = max(d,0);
+d = window_normalize( d, 25 );
+return;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function  d =  cap_outliers( d )
@@ -449,6 +459,7 @@ function show_anchor_nodes( anchor_nodes );
 
 for i = 1:size( anchor_nodes, 1 )
   hold on
-  plot( [1:size(anchor_nodes,2)], anchor_nodes(i,:), 'r-' );
+  h=plot( [1:size(anchor_nodes,2)], anchor_nodes(i,:), 'r-' );
+  set(h,'clipping','off');
 end
 hold off;
