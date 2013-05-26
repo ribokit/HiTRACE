@@ -1,4 +1,4 @@
-function [ reactivity, reactivity_error, seqpos_out, area_peak_corrected, attenuation_corrected, reactionProb] = get_reactivities( undiluted, diluted, undiluted_error, diluted_error, bkg_col, refpos, seqpos, exclude_pos_for_unsaturation, sd_cutoff )
+function [ reactivity, reactivity_error, seqpos_out, unsaturated, attenuation_corrected, reactionProb] = get_reactivities( undiluted, diluted, undiluted_error, diluted_error, bkg_col, refpos, seqpos, exclude_pos_for_unsaturation, sd_cutoff )
 % GET_REACTIVITIES: Correct data for saturating bands; subtract background; normalize; and propagate errors.
 %
 %  [reactivity, reactivity_error, seqpos_out, ...
@@ -60,7 +60,6 @@ if ~exist( 'bkg_col','var' ); bkg_col = 0; end;
 if ~exist( 'refpos','var' ); refpos = []; end;
 if ~exist( 'seqpos','var' ); seqpos = [0 : size( undiluted, 1 ) - 1]; end;
 if ~exist( 'exclude_pos_for_unsaturation','var' ); exclude_pos_for_unsaturation = []; end;
-area_peak_corrected = [];
 attenuation_corrected = [];
 reactionProb = [];
 reactivity = [];
@@ -115,7 +114,7 @@ image_scalefactor = 2000;
 BACKGROUND_SUBTRACTED = 0;
 if bkg_col(1) > 0;
   if length( bkg_col ) == 1; bkg_col = bkg_col * ones( ntrace, 1 ); end;
-  [reactionProb, reactionProb_err ] = subtract_array( attenuation_corrected, attenuation_corrected(:,bkg_col), attenuation_corrected_error, attenuation_corrected_error(:,bkg_col), seqpos )
+  [reactionProb, reactionProb_err ] = subtract_array( attenuation_corrected, attenuation_corrected(:,bkg_col), attenuation_corrected_error, attenuation_corrected_error(:,bkg_col), seqpos );
   BACKGROUND_SUBTRACTED = 1;
 end
 
@@ -126,21 +125,24 @@ for k = 1:length( refpos )
   ref_pos_in = [ ref_pos_in, find( seqpos == refpos(k) ) ];
 end
 
+pause;
 %reactivity = reactionProb/mean(mean(reactionProb));
 reactivity       = reactionProb;
 reactivity_error = reactionProb_error;
 NORMALIZED = 0;
 if ~isempty( ref_pos_in )
-  [reactivity, norm_scalefactors] = quick_norm( reactionProb, ref_pos_in );
-  reactivity_error = reactionProb_error * diag( norm_scalefactors );
+  [reactivity, norm_scalefactors, reactivity_error ] = quick_norm( reactionProb, ref_pos_in, reactionProb_error );
   image_scalefactor = 40;
   NORMALIZED = 1;
 end
+
+pause
 
 image( 1:ntrace, seqpos, reactivity * image_scalefactor );
 title( 'Final', 'FontSize', 11, 'FontWeight', 'Bold');
 make_lines;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 REMOVED_FULL_EXTENSION_SITE = 0;
 seqpos_out = seqpos(2:end);
 reactivity = reactivity(2:end,:);

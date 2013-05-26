@@ -112,6 +112,7 @@ title( 'Diluted Sample, Scaled', 'FontSize', 11, 'FontWeight', 'Bold');
 subplot(1,3,3); make_image( area_peak_unsaturated, is_saturated_position, scalefactor, seqpos );
 title( 'Unsaturated', 'FontSize', 11, 'FontWeight', 'Bold');
 
+
 return;
 
 
@@ -120,13 +121,9 @@ function make_image( image_array, is_saturated_position, scalefactor, seqpos )
 
 image( 1:size(image_array,2) , seqpos,  scalefactor * image_array );
 
-for j = 1:size( image_array,2)
-  hold on; plot( [j j]+0.5,  [0.5 size(image_array,1)+0.5], 'k' );
-end
-
 box_saturated_positions( is_saturated_position, seqpos );
 
-if size( image_array, 2 ) < 40; make_lines; end;
+if size( image_array, 2 ) < 80; make_lines; end;
 
 hold off
 colormap( 1 - gray(100));
