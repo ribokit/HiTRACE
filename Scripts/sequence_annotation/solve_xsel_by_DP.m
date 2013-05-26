@@ -49,7 +49,7 @@ end
 %I_data = (max(I_data,0)/5).^0.5;
 %I_data = max(I_data,0)/5;
 window_size = ideal_spacing * 2;
-I_data = boxcart_normalize( I_data, window_size )/2;
+I_data = window_normalize( I_data, window_size )/2;
 
 % Set up basis functions.
 % A gaussian. 
