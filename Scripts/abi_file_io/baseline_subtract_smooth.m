@@ -32,8 +32,7 @@ if ~exist('PLOT_STUFF')  PLOT_STUFF = 1; end
 
 
 if parallelization_exists()
-  %parfor k = 1:size(d,2);
-  for k = 1:size(d,2);
+  parfor k = 1:size(d,2);
       fprintf(1,'Baseline subtracting...%d\n',k);
       [d_sub(:,k),bdx(:,k)] = baseline_subtract_smooth_one_profile( d(:,k), ymin,ymax,A,B);
   end 
