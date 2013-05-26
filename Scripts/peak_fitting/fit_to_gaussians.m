@@ -72,18 +72,20 @@ end
 for n = 1:size( d_align,2); derivatives{n} = []; end;
 for n = 1:size( d_align,2); numerical_derivatives{n} = []; end;
 
+
 %%%%%%%%%%%%%%%%%%
 % inner loop
 %%%%%%%%%%%%%%%%%%
+PLOT_FITS = 0;
 if parallelization_exists() && (PLOT_STUFF ~= 3)
   parfor j = whichpos
     fprintf( 1, 'Fitting profile %d\n',j);
-    [ area_peak(:,j), prof_fit(:,j), deviation(j), derivatives{j}, numerical_derivatives{j} ] = do_the_fit_inner_loop( d_align(:,j), xsel(:,j)', widthpeak_start, PLOT_STUFF, DERIV_CHECK );
+    [ area_peak(:,j), prof_fit(:,j), deviation(j), derivatives{j}, numerical_derivatives{j} ] = do_the_fit_inner_loop( d_align(:,j), xsel(:,j)', widthpeak_start, PLOT_FITS, DERIV_CHECK );
   end;
 else
   for j = whichpos
     fprintf( 1, 'Fitting profile %d\n',j);
-    [ area_peak(:,j), prof_fit(:,j), deviation(j), derivatives{j}, numerical_derivatives{j} ] = do_the_fit_inner_loop( d_align(:,j), xsel(:,j)', widthpeak_start, PLOT_STUFF, DERIV_CHECK );
+    [ area_peak(:,j), prof_fit(:,j), deviation(j), derivatives{j}, numerical_derivatives{j} ] = do_the_fit_inner_loop( d_align(:,j), xsel(:,j)', widthpeak_start, PLOT_FITS, DERIV_CHECK );
   end;
 end;
 
@@ -148,13 +150,17 @@ end
 gong
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% several matrices are shared across all peak fitting calculations.
+%function [x_disallow, x_allow, xpeak_grid, widthpeak_grid, gaussian, dgaussian, A, Ainv, D] = precalculate_stuff( d_align, xsel_fit, widthpeak );
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ area_peak, prof_fit, deviation, derivatives, numerical_derivatives ] = do_the_fit_inner_loop( d_align, xsel_fit, widthpeak, PLOT_STUFF, DERIV_CHECK )
 
 tic
 
-%x_allow = [1:size(d_align,1)];
 [ x_disallow, x_allow ] = find_x_disallow( d_align );
-
 [xdummy, xpeak_grid]    = meshgrid(x_allow, xsel_fit);
 [xdummy,widthpeak_grid] = meshgrid(x_allow, widthpeak);
 gaussian = exp( -0.5 * ((xdummy-xpeak_grid)./widthpeak_grid).^2 );
@@ -167,7 +173,6 @@ Ainv = inv( A );
 a = (Ainv * B)';
 area_peak = sqrt(2*pi) * a .* widthpeak;
 
-toc
 
 % calculate derivatives analytically
 N = length(xsel_fit);
@@ -179,6 +184,8 @@ D = (gaussian * dgaussian')';
 derivatives = derivatives - Ainv .* repmat( a*D', N, 1) - (Ainv * D') .* repmat(a, N, 1 );
 % scale up to area.
 derivatives = derivatives * sqrt(2*pi) .* repmat( widthpeak', 1, N);
+
+toc
 
 % numerical derivatives if desired.
 numerical_derivatives = derivatives * 0;
@@ -219,6 +226,8 @@ if PLOT_STUFF;
   axis([ min(xsel_fit)-100 max(xsel_fit)+100 min(prof_fit) max( prof_fit )]);
   %pause;
 end;
+
+toc
 
 return;
 
