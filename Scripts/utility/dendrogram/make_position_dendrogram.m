@@ -29,8 +29,9 @@ r = max(remove_offset(reactivity( subset_seq,subset_mod) ), 0);
 % new: cap_outliers
 %r = min( max( r, 0 ), 5 );
 
-dm = pdist( r' ,'correlation' );
+%dm = pdist( r' ,'correlation' );
 %dm = get_chi_squared_dm( r, r_error );
+dm= get_weighted_correlation_coefficient( r, r_error);
 
 z = linkage( dm, 'weighted' );
 [h,t,perm_mod] = dendrogram( z, 0,'labels',blank_tags,'colorthreshold',0.3,'orientation','left' ); 
@@ -46,9 +47,10 @@ xticklabel_rotate
 
 subplot(2,2,2);
 %dm_seq = pdist( r ,'correlation' );
-dm_seq = pdist( r ,'mydist' );
+%dm_seq = pdist( r ,'mydist' );
 %dm_seq = pdist( r ,'distcorr_wrapper' );
 %dm_seq = get_chi_squared_dm( r', r_error' );
+dm_seq = get_weighted_correlation_coefficient( r', r_error');
 
 z_seq = linkage( dm_seq, 'weighted' );
 %z_seq = linkage( dm_seq, 'ward' );
@@ -67,7 +69,7 @@ xticklabel_rotate
 
 subplot(2,2,4);
 image(40 * r(perm_seq,perm_mod)' );
-colormap( 1 - gray(100));
+colormap( [1 - gray(100); zeros(200,3); 1 0 0] )
 box off
 set(gca,'tickdir','out' ,'ticklength',[0 0], 'ytick',[1:length(perm_mod)],'fontweight','bold','yticklabel',labels(subset_mod(perm_mod)),'fontsize',6 );
 xlim( [0.5 length(perm_seq)+0.5] );
