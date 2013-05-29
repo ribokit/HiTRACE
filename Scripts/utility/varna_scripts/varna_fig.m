@@ -114,7 +114,7 @@ if ( exist( 'offset' ) | exist( 'bpp_values' ) )
   
   fprintf( fid, '<param name="annotations" value="' );
   if exist( 'offset' )
-    PERIOD = 20;
+    PERIOD = 10;
     for i = 1:length( sequence )
       if ( mod( i+offset, PERIOD) == 0 )
 	fprintf( fid, '%d:type=B,anchor=%d,color=#000000,size=8;', i+offset, i );

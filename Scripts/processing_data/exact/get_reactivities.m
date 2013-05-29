@@ -150,13 +150,13 @@ reactivity_error = reactivity_error(2:end,:);
 REMOVED_FULL_EXTENSION_SITE = 1;
 
 fprintf( '\n' );
-if UNSATURATED  fprintf( 'Unsaturated the data based on undiluted and diluted array.\n' );
+if UNSATURATED;  fprintf( 'Unsaturated the data based on undiluted and diluted array.\n' );
 else fprintf( 'No attempt at unsaturation.\n' ); end;
 
-if BACKGROUND_SUBTRACTED fprintf( 'Subtracted background.\n' );
+if BACKGROUND_SUBTRACTED; fprintf( 'Subtracted background.\n' );
 else fprintf( 'No background subtraction.\n' ); end;
 
-if NORMALIZED fprintf( 'Normalized base on refpos.\n' );
+if NORMALIZED; fprintf( 'Normalized base on refpos.\n' );
 else fprintf( 'No normalization -- ''absolute'' reactivities outputted.\n' ); end;
 
 if REMOVED_FULL_EXTENSION_SITE; fprintf( 'Removed  "site 0", corresponding the fully extended cDNA [Use seqpos_out, which also removes that first data point.]\n'); end;
