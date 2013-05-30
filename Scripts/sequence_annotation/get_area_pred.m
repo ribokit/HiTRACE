@@ -32,76 +32,101 @@ if length( structure ) ~= length( sequence ); fprintf( 'Sequence length must equ
 
 for k = 1:length( data_types )
 
+  construct_structure = structure;
+  
   if isempty( data_types{k} ) continue; end;
   
-  switch data_types{k}
-   case 'SHAPE'
-    for i = 1:length( structure )
-      if structure(i) == '.'
-	area_pred(i,k) = 1.0;
-      end
+  tags = split_string( data_types{k} );
+  mutpos = NaN;
+  
+  for n = 1:length( tags ) % look for any mutation positions.
+    tag = tags{n};
+    % first look for any numbers in the tag
+    % following is useful for mutate-and-map data sets.
+    if isnumeric( tag ) % may be a number reflecting the mutation position.
+      mutpos = round( tag );
+    else
+      mutpos = str2num( tag );
     end
-   case 'DMS'
-    for i = 1:length( structure )
-      if structure(i) == '.' & ( sequence(i) == 'A'  | sequence(i) == 'C'  ) 
-	area_pred(i,k) = 1.0;
-      end
-    end
-   case 'CMCT'
-    for i = 1:length( structure )
-      if structure(i) == '.' & ( sequence(i) == 'G'  | sequence(i) == 'U'  | sequence(i) == 'T'  ) 
-	area_pred(i,k) = 1.0;
-      end
-    end
-   case 'G'
-    for i = 1:length( structure )
-      if ( sequence(i) == 'G'  )
-	area_pred(i,k) = 1.0;
-      end
-    end
-   case 'UV'
-    for i = 2:length( structure )
-      if ( sequence(i) == 'C'  | sequence(i) == 'U'  ) & ...
-	    ( sequence(i-1) == 'C'  | sequence(i-1) == 'U'  ) 
-	area_pred(i,k) = 1.0;
-      end
-    end
-   case 'ddATP'
-    for i = 1:length( sequence )-1
-      if ( sequence(i+1) == 'T' | sequence(i+1) == 'U' ); area_pred(i,k) = 1.0; end;
-    end
-   case 'ddCTP'
-    for i = 1:length( sequence )-1
-      if ( sequence(i+1) == 'G' ); area_pred(i,k) = 1.0; end;
-    end
-   case 'ddGTP'
-    for i = 1:length( sequence )-1
-      if ( sequence(i+1) == 'C' ); area_pred(i,k) = 1.0; end;
-    end
-   case 'ddTTP'
-    for i = 1:length( sequence )-1
-      if ( sequence(i+1) == 'A' ); area_pred(i,k) = 1.0; end;
+    if ~isempty( mutpos ) & ~isnan( mutpos )
+	seqidx = mutpos - offset;
+	partner_idx = 0; 
+	if ( seqidx <= length( sequence) & seqidx >= 1 )
+	  construct_structure( seqidx ) = '.';
+	  if ~exist( 'bps' ) bps = convert_structure_to_bps( structure ); end;
+	  partner_idx = find_partner( seqidx, bps );
+	  if ( partner_idx >=1 & partner_idx <= length( sequence ) ) 
+	    construct_structure( partner_idx) = '.';
+	  end
+	end
     end
   end
 
-  % following is useful for mutate-and-map data sets.
-  mutpos = [];
-  if isnumeric( data_types{k} ) % may be a number reflecting the mutation position.
-    mutpos = round( data_types{k} );
-  else
-    mutpos = str2num( data_types{k} );
-  end
-  if ~isempty( mutpos ) & ~isnan( mutpos )
-    area_pred(:,k) = 0.0;
-    seqidx = mutpos - offset;
-    if ( seqidx <= length( sequence) & seqidx >= 1 )
-      area_pred(seqidx ,k) = 1.0;
+  % then go through and look for modifier tags
+  for n = 1:length( tags )
+    tag = tags{n};
+    switch tag
+     case 'SHAPE'
+      for i = 1:length( sequence )
+	if construct_structure(i) == '.'
+	  area_pred(i,k) = 1.0;
+	end
+      end
+     case 'DMS'
+      for i = 1:length( sequence )
+	if construct_structure(i) == '.' & ( sequence(i) == 'A'  | sequence(i) == 'C'  ) 
+	  area_pred(i,k) = 1.0;
+	end
+      end
+     case 'CMCT'
+      for i = 1:length( sequence )
+	if construct_structure(i) == '.' & ( sequence(i) == 'G'  | sequence(i) == 'U'  | sequence(i) == 'T'  ) 
+	  area_pred(i,k) = 1.0;
+	end
+      end
+     case 'G'
+      for i = 1:length( sequence )
+	if ( sequence(i) == 'G'  )
+	  area_pred(i,k) = 1.0;
+	end
+      end
+     case 'UV'
+      for i = 2:length( sequence )
+	if ( sequence(i) == 'C'  | sequence(i) == 'U'  ) & ...
+	      ( sequence(i-1) == 'C'  | sequence(i-1) == 'U'  ) 
+	  area_pred(i,k) = 1.0;
+	end
+      end
+     case 'ddATP'
+      for i = 1:length( sequence )-1
+	if ( sequence(i+1) == 'T' | sequence(i+1) == 'U' ); area_pred(i,k) = 1.0; end;
+      end
+     case 'ddCTP'
+      for i = 1:length( sequence )-1
+	if ( sequence(i+1) == 'G' ); area_pred(i,k) = 1.0; end;
+      end
+     case 'ddGTP'
+      for i = 1:length( sequence )-1
+	if ( sequence(i+1) == 'C' ); area_pred(i,k) = 1.0; end;
+      end
+     case 'ddTTP'
+      for i = 1:length( sequence )-1
+	if ( sequence(i+1) == 'A' ); area_pred(i,k) = 1.0; end;
+      end
+     otherwise
+      if sum( area_pred(:,k) ) == 0 &  ~isnan( mutpos ); 
+	area_pred(:,k) = 0.0;
+	if ( seqidx <= length( sequence) & seqidx >= 1 )
+	  area_pred(seqidx ,k) = 1.0;
+	end
+	if ( partner_idx >=1 & partner_idx <= length( sequence ) ) 
+	  area_pred( partner_idx,k ) = 1.0; 
+	end;
+      end
     end
-    if ~exist( 'bps' ) bps = convert_structure_to_bps( structure ); end;
-    partner_idx = find_partner( seqidx, bps );
-    if ( partner_idx >=1 & partner_idx <= length( sequence ) ) area_pred( partner_idx,k ) = 1.0; end;
+  
   end
-
+  
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

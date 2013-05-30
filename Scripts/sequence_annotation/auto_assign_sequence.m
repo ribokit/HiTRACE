@@ -24,7 +24,11 @@ if ~exist('PLOT_STUFF','var'), PLOT_STUFF = 1; end
 [num_pixels, num_lanes] = size( image_x );
 if ~exist('ideal_spacing','var') | isempty(ideal_spacing)  | ideal_spacing == 0
   ideal_spacing = guess_ideal_spacing( image_x );
-  if ( ideal_spacing == 0 );  ideal_spacing = floor(num_pixels / (size( area_pred, 1 )-1) );  end;
+  if ( ideal_spacing == 0 | ideal_spacing > size( image_x,1)/length(sequence) );  
+    fprintf( 'Guess of ideal_spacing failed: %8.3f\n',  ideal_spacing );
+    ideal_spacing = floor(num_pixels / (size( area_pred, 1 )-1) );  
+    fprintf( 'Using ideal_spacing: %8.3f\n',  ideal_spacing );
+  end;
 end;
 if ~exist('input_bounds','var'), input_bounds = []; end
 if ~exist( 'data_types', 'var' ), data_types = []; end;
@@ -64,7 +68,8 @@ function ideal_spacing = guess_ideal_spacing( image_x )
 max_spacing = 50;
 possible_spacings = [];
 for i = 1:size( image_x, 2 )
-  spacings = localMaximum( autocorr( image_x(:,i), max_spacing ) );
+  autocorr_profile(:,i) = autocorr( image_x(:,i), max_spacing );
+  spacings = localMaximum( autocorr_profile(:,i) );
 
   % the first peak is always at 1 -- ignore that one and go to the next tightest spacing
   if length( spacings ) > 1;
@@ -72,10 +77,12 @@ for i = 1:size( image_x, 2 )
   end
 end
 
+
 if length( possible_spacings ) == 0
   ideal_spacing = 0; % no clue.
 else
-  ideal_spacing = median( possible_spacings ); 
+  %ideal_spacing = median( possible_spacings ); 
+  ideal_spacing = min( possible_spacings ); 
 end
 
 fprintf( 'Trying to guess ideal peak-to-peak spacing: %8.1f\n', ideal_spacing );

@@ -157,7 +157,7 @@ for n = 2:N
   if XSEL_GIVEN % entire xsel is already provided
     reasonable_pixel_range = [ input_bounds(n) ];
   end
-    
+  
   prev_pos_min = max(reasonable_pixel_range - MAX_SEP, 1)';
   prev_pos_max = max(reasonable_pixel_range - MIN_SEP, 1)';
     

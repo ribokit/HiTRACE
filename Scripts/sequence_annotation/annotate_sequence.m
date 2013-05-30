@@ -57,7 +57,7 @@ end
 
 % fill out area_pred, based on data_types.
 numlanes = size(d_align,2);
-area_pred = generate_area_pred (sequence, structure, offset, data_types, numlanes);
+area_pred = generate_area_pred(sequence, structure, offset, data_types, numlanes);
 
 if ~exist('JUST_PLOT','var'); JUST_PLOT = 0; end
 
@@ -223,8 +223,8 @@ while ~stop_sel
 		  area_pred_reverse = area_pred(end:-1:1,:); % should fix auto_assign to reverse.
 		  fprintf( 'Running auto-assign. This might take a minute.\n');
 
-		  %xsel = auto_assign_sequence( d_align, sequence, offset, area_pred_reverse, peak_spacing, input_bounds, 0, data_types );
-		  xsel = auto_assign_sequence_OLD( d_align, sequence, offset, area_pred_reverse, peak_spacing, input_bounds, 0, data_types );
+		  xsel = auto_assign_sequence( d_align, sequence, offset, area_pred_reverse, peak_spacing, input_bounds, 0, data_types );
+		  %xsel = auto_assign_sequence_OLD( d_align, sequence, offset, area_pred_reverse, peak_spacing, input_bounds, 0, data_types );
 
 		  xsel = reverse_sort( xsel ); % should fix auto_assign to reverse.
                 end
