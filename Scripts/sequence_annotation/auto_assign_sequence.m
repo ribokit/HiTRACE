@@ -23,10 +23,12 @@ if nargin == 0;  help( mfilename ); return; end;
 if ~exist('PLOT_STUFF','var'), PLOT_STUFF = 1; end
 [num_pixels, num_lanes] = size( image_x );
 if ~exist('ideal_spacing','var') | isempty(ideal_spacing)  | ideal_spacing == 0
-  ideal_spacing = guess_ideal_spacing( image_x );
-  if ( ideal_spacing == 0 | ideal_spacing > size( image_x,1)/length(sequence) );  
-    fprintf( 'Guess of ideal_spacing failed: %8.3f\n',  ideal_spacing );
-    ideal_spacing = floor(num_pixels / (size( area_pred, 1 )-1) );  
+
+  max_ideal_spacing = floor(num_pixels / (size( area_pred, 1 )-1) );  
+  ideal_spacing = guess_ideal_spacing( image_x, max_ideal_spacing );
+  if ( ideal_spacing == 0 );  
+    fprintf( 'Guess of ideal_spacing failed\n' );
+    ideal_spacing = max_ideal_spacing;
     fprintf( 'Using ideal_spacing: %8.3f\n',  ideal_spacing );
   end;
 end;
@@ -63,26 +65,25 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function ideal_spacing = guess_ideal_spacing( image_x )
+function ideal_spacing = guess_ideal_spacing( image_x, max_spacing )
 % look for closely spaced peaks using autocorrelation
-max_spacing = 50;
+max_spacing_for_corr = floor( 1.5*max_spacing );
 possible_spacings = [];
 for i = 1:size( image_x, 2 )
-  autocorr_profile(:,i) = autocorr( image_x(:,i), max_spacing );
+  autocorr_profile(:,i) = autocorr( image_x(:,i), max_spacing_for_corr );
   spacings = localMaximum( autocorr_profile(:,i) );
 
   % the first peak is always at 1 -- ignore that one and go to the next tightest spacing
-  if length( spacings ) > 1;
+  if length( spacings ) > 1 & spacings(2) < max_spacing;
     possible_spacings = [ possible_spacings, spacings(2) ];
   end
 end
-
 
 if length( possible_spacings ) == 0
   ideal_spacing = 0; % no clue.
 else
   %ideal_spacing = median( possible_spacings ); 
-  ideal_spacing = min( possible_spacings ); 
+  ideal_spacing = median( possible_spacings ); 
 end
 
 fprintf( 'Trying to guess ideal peak-to-peak spacing: %8.1f\n', ideal_spacing );
