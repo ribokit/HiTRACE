@@ -1,4 +1,21 @@
 function data_out = demix_by_ICA( data, num_components );
+% DEMIX_BY_ICA: Totally experimental scripts for automatically 
+%     carrying out  leakage correction through Independent Component Analysis.
+%
+%  data_out = demix_by_ICA( data, num_components );
+%
+% data = cell of matrices with traces, as would be output by plot_ABI_runs. 
+%         Each matrix has, e.g., four 
+%         columns for the four color channels.
+%
+% num_components = number of actual signal components (default 2).
+%
+% This doesn't really work unless input data has been subjected to
+% baseline_subtract_smooth. Even then, some weirdness happens due to
+% saturated peaks -- need to work on that.
+% 
+% (C) R. Das, 2013
+%
 
 if ~exist( 'num_components' ) num_components = 2; end;
 [d_orig, bounds_side_by_side_orig] = collate_data( data, 0 );
