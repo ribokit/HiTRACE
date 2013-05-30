@@ -21,7 +21,7 @@ if nargin == 0;  help( mfilename ); return; end;
 data = {};
 filenames = {};
 
-if ~exist( 'dye_names' ) dye_names = {}; end;
+if ~exist( 'dye_names_full','var' ) dye_names_full = {}; end;
 if ~exist( 'PLOT_STUFF' );  PLOT_STUFF = 1; end
 if ~exist('ymax')
   ymax=2000;
