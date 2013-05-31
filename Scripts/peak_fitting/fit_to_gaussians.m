@@ -170,7 +170,8 @@ B = gaussian * d_align(x_allow);
 
 Ainv = inv( A );
 %a  = lsqr( A, B )';
-a = (Ainv * B)';
+a = lsqnonneg(A,B)';
+%a = (Ainv * B)';
 area_peak = sqrt(2*pi) * a .* widthpeak;
 
 

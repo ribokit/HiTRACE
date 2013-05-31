@@ -40,6 +40,8 @@ function print_xsel_split(d_align, xsel, seqpos, sequence, offset, area_pred, la
 %                               'SC' (scale_factor) denotes the scaling factor of image,
 %                                   default is calculated to display optimally according
 %                                   to sc = 27.5 / mean(mean(d_align));
+%                               'SP' (spacer) denotes the spacer width on both top and 
+%                                   bottom of each sub-figure;
 %                               'UO' (upper_bound) denotes the excess D_ALIGN image
 %                                   shown above the first SEQPOS label;
 %                               'LO' (lower_bound) denotes the excess D_ALIGN image
