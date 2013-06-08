@@ -264,6 +264,43 @@ for i = 1:length(data_set_starts)
   end
   data_align_group{group_count} = align_capillaries( ...
       { data_all{[start_index:final_index]} }, refchannel, reflane);
+
+  ref_test = zeros(size(data_align_group{group_count}{1},1),length(data_align_group{group_count}));
+
+  for j = 1:length(data_align_group{group_count})
+    ref_test(:,j) = data_align_group{group_count}{j}(:,refchannel);
+  end
+
+  corr_test = zeros(size(ref_test,2));
+  for j = 1:size(ref_test,2)
+    for k = 1:size(ref_test,2)
+      corr_test(j,k) = corr2(ref_test(:,j),ref_test(:,k));
+    end
+  end
+
+  if(size(corr_test,2) > 2)
+      [~,corr_idx] = sort(corr_test);
+
+      corr_refined = zeros(size(corr_idx(2:end-1,:)));
+
+      for j = 1:size(corr_refined,2)
+          corr_refined(:,j) = corr_test(corr_idx(2:end-1,j),j);
+      end
+
+      corr_test = corr_refined;
+  end
+
+  corr_test = median(corr_test);
+
+  bad_threshold = max(corr_test) / 2;
+
+  if(corr_test(reflane) < bad_threshold)
+    [~,another_ref] = max(corr_test);
+
+    data_align_group{group_count} = align_capillaries( ...
+          { data_all{[start_index:final_index]} }, refchannel, another_ref);
+  end
+
 end
 
 data_align = align_capillaries_group( data_align_group, refchannel, 1, 1);
