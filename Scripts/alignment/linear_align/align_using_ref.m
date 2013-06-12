@@ -9,13 +9,11 @@ function [d_out, d_ref_out, x_realign] = align_using_ref( d, d_ref, align_blocks
 %  align_blocks_in = subsets of traces for serial alignments specified as a cell of integer vectors. Example: 
 %                       specifying { [1:4], [7 5 6 8] } will first align traces 2,3, and 4 to trace 1, and
 %                         then trace 5, 6, and 8 to 7.  [Default is align all to 1]
-
 %  Optimizes correlation coefficient by grid search + Fast Fourier Transform
 %
 %
 % (C) R. Das, 2013
 %
-
 
 
 %if no 'block's are specified, align the whole thing to column 1

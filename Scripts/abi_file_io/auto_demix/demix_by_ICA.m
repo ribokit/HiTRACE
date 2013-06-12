@@ -63,7 +63,7 @@ data_out = separate_data( dx, bounds );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clf
 make_colormap;
-scalefactor = 2/mean(mean( d_orig));
+scalefactor = 20/mean(mean( d_orig))
 subplot(1,2,1);
 image( d_orig*scalefactor )
 make_lines( bounds_side_by_side_orig,'b',1 );

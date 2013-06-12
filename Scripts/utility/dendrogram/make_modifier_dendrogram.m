@@ -42,7 +42,7 @@ box off
 gp = find( mod(seqpos,10) == 0 );
 set(gca,'tickdir','in','ygrid','on','ticklength',[ 0 0],'ytick',seqpos(gp));
 make_lines([1:length(perm_mod)] );
-colormap( [1 - gray(100); zeros(200,3); 1 0 0] )
+make_colormap;
 set(gcf, 'PaperPositionMode','auto','color','white');
 set(gca,'Position', [0.05 0.02 0.95 0.63] )
 %print( '-depsc2','RhijuWinners_dendrogramALL_modifiers.eps');

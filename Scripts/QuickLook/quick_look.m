@@ -95,6 +95,7 @@ end;
 % Parse some of these crazy options.
 if ~exist( 'moreOptions','var' ); moreOptions = {}; end;
 if ~iscell( moreOptions); moreOptions = { moreOptions }; end;
+FIX_LEAKAGE_OF_SATURATING_SIGNALS_TO_REF = 1;
 PLOT_STUFF = 1;
 NORMALIZE = 1;
 LOCAL_ALIGN = 1;
@@ -229,7 +230,6 @@ if PLOT_STUFF
   xticklabel_rotate;
   make_dividers( d0_signal, subset_pos, ymin, ymax );
 
-  %figure(3)
   subplot(1,2,2);
   image( d0_reference_ladder*2);
   h=title( sprintf('Reference channel %s', num2str( refchannel) ));
@@ -241,7 +241,14 @@ if PLOT_STUFF
   xticklabel_rotate;
   
   colormap( 1- gray(100));
-  %print( '-depsc2',[tag,'_Figure2.eps']);
+end
+
+
+% wipe out strong peaks from signal to leak into reference
+if FIX_LEAKAGE_OF_SATURATING_SIGNALS_TO_REF
+  for i = 1:length( data_all )
+    data_all{i}(:,refchannel) = fix_leakage_of_saturating_signals_to_ref( data_all{i}(:,sigchannels(m) ),  data_all{i}(:,refchannel) );
+  end
 end
 
 
@@ -342,12 +349,12 @@ if PLOT_STUFF
   
   %subplot(1,2,1);
   image( 50*d );
-  axis( [ 0.5 size( d0_signal, 2 )+0.5 ymin ymax] );
+  axis( [ 0.5 size( d, 2 )+0.5 ymin ymax] );
   set( gca, 'xtick', 1:size( d0_signal, 2 ), ...
 	    'xticklabel', char( labels_used  )  );
   xticklabel_rotate;
 
-  make_dividers( d0_signal, [], ymin, ymax );
+  make_dividers( d, [], ymin, ymax );
   h=title( [dirnames{1}]);
   set( h,'interpreter','none','fontweight','bold' )
   colormap(  1 - gray(100) )
