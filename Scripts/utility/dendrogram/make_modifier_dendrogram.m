@@ -1,4 +1,4 @@
-function [perm_mod,dm] = make_modifier_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, seqpos, labels );
+function [perm_mod,dm,r] = make_modifier_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, seqpos, labels );
 % MAKE_MODIFIER_DENDROGRAM
 %
 % perm_mod = make_modifier_dendrogram( reactivity, subset_seq, subset_mod, seqpos, labels );
@@ -30,7 +30,10 @@ dm = get_weighted_correlation_coefficient( r, r_error );
 %z = linkage( dm, 'average' );
 z = linkage( dm, 'weighted' );
 
-[h,t,perm_mod] = dendrogram( z, 0, 'labels',labels( subset_mod) );
+
+leaf_order_mod = optimalleaforder( z, dm );
+[h,t,perm_mod] = dendrogram( z, 0, 'labels',labels( subset_mod),'reorder',leaf_order_mod );
+
 set(gca,'Position', [0.05 0.85 0.95 0.10] )
 xlim([0.5 length(perm_mod)+0.5]);
 axis off
