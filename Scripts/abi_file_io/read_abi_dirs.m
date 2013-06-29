@@ -29,6 +29,8 @@ count = 0;
 
 if ~exist( 'dye_names_full','var' ) dye_names_full = {}; end;
 
+if length( dirnames) == 1; dirnames = check_for_subdirs( dirnames{1} ); end
+
 for j = 1:length( dirnames )
   % This script calls read_abi.m which has the actual file format.
   fprintf( 1, 'Reading in:  %s\n',dirnames{j} ); 
@@ -49,3 +51,42 @@ end
 
 clear count;
 clear j; clear k;
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function dirnames = check_for_subdirs( dirname );
+
+datafile_names = {};
+
+datafiles = dir( [dirname,'/*ab1'] );
+if length( datafiles ) == 0;
+    datafiles = dir( [dirname,'/*.fsa'] );
+end
+
+dirnames = {};
+if length( datafiles ) > 0
+    dirnames = {dirname};
+else
+    list = dir( dirname );  %get info of files/folders in current directory
+    isdir_files = [ list.isdir ]; %determine index of directories
+    subdirnames = { list(isdir_files).name };
+    for i = 1:length( subdirnames );  
+       % don't do first directory names, which are '.' and '..'
+       if strcmp( subdirnames{i}, '.' ), continue; end;
+       if strcmp( subdirnames{i}, '..' ), continue; end;
+       datafiles = dir( [dirname,'/',subdirnames{i},'/*ab1' ] );
+       if length( datafiles ) > 0; 
+           dirnames = [ dirnames, [dirname,'/',subdirnames{i}] ];
+       end
+       datafiles = dir( [dirname,'/',subdirnames{i},'/*fsa' ] );
+       if length( datafiles ) > 0; 
+           dirnames = [ dirnames, [dirname,'/',subdirnames{i}] ];
+       end
+    end;
+end
+
+
+
+
+return;

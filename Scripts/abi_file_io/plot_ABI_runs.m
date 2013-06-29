@@ -269,17 +269,8 @@ datafile_names = {};
 
 if ~exist( 'suffix' ) suffix = '.ab1'; end;
 
-datafiles = dir( [dirname,'/*ab1'] );
+datafiles = dir( [dirname,'/*',suffix ] );
 datafile_names = get_datafile_names( datafiles, dirname, datafile_names );
-
-% search one more level down.
-list = dir( dirname );  %get info of files/folders in current directory
-isdir_files = [ list.isdir ]; %determine index of directories
-subdirnames = { list(isdir_files).name };
-for i = 3:length( subdirnames );  % don't do first directory names, which are '.' and '..'
-  datafiles = dir( [dirname,'/',subdirnames{i},'/*ab1' ] );
-  datafile_names = get_datafile_names( datafiles, [dirname,'/',subdirnames{i}], datafile_names );
-end;
 
 return;
 
