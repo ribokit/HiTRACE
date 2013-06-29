@@ -71,11 +71,13 @@ peak_shifts = -PEAK_SPREAD:PEAK_SPREAD;
 peak_scores = ones(1,num_lanes);
 if length( data_types ) > 0
   for i = 1:num_lanes
-    if strcmp(data_types{i},'nomod')
+    if i <= length( data_types ) 
+     if  strcmp(data_types{i},'nomod')
       %peak_scores(i) = 0;
-    elseif ( strcmp(data_types{i},'ddTTP') || strcmp(data_types{i},'ddGTP') ...
+     elseif ( strcmp(data_types{i},'ddTTP') || strcmp(data_types{i},'ddGTP') ...
 	     || strcmp(data_types{i},'ddATP') || strcmp(data_types{i},'ddCTP') || strcmp(data_types{i},'ddUTP') )
       %peak_scores(i) = (num_lanes - 2) / 1.5;
+     end
     end
   end
 end
