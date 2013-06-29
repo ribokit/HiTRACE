@@ -1,4 +1,4 @@
-function [perm_seq,perm_mod,dm_seq,dm_mod,r] = make_position_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, seqpos, labels, sequences, offsets, sources, source_names );
+function [perm_seq,perm_mod,dm_seq,dm_mod,r] = make_position_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, seqpos, labels, sequences, offsets, sources, source_names, seq_labels );
 % MAKE_POSITION_DENDROGRAM
 %
 %  [perm_seq_out,perm_mod_out] = make_position_dendrogram( reactivity, subset_seq, subset_mod, seqpos, labels, sequences, offsets, sources, source_names );
@@ -7,8 +7,9 @@ function [perm_seq,perm_mod,dm_seq,dm_mod,r] = make_position_dendrogram( reactiv
 %
 %
 
-if ~exist( 'sources' ) sources = ones(1, length( seqpos ) ); end;
-if ~exist( 'source_names' ) source_names = {}; end;
+if ~exist( 'sources' ) | isempty( sources ), sources = ones(1, length( seqpos ) ); end;
+if ~exist( 'source_names' ) | isempty( source_names ), source_names = {}; end;
+if ~exist( 'seq_labels' ) | isempty( seq_labels ), seq_labels = {}; end;
 clf;
 if ~iscell( sequences ); sequences = { sequences } ; end;
 for i= 1:length(subset_mod); blank_tags{i} = ''; end;
@@ -24,7 +25,6 @@ r = max(remove_offset(reactivity( subset_seq,subset_mod) ), 0);
 %r = 2*r/mean(mean(r));
 [r, norm_factor, r_error] = quick_norm( r, [], reactivity_error( subset_seq, subset_mod) );
 
-
 % new: cap_outliers
 %r = min( max( r, 0 ), 5 );
 
@@ -38,7 +38,7 @@ leaf_order_mod = optimalleaforder( z, dm_mod );
 [h,t,perm_mod] = dendrogram( z, 0,'labels',blank_tags,'colorthreshold',0.3,'orientation','left','reorder',leaf_order_mod ); 
 
 for k = 1:length(h); set(h(k),'linew',2); end;
-set(gca,'Position', [0.01 0.05 0.05 0.80]);
+set(gca,'Position', [0.01 0.025 0.05 0.80]);
 ylim([0.5 length(perm_mod)+0.5] )
 axis off
 xticklabel_rotate
@@ -48,10 +48,14 @@ xticklabel_rotate
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 seqpos_tags = {};
 for i = 1:length(subset_seq); 
-  m = seqpos(subset_seq(i)); 
-  source = sources(subset_seq(i));
-  seqpos_tags{i} = [sequences{ source }( m - offsets( source ) ),num2str(m) ]; 
-  if length( source_names ) > 0; seqpos_tags{i} = [ source_names{source},':',seqpos_tags{i} ]; end;
+  if ~isempty( seq_labels )
+    seqpos_tags{i} = seq_labels{ subset_seq(i) };
+  else
+    m = seqpos(subset_seq(i)); 
+    source = sources(subset_seq(i));
+    seqpos_tags{i} = [sequences{ source }( m - offsets( source ) ), num2str(m) ];   
+    if length( source_names ) > 0; seqpos_tags{i} = [ source_names{source},':',seqpos_tags{i} ]; end;
+  end
 end;
 
 
@@ -83,7 +87,7 @@ ylim( [0.5 length(perm_mod)+0.5] );
 make_lines( [0:length(perm_seq)], 'k', 0.25);
 make_lines_horizontal( [0:length(perm_mod)], 'k', 0.25);
 set(gcf, 'PaperPositionMode','auto','color','white');
-set(gca,'Position', [0.15 0.05 0.80 0.80],'ydir','normal')
+set(gca,'Position', [0.15 0.025 0.80 0.80],'ydir','normal')
 set(gca,'xtick',1:length(perm_seq),'xticklabel',seqpos_tags(perm_seq),'fontweight','bold','fontsize',9 );
 xticklabel_rotate;
 

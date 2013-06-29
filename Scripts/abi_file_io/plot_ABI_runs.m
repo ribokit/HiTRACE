@@ -27,26 +27,21 @@ if ~exist('ymax')
   ymax=2000;
 end
 
-datafiles = dir( [dirname,'/*ab1'] );
-if length( datafiles ) == 0
-% fragment analysis files -- appear to be the same format as ab1
-  datafiles = dir( [dirname,'/*fsa'] ); 
-end
+datafile_names = get_data_files( dirname , '.ab1');
+if length( datafile_names ) == 0,  datafile_names = get_data_files( dirname, '.fsa' ); end;
 
 count = 0;
 
 data_in = {};
-for k = 1:length( datafiles );
- 
-  datafile = datafiles( k ).name;
-  if datafile(1) == '.'; continue;end;
+for k = 1:length( datafile_names );
 
+  datafile = datafile_names{k};
   count= count + 1;
   filenames_in{ count } = datafile( 1:(end-4) ); %remove .ab1 tag.
-  datafile = [dirname,'/',datafile];
   filenames_full{ count } = datafile;
   d = read_abi( datafile );  
   data_in{ count } =  d;
+
 end
 
 %clf; plot( data_in{1}(:,1),'r' ); pause;
@@ -61,7 +56,6 @@ end; % did the files exist?
 % Clarence Cheng, 2013
 % In case of large negative peak in HEX channel due to ROX ladder, use fix_strong_negative script to replace the peak with a linear interpolation around the peak
 % Strategy: detect whether there is a large negative peak; if so, get peak range for flattening; then leakage correct; then flatten the correct range, then return for rest of quick_look (including baseline subtraction) 
-
 for i = 1: length(data_in)
   flatten_range{i} = fix_strong_negativeA(data_in{1,i});
 end
@@ -92,15 +86,13 @@ data_in = data_correct;
 
 data_fix = {};
 for i = 1: length(data_in)
-    data_fix{1,i} = fix_strong_negativeB(data_in{1,i},flatten_range{i});
-    %    figure(i+5); plot(data_in{1,i}(:,2),'b'); hold on; plot(data_fix{1,i}(:,2),'Color',[0 0.5 0]);     %plot uninterpolated and interpolated data
+  data_fix{1,i} = fix_strong_negativeB(data_in{1,i},flatten_range{i});
+  %    figure(i+5); plot(data_in{1,i}(:,2),'b'); hold on; plot(data_fix{1,i}(:,2),'Color',[0 0.5 0]);     %plot uninterpolated and interpolated data
 end
 
 data_in = data_fix;
 
 %%%%%%%
-
-
 %how_many_cols = figure_out_cols( filenames );
 for k = 1:count
   whichwell(k) = figure_out_well(filenames_full{k} );
@@ -268,3 +260,33 @@ for i = 1:length( letters )
 end
 				  
 return
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function datafile_names = get_data_files( dirname, suffix );
+
+datafile_names = {};
+
+if ~exist( 'suffix' ) suffix = '.ab1'; end;
+
+datafiles = dir( [dirname,'/*ab1'] );
+datafile_names = get_datafile_names( datafiles, dirname, datafile_names );
+
+% search one more level down.
+list = dir( dirname );  %get info of files/folders in current directory
+isdir_files = [ list.isdir ]; %determine index of directories
+subdirnames = { list(isdir_files).name };
+for i = 3:length( subdirnames );  % don't do first directory names, which are '.' and '..'
+  datafiles = dir( [dirname,'/',subdirnames{i},'/*ab1' ] );
+  datafile_names = get_datafile_names( datafiles, [dirname,'/',subdirnames{i}], datafile_names );
+end;
+
+return;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function datafile_names = get_datafile_names( datafiles, dirname, datafile_names );
+
+for n = 1:length( datafiles ); 
+  if datafiles(n).name(1) == '.'; continue;end;
+  datafile_names =[  datafile_names, [ dirname, '/', datafiles(n).name ] ]; 
+end;

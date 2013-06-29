@@ -14,6 +14,7 @@ if ~exist( 'ymin')
 end
 if ~exist( 'ymax')
   ymax = 4000;
+  %ymax = min( 4000, length(d) );
 end
 
 window_size = 20;
