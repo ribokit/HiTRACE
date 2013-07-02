@@ -7,6 +7,7 @@ k=0;
 while ~feof(fid)
   k=k+1;
   construct_name = fgetl(fid);
+  construct_name = strrep( construct_name, '"', '' );
   %fprintf(1,'%s\n',construct_name );
   construct_names{k} = construct_name;
 end

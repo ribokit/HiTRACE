@@ -1,7 +1,8 @@
 function [perm_mod,dm,r] = make_modifier_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, seqpos, labels );
 % MAKE_MODIFIER_DENDROGRAM
 %
-% perm_mod = make_modifier_dendrogram( reactivity, subset_seq, subset_mod, seqpos, labels );
+% [perm_mod,dm,r] = make_modifier_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, seqpos, labels );
+
 %
 %  Clustering of deep chemical profiles and a nice big plot.
 %
@@ -34,7 +35,7 @@ z = linkage( dm, 'weighted' );
 leaf_order_mod = optimalleaforder( z, dm );
 [h,t,perm_mod] = dendrogram( z, 0, 'labels',labels( subset_mod),'reorder',leaf_order_mod );
 
-set(gca,'Position', [0.05 0.85 0.95 0.10] )
+set(gca,'Position', [0.05 0.85 0.95 0.10],'fontsize',7 )
 xlim([0.5 length(perm_mod)+0.5]);
 axis off
 xticklabel_rotate

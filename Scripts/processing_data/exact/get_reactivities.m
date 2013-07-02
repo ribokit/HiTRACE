@@ -125,7 +125,6 @@ for k = 1:length( refpos )
   ref_pos_in = [ ref_pos_in, find( seqpos == refpos(k) ) ];
 end
 
-pause;
 %reactivity = reactionProb/mean(mean(reactionProb));
 reactivity       = reactionProb;
 reactivity_error = reactionProb_error;
@@ -136,7 +135,6 @@ if ~isempty( ref_pos_in )
   NORMALIZED = 1;
 end
 
-pause
 
 image( 1:ntrace, seqpos, reactivity * image_scalefactor );
 title( 'Final', 'FontSize', 11, 'FontWeight', 'Bold');

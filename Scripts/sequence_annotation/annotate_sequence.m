@@ -106,7 +106,7 @@ while ~stop_sel
     update_contrast = 0;
     update_ylim = 0;
     
-    title( ['j,l -- zoom. i,k -- up/down. q -- quit. left-click -- select. \newline',...
+    title( ['-,+ : zoom. up/down arrows : up/down. q -- quit. left-click -- select. \newline',...
         'middle button -- erase.', ' r -- reset.', 'x -- auto-assign. ',...
         sprintf(' # of Annotation: %d / %d', length(xsel),length(sequence))]);
     
@@ -129,7 +129,10 @@ while ~stop_sel
         end
     else
         keychar = get(gcf,'CurrentCharacter');
-        
+        if double( keychar ) == 28; keychar = '+'; end; 
+        if double( keychar ) == 29; keychar = '-'; end; 
+        if double( keychar ) == 30; keychar = 'i'; end; 
+        if double( keychar ) == 31; keychar = 'k'; end; 
         switch keychar
             case {'p', 'P'}
                 [name path] = uiputfile('xsel.mat', 'Write xsel to matlab file');
@@ -162,14 +165,16 @@ while ~stop_sel
             case {'e','E'} % doesn't work -- use mouse middle-click to erase.
                 xsel = remove_pick( xsel, xselpick );
                 update_plot = 1;
-            case {'j','J'}
+            case {'j','J','+','='}
+                xselpick =  (ymax + ymin)/2;
                 current_relative_pos =  (xselpick - ymin)/(ymax-ymin);
                 yscale = (ymax - ymin)*0.75;
                 ymin = xselpick - yscale * (current_relative_pos);
                 ymax = xselpick + yscale * ( 1- current_relative_pos);
                 update_plot = 1; % for text labels
                 update_ylim = 1;
-            case {'l','L'}
+            case {'l','L','-','_'}
+                xselpick =  (ymax + ymin)/2;
                 current_relative_pos =  (xselpick - ymin)/(ymax-ymin);
                 yscale = (ymax - ymin)/0.75;
                 ymin = xselpick - yscale * (current_relative_pos);
