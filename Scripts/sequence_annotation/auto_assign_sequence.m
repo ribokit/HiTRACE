@@ -1,4 +1,4 @@
-function [xsel, best_score, msg] = auto_assign_sequence( image_x, sequence, offset, area_pred, ideal_spacing, input_bounds, PLOT_STUFF, data_types )
+function [xsel, best_score, msg] = auto_assign_sequence( image_x, sequence, area_pred, ideal_spacing, input_bounds, data_types )
 % AUTO_ASSIGN_SEQUENCE: (still experimental) automatic assignment of bands, given expected locations of marks
 %
 % [xsel, best_score, msg] = auto_assign_sequence( image_x, sequence, offset, area_pred, ideal_spacing, input_bounds, PLOT_STUFF, data_types )
@@ -6,12 +6,10 @@ function [xsel, best_score, msg] = auto_assign_sequence( image_x, sequence, offs
 %
 %  image_x        = matrix of aligned electrophoretic traces.
 %  sequence       = sequence corresponding to each band [from top to bottom! may be reverse of actual sequence]
-%  offset         = [NO LONGER IN USE -- SHOULD REMOVE!]
 %  area_pred      = strength of bands expected at each position [in a range from 0 to 1 for no band to visible band]
 %  ideal_spacing  = [optional] peak-to-peak spacing. [default 0 will trigger estimation of ideal_spacing from auto correlation function]
 %  input_bounds   = [optional] start band position. If given, the last band position. If number of position corresponds to sequence size, 
 %                     the scripts will not reassign sequence -- will just compute score. 
-%  PLOT_STUFF     = [NO LONGER IN USE -- SHOULD REMOVE!]
 %  data_types     = [optional] cell of data type strings [e.g., {'DMS','ddATP', etc.} -- was used to upweight no mod lanes, and
 %                     to downweight reference ladders, but this is not the case anymore].
 %
@@ -20,7 +18,6 @@ function [xsel, best_score, msg] = auto_assign_sequence( image_x, sequence, offs
 
 if nargin == 0;  help( mfilename ); return; end;
 
-if ~exist('PLOT_STUFF','var'), PLOT_STUFF = 1; end
 [num_pixels, num_lanes] = size( image_x );
 if ~exist('ideal_spacing','var') | isempty(ideal_spacing)  | ideal_spacing == 0
 
