@@ -1,10 +1,10 @@
 function hitrace_test()
 addpath(genpath(strcat(pwd,'/../')));
 
-sample_dirs = {'sample1', ...
-    'sample2', ...
-    'sample3', ...
-    'sample4'};
+sample_dirs = {{'sample1'}, ...
+    {'sample2/1_data', 'sample2/2_nomod_ladder'}, ...
+    {'sample3'}, ...
+    {'sample4'}};
 
 sameple_seq = { 'GGAAAGCUGACAGGAUAUGGGCAUGACAAAAGUCAUGCGCUGGCUACAAAAGUAGGCAGCCUAGAUCAAAAGAUCUAGCCAGAAGGGUCAGCAAAGAAACAACAACAACAAC', ...
     'GGCAGGACGAUGUUGCUAUGAAUGUAUAGUACGACAGGAUAUUUGUUAUUAAAGAAGGGUCGCCGCGUACACCUAUGCGGACAUCGUUAAAGAAACAACAACAACAAC', ...
@@ -16,28 +16,16 @@ sample_str = { '.....((((((......((((((((((....)))))))((((.((((....)))).))))((((
     '.....((((((......((((((((((....)))))))((((.((((....)))).))))(((((((....)))))))))).....))))))....................', ...
     '.....((((......(((.((((.(((....))).(((....))).)))).((((.(((....))).(((....))).)))).))).....))))....................'};
 
+sample_type = {'SHAPE', 'SHAPE', 'DMS', 'DMS', 'nomod', 'ddTTP'};
 
 tic;
 for i = 1:length(sample_dirs)
-    a = dir(sample_dirs{i});
-    nameFolds = [a(:).isdir];
-    nameFolds = {a(nameFolds).name};
+    [d{i}, da{i}] = quick_look(sample_dirs{i});
     
-    nameFolds(ismember(nameFolds,{'.','..'})) = [];
-    
-    if isempty(nameFolds)
-        [~, da] = quick_look(sample_dirs{i});
-    else
-        for j = 1:length(nameFolds)
-            nameFolds{j} = [sample_dirs{i} ,'/', nameFolds{j}];
-        end
-        [~, da] = quick_look(nameFolds);
-    end
-    
-    corr_test = zeros(size(da,2));
-    for j = 1:size(da,2)
-        for k = 1:size(da,2)
-            corr_test(j,k) = corr2(da(:,j),da(:,k));
+    corr_test = zeros(size(da{i},2));
+    for j = 1:size(da{i},2)
+        for k = 1:size(da{i},2)
+            corr_test(j,k) = corr2(da{i}(:,j),da{i}(:,k));
         end
     end
     
@@ -46,5 +34,7 @@ for i = 1:length(sample_dirs)
     figure;
     bar(corr_test);
     title(sprintf('sample %d - mean %f',i, mean(corr_test)));
+    
+    
 end
 toc;
