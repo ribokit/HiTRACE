@@ -13,12 +13,24 @@ reactivity_shift = reactivity - repmat( reactivity_mean, size(reactivity,1), 1 )
 for i = 1:N
   for j = 1:N   
     weights = 1./( reactivity_error(:,i).^2 + reactivity_error(:,j).^2 );
+       
+    
     dm(i,j) = sum( weights .* reactivity_shift(:,i) .* reactivity_shift(:,j) );
     %dm(i,j) = sum( weights .* reactivity_shift(:,i) .* reactivity(:,j) );
     dm(i,j) = dm(i,j) / sqrt( sum( weights .* reactivity_shift(:,i).^2) );
     dm(i,j) = dm(i,j) / sqrt( sum( weights .* reactivity_shift(:,j).^2) );    
+  
+  
+    if isnan( dm(i,j) ); 
+      [i j]
+      reactivity(:,j)
+      reactivity_shift(:,j)
+      error( 'isnan!!' );
+    end;
+
   end
 end
+
 
 dm = 1 - dm;
 for i = 1:N;

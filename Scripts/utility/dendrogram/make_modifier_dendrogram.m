@@ -1,11 +1,17 @@
-function [perm_mod,dm,r] = make_modifier_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, seqpos, labels );
+function [perm_mod,dm,r] = make_modifier_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, labels, seqpos_tags, USE_CORRELATION );
 % MAKE_MODIFIER_DENDROGRAM
 %
-% [perm_mod,dm,r] = make_modifier_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, seqpos, labels );
-
+% [perm_mod,dm,r] = make_modifier_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, labels, seqpos_tags );
+%
 %
 %  Clustering of deep chemical profiles and a nice big plot.
 %
+
+if (nargin < 1); help( mfilename ); return; end;
+  
+if ~exist( 'seqpos_tags' ) | isempty( seqpos_tags ) seqpos_tags = [1:size( reactivity,1) ]; end;
+if ~iscell( seqpos_tags ) & isnumeric( seqpos_tags ) seqpos = seqpos_tags; clear seqpos_tags; end;
+if ~exist( 'USE_CORRELATION' ) USE_CORRELATION = 0; end;
 clf;
 
 %r = quick_norm( max(reactivity( subset_seq,subset_mod),0) );
@@ -20,12 +26,14 @@ end
 % new: cap_outliers
 %r = min( max( r, 0 ), 5 );
 
-dm = pdist( r' ,'correlation' );
 %dm = pdist( r' ,'mydist' );
 %dm = pdist( r' ,'distcorr_wrapper' );
-
 %dm = get_chi_squared_dm( r, r_error );
-dm = get_weighted_correlation_coefficient( r, r_error );
+if USE_CORRELATION
+  dm = pdist( r' ,'correlation' );
+else
+  dm = get_weighted_correlation_coefficient( r, r_error );
+end
 
 %z = linkage( dm, 'ward' );
 %z = linkage( dm, 'average' );
@@ -41,16 +49,26 @@ axis off
 xticklabel_rotate
 
 subplot(2,1,2);
-image([1:length(perm_mod)], seqpos(subset_seq), 40*r(:,perm_mod) )
+image([1:length(perm_mod)], [1:length(subset_seq)], 40*r(:,perm_mod) )
 box off
-gp = find( mod(seqpos,10) == 0 );
-set(gca,'tickdir','in','ygrid','on','ticklength',[ 0 0],'ytick',seqpos(gp));
+set(gca,'tickdir','in','ygrid','on','ticklength',[ 0 0] );
 make_lines([1:length(perm_mod)] );
 make_colormap;
 set(gcf, 'PaperPositionMode','auto','color','white');
-set(gca,'Position', [0.05 0.02 0.95 0.63] )
+set(gca,'Position', [0.05 0.02 0.95 0.73] )
 %print( '-depsc2','RhijuWinners_dendrogramALL_modifiers.eps');
 
 set(gcf,'Pointer','fullcross');
 
 dm = squareform(dm);
+
+if exist( 'seqpos_tags' ); 
+  set(gca,'ytick',seqpos( subset_seq ), 'yticklabel', seqpos_tags( subset_seq ),'fontsize',6,'ygrid','off' );
+  gp = find( mod( seqpos, 10 ) == 0 );
+  make_lines_horizontal( seqpos(gp), 'k',0.25,':');
+else 
+  gp = find( mod(seqpos(subset_seq),10) == 0 );
+  set(gca,'ytick',subset_seq(gp),'yticklabel',seqpos(subset_seq(gp)) );
+end
+
+
