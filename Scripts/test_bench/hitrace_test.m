@@ -53,25 +53,17 @@ for i = 1:length(sample_dirs)
     xsel{i} = auto_assign_sequence(d{i}, sample_seq{i}(1:end-20), area_pred_reverse, 0, [], sample_type{i});    
     area_peak{i} = fit_to_gaussians( d{i}, xsel{i} );
     
-    corr_area = zeros(size(da{i},2));
-    corr_area_org = zeros(size(da_org{i},2));
+    corr_area = zeros(1,size(da{i},2));
     for j = 1:size(da{i},2)
-        for k = 1:size(da{i},2)
-            corr_area(j,k) = corr2(area_peak{i}(:,j),area_peak{i}(:,k));
-            corr_area_org(j,k) = corr2(area_peak_org{i}(:,j),area_peak_org{i}(:,k));
-        end
+        corr_area(j) = corr2(area_peak{i}(:,j),area_peak_org{i}(:,j));
     end
     
-    corr_area = median(corr_area);
-    corr_area_org = median(corr_area_org);
-    
     corr_area_mean(i) = mean(corr_area);
-    corr_area_mean_org(i) = mean(corr_area_org);
 end
 toc;
 
 fprintf(1,'Report... \n\n');
 for i = 1:length(sample_dirs)
     fprintf(1,'Sample %d Align Correlation Coeff. - current code: %f, original code: %f\n', i, corr_mean(i), corr_mean_org(i)); 
-    fprintf(1,'Sample %d Fitting Area Correlation Coeff. - current code: %f, original code: %f\n\n', i, corr_area_mean(i), corr_area_mean_org(i)); 
+    fprintf(1,'Sample %d Fitting Area Correlation Coeff. to original code - %f\n\n', i, corr_area_mean(i)); 
 end
