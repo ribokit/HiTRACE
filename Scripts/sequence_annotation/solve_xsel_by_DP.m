@@ -90,8 +90,9 @@ for n = 1:num_lanes
   % this peak finder takes some time...
   peaks = getpeaks( I_data(:,n), 'THRESHOLD', min([ mean(I_data(:,n)), median(I_data(:,n)), max(I_data(:,n))*0.05 ]) );
   peaks = intersect( peaks, ok_points );
-  for k = peaks
-    peak_bonus_matrix( peak_shifts+k, n ) = peak_bonus_matrix( peak_shifts+k, n ) - peak_scores(n);
+  for m = 1:length(peaks)
+    peak_pos = peaks(m);
+    peak_bonus_matrix( peak_shifts+peak_pos, n ) = peak_bonus_matrix( peak_shifts+peak_pos, n ) - peak_scores( n );
   end
 end
 peak_bonus = sum(peak_bonus_matrix, 2);

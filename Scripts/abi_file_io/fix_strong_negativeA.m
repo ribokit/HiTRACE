@@ -32,6 +32,8 @@ function [range] = fix_strong_negativeA(data)
         elseif peakindex > peakindex2     %if maximum and second-maximum peaks are less than 30 sec apart and max is to the right of second max, bias asymmetric framing to the left
             frame_pos = [local_peaks(peakindex,2)-25; local_peaks(peakindex,2)+11];
         end
+        frame_pos(1) = max( 1, frame_pos(1) );
+        frame_pos(2) = min( size( data, 1 ), frame_pos(2) );
         xi = frame_pos(1):1:frame_pos(2);    %define range to flatten by expanding around time point of negative peak by 15 ms on either side
         range = xi;
     else

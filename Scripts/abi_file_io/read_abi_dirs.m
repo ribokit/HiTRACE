@@ -29,7 +29,7 @@ count = 0;
 
 if ~exist( 'dye_names_full','var' ) dye_names_full = {}; end;
 
-if length( dirnames) == 1; dirnames = check_for_subdirs( dirnames{1} ); end
+dirnames = check_for_subdirs( dirnames ); 
 
 for j = 1:length( dirnames )
   % This script calls read_abi.m which has the actual file format.
@@ -53,9 +53,18 @@ clear count;
 clear j; clear k;
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function dirnames_out = check_for_subdirs( dirnames );
+
+dirnames_out = {};
+for k = 1:length( dirnames )
+  dirnames_out = [ dirnames_out, check_for_subdirs_in_one_directory( dirnames{k} ) ];
+end
+
+return;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function dirnames = check_for_subdirs( dirname );
+function dirnames = check_for_subdirs_in_one_directory( dirname );
 
 datafile_names = {};
 

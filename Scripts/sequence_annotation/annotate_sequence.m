@@ -55,6 +55,9 @@ else
     sequence = sequence_full;
 end
 
+% capitalize the sequence...
+sequence = upper( sequence );
+
 % fill out area_pred, based on data_types.
 numlanes = size(d_align,2);
 area_pred = generate_area_pred(sequence, structure, offset, data_types, numlanes);
@@ -129,11 +132,15 @@ while ~stop_sel
         end
     else
         keychar = get(gcf,'CurrentCharacter');
-        if double( keychar ) == 28; keychar = '+'; end; 
-        if double( keychar ) == 29; keychar = '-'; end; 
-        if double( keychar ) == 30; keychar = 'i'; end; 
-        if double( keychar ) == 31; keychar = 'k'; end; 
-        switch keychar
+        if double( keychar ) == 28; keychar = '+'; end; % left arrow
+        if double( keychar ) == 29; keychar = '-'; end; % right arrow
+        if double( keychar ) == 30; keychar = 'i'; end; % up arrow
+        if double( keychar ) == 31; keychar = 'k'; end; % down arrow
+
+	%if double( keychar ) == 33; keychar = 'w'; end; % page up
+	%f double( keychar ) == 34; keychar = 's'; end; % page down
+
+	switch keychar
             case {'p', 'P'}
                 [name path] = uiputfile('xsel.mat', 'Write xsel to matlab file');
                 if(name)
@@ -165,8 +172,8 @@ while ~stop_sel
             case {'e','E'} % doesn't work -- use mouse middle-click to erase.
                 xsel = remove_pick( xsel, xselpick );
                 update_plot = 1;
-            case {'j','J','+','='}
-                xselpick =  (ymax + ymin)/2;
+	    case {'j','J','+','='}
+                %xselpick =  (ymax + ymin)/2;
                 current_relative_pos =  (xselpick - ymin)/(ymax-ymin);
                 yscale = (ymax - ymin)*0.75;
                 ymin = xselpick - yscale * (current_relative_pos);
@@ -174,7 +181,7 @@ while ~stop_sel
                 update_plot = 1; % for text labels
                 update_ylim = 1;
             case {'l','L','-','_'}
-                xselpick =  (ymax + ymin)/2;
+                %xselpick =  (ymax + ymin)/2;
                 current_relative_pos =  (xselpick - ymin)/(ymax-ymin);
                 yscale = (ymax - ymin)/0.75;
                 ymin = xselpick - yscale * (current_relative_pos);
@@ -191,6 +198,18 @@ while ~stop_sel
                 yscale = (ymax - ymin);
                 ymin = ymin + yscale*0.05;
                 ymax = ymax + yscale*0.05;
+                update_plot = 1; % for text labels
+                update_ylim = 1;
+            case {'w','W'}
+                yscale = (ymax - ymin);
+                ymin = ymin - yscale;
+                ymax = ymax - yscale;
+                update_plot = 1; % for text labels
+                update_ylim = 1;
+            case {'s','S'}
+                yscale = (ymax - ymin);
+                ymin = ymin + yscale;
+                ymax = ymax + yscale;
                 update_plot = 1; % for text labels
                 update_ylim = 1;
             case {'b', 'B'}
