@@ -247,9 +247,8 @@ while ~stop_sel
 		  area_pred_reverse = area_pred(end:-1:1,:); % should fix auto_assign to reverse.
 		  fprintf( 'Running auto-assign. This might take a minute.\n');
 
-		  xsel = auto_assign_sequence( d_align, sequence, area_pred_reverse, peak_spacing, input_bounds, 0, data_types );
-		  %xsel = auto_assign_sequence_OLD( d_align, sequence, offset, area_pred_reverse, peak_spacing, input_bounds, 0, data_types );
-
+		  xsel = auto_assign_sequence( d_align, sequence, area_pred_reverse, peak_spacing, input_bounds, data_types );
+	      
 		  xsel = reverse_sort( xsel ); % should fix auto_assign to reverse.
                 end
                 update_plot = 1;

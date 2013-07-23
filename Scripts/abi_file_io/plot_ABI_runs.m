@@ -48,6 +48,7 @@ end
 
 if length( data_in ) == 0; 
   fprintf( 'WARNING!!! Could not read .ab1 files from: %s\n', dirname );
+  error( ['no files in ', dirname ] );
   return; 
 end; % did the files exist?
 

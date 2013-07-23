@@ -157,7 +157,7 @@ numfiles = length( data_all );
 filenames_all;
 
 if ~exist( 'trace_subset','var' ) || isempty( trace_subset);  
-  trace_subset = 1 : length( data_all );
+  trace_subset = [ 1 : length( data_all ) ];
 else
   subset_pos = 0; % if user asks for a subset, it will be hard to define boundaries between subsets.
 end

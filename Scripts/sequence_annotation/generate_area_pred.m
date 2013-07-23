@@ -24,7 +24,8 @@ if nargin == 0; help( mfilename ); return; end;
 if isempty( data_types ) % no input.
     area_pred = zeros( length(sequence), numlanes );
 elseif iscell( data_types ) % input is a matrix
-    for m = length( data_types )+1 : numlanes; data_types{m} = ''; end; % pad to number of lanes.
+  if length(data_types ) > numlanes; fprintf( 'WARNING! data_type has more elements than number of data traces!\n' ); end;
+  for m = length( data_types )+1 : numlanes; data_types{m} = ''; end; % pad to number of lanes.
     area_pred = get_area_pred( sequence, data_types, offset, structure );
 else
     if size( data_types, 1 ) == length( sequence )

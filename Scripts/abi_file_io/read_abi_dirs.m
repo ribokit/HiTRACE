@@ -58,8 +58,11 @@ function dirnames_out = check_for_subdirs( dirnames );
 
 dirnames_out = {};
 for k = 1:length( dirnames )
-  dirnames_out = [ dirnames_out, check_for_subdirs_in_one_directory( dirnames{k} ) ];
+  some_dirnames = check_for_subdirs_in_one_directory( dirnames{k} );
+  if length( some_dirnames ) == 0; error( ['Did not find ab1/.fsa files in: ', dirnames{k}]); end;
+  dirnames_out = [ dirnames_out, some_dirnames];
 end
+
 
 return;
 

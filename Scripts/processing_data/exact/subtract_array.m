@@ -1,7 +1,7 @@
-function  [subtracted, subtracted_err ] = subtract_array( signal, background, signal_err, background_err, seqpos, imagescalefactor )
+function  [subtracted, subtracted_err ] = subtract_array( signal, background, signal_err, background_err, seqpos, image_scalefactor )
 % SUBTRACT_ARRAY: Subtracts two arrays, and also progates errors. Useful for background subtaction.
 %
-%  [subtracted, subtracted_err ] = subtract_array( signal, background, signal_err, background_err, seqpos, imagescalefactor )
+%  [subtracted, subtracted_err ] = subtract_array( signal, background, signal_err, background_err, seqpos, image_scalefactor )
 %
 % Inputs:
 %  signal     = array with signal areas/reactivities.
@@ -11,7 +11,7 @@ function  [subtracted, subtracted_err ] = subtract_array( signal, background, si
 %  signal_err     = array with errors on signal
 %  background_err = array with errors on background
 %  seqpos         = residue numberings that go with positions [for plotting; default is 0, 1, 2,...].
-%  imagescalefactor = factor by which to multiply array by plotting [default is calculated based on mean intensity]
+%  image_scalefactor = factor by which to multiply array by plotting [default is calculated based on mean intensity]
 %
 % (C) R. Das, 2013.
 %
@@ -26,13 +26,13 @@ subtracted     = signal - background;
 subtracted_err = sqrt( signal_err.^2 + background_err.^2 );
   
 ntrace = size( signal, 2 );
-if ~exist( 'imagescalefactor', 'var' ); 
+if ~exist( 'image_scalefactor', 'var' ); 
   image_scalefactor = 40/mean(mean( subtracted ) );
 end;
 
 image( 1:ntrace, seqpos, subtracted * image_scalefactor );
 title( 'Background Corrected', 'FontSize', 11, 'FontWeight', 'Bold');
-make_lines;
+if ( ntrace < 100 ) make_lines; end
 
 fprintf('Press any key to continue ...\n'); 
 pause;

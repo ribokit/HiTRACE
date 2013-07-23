@@ -1,7 +1,7 @@
 function [xsel, best_score, msg] = auto_assign_sequence( image_x, sequence, area_pred, ideal_spacing, input_bounds, data_types )
 % AUTO_ASSIGN_SEQUENCE: (still experimental) automatic assignment of bands, given expected locations of marks
 %
-% [xsel, best_score, msg] = auto_assign_sequence( image_x, sequence, offset, area_pred, ideal_spacing, input_bounds, PLOT_STUFF, data_types )
+% [xsel, best_score, msg] = auto_assign_sequence( image_x, sequence, offset, area_pred, ideal_spacing, input_bounds, data_types )
 %
 %
 %  image_x        = matrix of aligned electrophoretic traces.

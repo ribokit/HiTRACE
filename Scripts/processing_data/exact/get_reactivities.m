@@ -68,16 +68,16 @@ seqpos_out = [];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ( ~isempty( diluted ) &&  ~all( size( undiluted ) == size( diluted )) ); 
-    fprintf( 'Mismatch in size of undiluted and diluted.\n'); 
-    return;  
+    error( 'Mismatch in size of undiluted and diluted.\n'); 
 end;
 if ( ~isempty( diluted_error ) &&  ~all( size( diluted ) == size( diluted_error )) ); 
-    fprintf( 'Mismatch in size of diluted and diluted_error.\n'); 
-    return;  
+    error( 'Mismatch in size of diluted and diluted_error.\n'); 
 end;
 if ( ~isempty( undiluted_error ) &&  ~all( size( undiluted ) == size( undiluted_error )) ); 
-    fprintf( 'Mismatch in size of undiluted and undiluted_error.\n'); 
-    return;  
+    error( 'Mismatch in size of undiluted and undiluted_error.\n'); 
+end;
+if ( length( bkg_col ) > 1  &&  ~( length( bkg_col) == size( diluted, 2 )) ); 
+    error( 'Mismatch in size of bkg_col and data.\n'); 
 end;
 nres   = size( undiluted, 1);
 ntrace = size( undiluted, 2 );
@@ -114,7 +114,7 @@ image_scalefactor = 2000;
 BACKGROUND_SUBTRACTED = 0;
 if bkg_col(1) > 0;
   if length( bkg_col ) == 1; bkg_col = bkg_col * ones( ntrace, 1 ); end;
-  [reactionProb, reactionProb_err ] = subtract_array( attenuation_corrected, attenuation_corrected(:,bkg_col), attenuation_corrected_error, attenuation_corrected_error(:,bkg_col), seqpos );
+  [reactionProb, reactionProb_err ] = subtract_array( attenuation_corrected, attenuation_corrected(:,bkg_col), attenuation_corrected_error, attenuation_corrected_error(:,bkg_col), seqpos, image_scalefactor );
   BACKGROUND_SUBTRACTED = 1;
 end
 
@@ -138,7 +138,7 @@ end
 
 image( 1:ntrace, seqpos, reactivity * image_scalefactor );
 title( 'Final', 'FontSize', 11, 'FontWeight', 'Bold');
-make_lines;
+if ( ntrace < 100 ) make_lines; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 REMOVED_FULL_EXTENSION_SITE = 0;
