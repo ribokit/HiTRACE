@@ -22,7 +22,7 @@ if length( input_bounds ) >= 2; END_POS   = round(input_bounds(end)); end;
 MIN_SEP = round(ideal_spacing/2); % this doesn't make sense -- optimal_SEP = ideal_spacing/3?
 MAX_SEP = round(ideal_spacing*1.5);
 
-SPACING_WEIGHT = 0.005; %0.1; % 0.1;
+SPACING_WEIGHT = 0.05; % 0.1;
 XSEL_GIVEN = 0;
 if length( input_bounds ) == N; 
   XSEL_GIVEN = 1;
