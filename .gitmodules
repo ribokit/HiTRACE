@@ -1,0 +1,6 @@
+[submodule "Scripts/xternal/rdatkit"]
+	path = Scripts/xternal/rdatkit
+	url = https://github.com/hitrace/rdatkit.git
+[submodule "Scripts/xternal/lifft"]
+	path = Scripts/xternal/lifft
+	url = https://github.com/hitrace/lifft.git
