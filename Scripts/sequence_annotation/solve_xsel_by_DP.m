@@ -1,8 +1,23 @@
-function [ xsel_fit, best_score ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds, data_types )
-% [ xsel_fit, best_score ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds, data_types );
+function [ xsel_fit, best_score, score_profiles ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds, data_types )
+% [ xsel_fit, best_score, score_profiles ] = solve_xsel_by_DP( I_data, alpha_ideal, sequence_at_bands, ideal_spacing, input_bounds, data_types );
 %
-% Check autoassign_notes_on_leastsquares_DP_rhiju.pdf  (checked into HiTRACE repository in same directory as this script)
-% for description of the 'scorefunction'.
+% Inputs
+%   I_data            = input data
+%   alpha_ideal       = 'ideal' band intensities in each lane.
+%   sequence_at_bands = RNA sequence, in order of appearance.
+%   ideal_spacing     = target band-to-band spacing 
+%   input_bounds      = [Optional] positions of top band and bottom band. (Default is [], unknown.)
+%   data_types        = [Optional] labels for each lane; script may upweight agreement 
+%                         in ddATP, ddCTP, ddUTP, ddGTP ladders.
+%
+% Outputs
+%   xsel_fit          = optimal band positions
+%   best_score        = top score from dynamic programming fit.
+%   score_profiles    = how the top overall score varies with the position of each band (optimized over positions 
+%                         of all other bands).
+% 
+% Check autoassign_notes_on_leastsquares_DP_rhiju.pdf  (checked into HiTRACE repository in same directory 
+% as this script) for description of the 'scorefunction'.
 %
 % (C) R. Das 2010-2013
 
@@ -16,6 +31,7 @@ N = size( alpha_ideal, 1 );
 [num_pixels, num_lanes] = size( I_data );
 x = (1:num_pixels)';
 
+if ~exist( 'input_bounds', 'var' ) input_bounds = []; end;
 if length( input_bounds ) >= 1; START_POS = round(input_bounds(1)); end;
 if length( input_bounds ) >= 2; END_POS   = round(input_bounds(end)); end;
 
@@ -44,6 +60,10 @@ for n = 1:(N-1);
   end
 end
 
+beta_SEP_reverse = [SPACING_WEIGHT; flipud( beta_SEP(2:end) ) ];
+optimal_SEP_reverse = [ideal_spacing; flipud( optimal_SEP(2:end) ) ];
+
+
 % We need to normalize I_data, right?
 %I_data = I_data/mean(mean(I_data));
 %I_data = (max(I_data,0)/5).^0.5;
@@ -62,21 +82,25 @@ for i = 1:MAX_SEP
   g(i) = sum( ideal_gaussian .* get_gaussian(x, xmid+i, peak_width ) );
 end
 
+
 % Set up a 'peak bonus'
+UPWEIGHT_SEQUENCING_LANES = 0;
+
 PEAK_WEIGHT = 1; % 1;
 PEAK_MATRIX_WEIGHT = 0; % 1;
 PEAK_SPREAD = round(peak_width/2); % number of pixels
 ok_points = (PEAK_SPREAD+1):(num_pixels-PEAK_SPREAD);
 peak_shifts = -PEAK_SPREAD:PEAK_SPREAD;
 peak_scores = ones(1,num_lanes);
-if length( data_types ) > 0
+if exist( 'data_types', 'var' ) & length( data_types ) > 0
   for i = 1:num_lanes
     if i <= length( data_types ) 
      if  strcmp(data_types{i},'nomod')
-      %peak_scores(i) = 0;
-     elseif ( strcmp(data_types{i},'ddTTP') || strcmp(data_types{i},'ddGTP') ...
-	     || strcmp(data_types{i},'ddATP') || strcmp(data_types{i},'ddCTP') || strcmp(data_types{i},'ddUTP') )
-      %peak_scores(i) = (num_lanes - 2) / 1.5;
+       %peak_scores(i) = 0;
+     elseif ( UPWEIGHT_SEQUENCING_LANES & ...
+	      (strcmp(data_types{i},'ddTTP') || strcmp(data_types{i},'ddGTP') ...
+	     || strcmp(data_types{i},'ddATP') || strcmp(data_types{i},'ddCTP') || strcmp(data_types{i},'ddUTP')) )
+       peak_scores(i) = (num_lanes - 2) / 1.5;
      end
     end
   end
@@ -106,12 +130,67 @@ I_data_fft = fftn( I_data, [n_fft_row num_lanes]);
 f = real( ifft2( gaussian_fft .* I_data_fft ) );
 f = f( xmid + (0:num_pixels-1), : );
 
-
 %figure; hold on; plot(I_data(:,1),'r');plot(I_data(:,2),'g');plot(I_data(:,3),'b');plot(I_data(:,5),'k');plot(peak_bonus,'k');
 %figure; hold on; plot(f(:,1),'r');plot(f(:,2),'g');plot(f(:,3),'b');plot(f(:,5),'k');plot(peak_bonus,'k');
+CHECK_NUMERIC = 0;
+
+[ D, prev_pos_best, D_self, I_data_2, I_pred2_DP, I_pred_data_DP ] = fill_DP_matrix( I_data, f, alpha_ideal, g, g0, peak_bonus, peak_bonus_matrix, MIN_SEP, MAX_SEP, optimal_SEP, beta_SEP, PEAK_WEIGHT, PEAK_MATRIX_WEIGHT, START_POS, END_POS, XSEL_GIVEN, CHECK_NUMERIC );
+%plot( D(:,N ) )
+
+START_POS_reverse = 0; END_POS_reverse = 0;
+if ( END_POS > 0 ); START_POS_reverse = num_pixels - END_POS + 1; end;
+if ( START_POS > 0 ); END_POS_reverse = num_pixels - START_POS + 1; end;
+[ D_reverse, prev_pos_best_reverse, D_self_reverse ] = fill_DP_matrix( flipud( I_data ), flipud( f ), flipud( alpha_ideal ), g, g0, flipud( peak_bonus ), flipud( peak_bonus_matrix ), MIN_SEP, MAX_SEP, optimal_SEP_reverse, beta_SEP_reverse, PEAK_WEIGHT, PEAK_MATRIX_WEIGHT, START_POS_reverse, END_POS_reverse, XSEL_GIVEN, CHECK_NUMERIC );
+%hold on; plot( [num_pixels:-1:1], D_reverse(:,N), 'r' ); hold off
+
+% check on optimal values -- should agree.
+%if ( START_POS > 0 & END_POS > 0 )
+%  D( END_POS, N )
+%  D_reverse( END_POS_reverse, N )
+%else
+%min( D(:,N) )
+%min( D_reverse(:,N) )
+%end
+
+CHECK_SELF = 0;
+if CHECK_SELF; check_self_agreement( D_self, D_self_reverse ); end;
+
+score_profiles = get_score_profiles_from_forward_reverse( D, D_reverse, D_self, I_data_2);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Backtrack
+xsel_fit = [];
+[best_score, xsel_fit(N) ] = min( D(:,N) );
+
+if ( END_POS > 0 ); xsel_fit(N) = END_POS; end;
+
+best_score = D( xsel_fit(N), N );
+fprintf( 'Found best score: %8.1f\n', best_score );
+
+for n = (N-1) : -1 : 1
+  xsel_fit(n) = prev_pos_best( xsel_fit(n+1), n+1 );
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% visual feedback & cross checks
+I_pred = get_Ipred(alpha_ideal, xsel_fit,x,peak_width); 
+
+if false, show_DP_matrix( D,xsel_fit); end;
+if false, show_fit_matrix( I_data, I_pred, xsel_fit, alpha_ideal, peak_bonus_matrix ); end;
+if CHECK_NUMERIC, do_numerical_checks( I_data, I_pred, alpha_ideal, xsel_fit, f, g, g0, I_data_2, I_pred2_DP, I_pred_data_DP ); end
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [ D, prev_pos_best, D_self, I_data_2, I_pred2_DP, I_pred_data_DP ] = fill_DP_matrix( I_data, f, alpha_ideal, g, g0, peak_bonus, peak_bonus_matrix, MIN_SEP, MAX_SEP, optimal_SEP, beta_SEP, PEAK_WEIGHT, PEAK_MATRIX_WEIGHT, START_POS, END_POS, XSEL_GIVEN, CHECK_NUMERIC );
+
+N = size( alpha_ideal, 1 );
+[num_pixels, num_lanes] = size( I_data );
+x = (1:num_pixels)';
 
 I_data_2 = sum( sum( I_data.^2 ) );
 D = nan * ones( num_pixels, N );
+D_self = D;
 I_pred_data_DP = nan * ones( num_pixels, N );
 I_pred2_DP = nan * ones( num_pixels, N );
 prev_pos_best = nan * ones( size(D) ); 
@@ -120,7 +199,7 @@ prev_pos_best = nan * ones( size(D) );
 % Initialize matrix.
 % I_data^2 + I_pred^2 - 2 * I_data*I_pred
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-start_vals = I_data_2  +   sum(alpha_ideal(1,:).^2) * g0  -  2 * alpha_ideal(1,:) * f(x,:)' + PEAK_WEIGHT*peak_bonus';
+start_vals = I_data_2  +   sum(alpha_ideal(1,:).^2) * g0  -  2 * alpha_ideal(1,:) * f(x,:)' + PEAK_WEIGHT * num_lanes * peak_bonus';
 
 % first peak position.
 if ( START_POS > 0 ) % only one value filled.
@@ -137,15 +216,13 @@ I_pred2_DP( :,1) = sum(alpha_ideal(1,:).^2) * g0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % used for calculating peak^2 [for predicted profiles]
 sum_n = sum(alpha_ideal.^2, 2);
+D_overlap1 = sum_n * g0;
 % used for calculating peak-peak overlap [for predicted profiles]
 overlap_n_nminus1 = sum(alpha_ideal .* [zeros(1,num_lanes); alpha_ideal(1:(end-1),:)], 2); 
-D_overlap1 = sum_n * g0;
 D_overlap2 = 2 * overlap_n_nminus1;
 
 min_pos_raw = 0;
 max_pos_raw = num_pixels - sum(optimal_SEP) + optimal_SEP(1);
-
-CHECK_NUMERIC = 0;
 
 for n = 2:N
   
@@ -153,7 +230,7 @@ for n = 2:N
   
   min_pos_raw = min_pos_raw + optimal_SEP(n-1);
   max_pos_raw = max_pos_raw + optimal_SEP(n);
-    
+      
   min_pos = floor(min_pos_raw);
   reasonable_pixel_range = [ min_pos : floor(max_pos_raw) ];  
   
@@ -166,10 +243,14 @@ for n = 2:N
     
   D_datapred_peak_peakpred = nan * ones( 1, num_pixels );
   D_datapred_peak_peakpred( reasonable_pixel_range ) = ...
+      + D_overlap1(n) ...
       - 2 * f(reasonable_pixel_range,:) * alpha_ideal(n,:)' ... % score for Idata*Ipred
       + PEAK_WEIGHT * num_lanes * peak_bonus(reasonable_pixel_range) ... % bonus for being at a peak location.
       + PEAK_MATRIX_WEIGHT * num_lanes * peak_bonus_matrix(reasonable_pixel_range,:) * alpha_ideal(n,:)'; % score for peak*Ipred
-    
+
+  % useful later in forward/backward calculation to estimate uncertainties at each band position n.
+  D_self( :, n ) = D_datapred_peak_peakpred;
+  
   % following could probably be sped up as a meshgrid calculation, or at least parallelized.
   for i = 1:length(reasonable_pixel_range)
     
@@ -179,14 +260,15 @@ for n = 2:N
     prev_pos = [prev_pos_min(i) : prev_pos_max(i)];
 
     % check where prev_pos is not nan!!!!!!!
-    prev_pos = prev_pos(  ~isnan( find( D(prev_pos,n-1) ) ) );
-
+    prev_pos = prev_pos(  find( ~isnan( D(prev_pos,n-1) ) ) );
+    if isempty( prev_pos ); continue; end;
+    
     spacings = new_peak_pos - prev_pos'; % these are spacings.
 
     D_test = nan * ones(1,num_pixels);
     D_test( prev_pos ) = ...
 	D( prev_pos, n-1 ) ...
-	+ (D_overlap1(n) + D_overlap2(n) * g( spacings )) ...
+	+ (D_overlap2(n) * g( spacings )) ...
 	+ beta_SEP(n) * num_lanes * ( spacings - optimal_SEP(n) ).^2  ...
 	+ D_datapred_peak_peakpred( new_peak_pos );
 
@@ -200,31 +282,41 @@ for n = 2:N
     end
     
   end
-    
+
 end
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Backtrack
-xsel_fit = [];
-[best_score, xsel_fit(N) ] = min( D(:,N) );
-fprintf( 'Found best score: %8.1f\n', best_score );
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function check_self_agreement( D_self, D_self_reverse ); 
 
-if ( END_POS > 0 ); xsel_fit(N) = END_POS; end;
-
-for n = (N-1) : -1 : 1
-  xsel_fit(n) = prev_pos_best( xsel_fit(n+1), n+1 );
+N = size( D_self, 2 );
+% following should agree
+for i = 2:(N-1)
+    plot( D_self(:,i), 'r' );
+    hold on;
+    plot( flipud(D_self_reverse(:,N-i+1)),'bo');
+    hold off
+    pause;
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function score_profiles = get_score_profiles_from_forward_reverse( D, D_reverse, D_self, I_data_2);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% visual feedback & cross checks
-I_pred = get_Ipred(alpha_ideal, xsel_fit,x,peak_width); 
+score_profiles = 0 * D;
+N = size( D, 2 );
 
-if false, show_DP_matrix( D,xsel_fit); end;
-if false, show_fit_matrix( I_data, I_pred, xsel_fit, alpha_ideal, peak_bonus_matrix ); end;
-if CHECK_NUMERIC, do_numerical_checks( I_data, I_pred, alpha_ideal, xsel_fit, f, g, g0, I_data_2, I_pred2_DP, I_pred_data_DP ); end
+D_reverse_flip = flipud( D_reverse );
 
+score_profiles(:,N) = D(:,N);
+score_profiles(:,1) = D_reverse_flip(:,N);
+
+for i = 1:N
+%for i = 2:(N-1)
+  i_reverse = N-i+1;
+  score_profiles(:,i) = D(:,i) + D_reverse_flip( :, i_reverse ) - D_self(:,i) - I_data_2;
+end
+%plot( min( score_profiles ) ); pause
+%plot( score_profiles );
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -334,3 +426,4 @@ fprintf( 'Ipred*Ipred ==> %8.1f (actual) or %8.1f (gauss) or %8.1f (DP)\n', ...
 dev_DP = I_data_2 + I_pred2_gauss - 2 * alpha_f_sum;
 
 fprintf( '(Ipred-Idata)^2 ==> %8.1f (actual) or %8.1f (gauss)\n', sum(sum( (I_data-I_pred ).^2 )), dev_DP );
+

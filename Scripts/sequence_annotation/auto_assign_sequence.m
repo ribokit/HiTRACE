@@ -1,9 +1,9 @@
-function [xsel, best_score, msg] = auto_assign_sequence( image_x, sequence, area_pred, ideal_spacing, input_bounds, data_types )
+function [xsel, best_score, score_profiles ] = auto_assign_sequence( image_x, sequence, area_pred, ideal_spacing, input_bounds, data_types )
 % AUTO_ASSIGN_SEQUENCE: (still experimental) automatic assignment of bands, given expected locations of marks
 %
-% [xsel, best_score, msg] = auto_assign_sequence( image_x, sequence, offset, area_pred, ideal_spacing, input_bounds, data_types )
+% [xsel, best_score, score_profiles] = auto_assign_sequence( image_x, sequence, offset, area_pred, ideal_spacing, input_bounds, data_types )
 %
-%
+% INPUTS:
 %  image_x        = matrix of aligned electrophoretic traces.
 %  sequence       = sequence corresponding to each band [from top to bottom! may be reverse of actual sequence]
 %  area_pred      = strength of bands expected at each position [in a range from 0 to 1 for no band to visible band]
@@ -13,6 +13,12 @@ function [xsel, best_score, msg] = auto_assign_sequence( image_x, sequence, area
 %  data_types     = [optional] cell of data type strings [e.g., {'DMS','ddATP', etc.} -- was used to upweight no mod lanes, and
 %                     to downweight reference ladders, but this is not the case anymore].
 %
+% OUTPUTS:
+%   xsel_fit          = optimal band positions
+%   best_score        = top score from dynamic programming fit.
+%   score_profiles    = how the top overall score varies with the position of each band (optimized over positions 
+%                         of all other bands).
+%
 % (C) R. Das, Hanjoo Kim, Sungroh Yoon, 2010-2011
 % (C) R. Das, 2013.
 
@@ -21,17 +27,22 @@ if nargin == 0;  help( mfilename ); return; end;
 [num_pixels, num_lanes] = size( image_x );
 if ~exist('ideal_spacing','var') | isempty(ideal_spacing)  | ideal_spacing == 0
 
-  max_ideal_spacing = floor(num_pixels / (size( area_pred, 1 )-1) );  
-  ideal_spacing = guess_ideal_spacing( image_x, max_ideal_spacing );
-  if ( ideal_spacing == 0 );  
-    fprintf( 'Guess of ideal_spacing failed\n' );
-    ideal_spacing = max_ideal_spacing;
-    fprintf( 'Using ideal_spacing: %8.3f\n',  ideal_spacing );
+  if (length( input_bounds ) == 2)
+    ideal_spacing = floor( ( input_bounds(2) - input_bounds(1) )/(size( area_pred, 1 )-1) );
+  else
+    max_ideal_spacing = floor(num_pixels / (size( area_pred, 1 )-1) );  
+    ideal_spacing = guess_ideal_spacing( image_x, max_ideal_spacing );
+    if ( ideal_spacing == 0 );  
+      fprintf( 'Guess of ideal_spacing failed\n' );
+      ideal_spacing = max_ideal_spacing;
+      fprintf( 'Using ideal_spacing: %8.3f\n',  ideal_spacing );
+    end;
   end;
-end;
+end
 if ~exist('input_bounds','var'), input_bounds = []; end
 if ~exist( 'data_types', 'var' ), data_types = []; end;
 
+fprintf( 'Using ideal_spacing: %8.3f\n',  ideal_spacing );
 
 exist_talepeak = 1;
 %FALSEPEAK_CUT = 8;
@@ -52,7 +63,7 @@ end
 s( s == 0.0 ) = 0.2;
 
 tic
-[xsel, best_score] = solve_xsel_by_DP( image_x, s, sequence_at_bands, ideal_spacing, input_bounds, data_types );
+[xsel, best_score, score_profiles] = solve_xsel_by_DP( image_x, s, sequence_at_bands, ideal_spacing, input_bounds, data_types );
 toc % read out time required for fit.
 
 if exist_talepeak
@@ -67,9 +78,10 @@ function ideal_spacing = guess_ideal_spacing( image_x, max_spacing )
 max_spacing_for_corr = floor( 1.5*max_spacing );
 possible_spacings = [];
 for i = 1:size( image_x, 2 )
-  autocorr_profile(:,i) = autocorr( image_x(:,i), max_spacing_for_corr );
+  autocorr_profile(:,i) = autocorr( sqrt( abs( image_x(:,i) ) ), max_spacing_for_corr );
+  %plot( autocorr_profile(:,i) ); 
   spacings = localMaximum( autocorr_profile(:,i) );
-
+  
   % the first peak is always at 1 -- ignore that one and go to the next tightest spacing
   if length( spacings ) > 1 & spacings(2) < max_spacing;
     possible_spacings = [ possible_spacings, spacings(2) ];
