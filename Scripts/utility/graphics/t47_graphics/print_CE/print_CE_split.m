@@ -1,7 +1,7 @@
-function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset, num_flg, bol_flg, str_flg, ft_sz, clr_cd)
+function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset, area_pred, num_flg, bol_flg, str_flg, ft_sz, clr_cd)
 
 %
-% PRINT_CE_SPLIT(d_align, d_rdat, [seqpos], [mutpos], [xsel], [sequence], [offset], ...
+% PRINT_CE_SPLIT(d_align, d_rdat, [seqpos], [mutpos], [xsel], [sequence], [offset], [area_pred], ...
 %               [number_flag], [boolean_flag], [string_flag], [font_size], [color_code])
 %
 %
@@ -13,29 +13,31 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 % =========
 %   d_align         Required    Provides the electrophoregram matrix. Format in double
 %                                   array.
-%   d_rdat          Required    Provides d_rdat, at least for mutants names, e.g. G145C. 
-%                                   Format in RDAT file. Provides SEQPOS, MUTPOS, XSEL, 
-%                                   SEQUENCE, OFFSET if not included in arguments.                                   
-%   [seqpos]        Optional    Provides bands annotation array. Format in double array.  
-%                                   If not provided, will be read out from D_RDAT.SEQPOS.  
-%                                   Should be strictly monotonic decreasing, increasing  
+%   d_rdat          Required    Provides d_rdat, at least for mutants names, e.g. G145C.
+%                                   Format in RDAT file. Provides SEQPOS, MUTPOS, XSEL,
+%                                   SEQUENCE, OFFSET if not included in arguments.
+%   [seqpos]        Optional    Provides bands annotation array. Format in double array.
+%                                   If not provided, will be read out from D_RDAT.SEQPOS.
+%                                   Should be strictly monotonic decreasing, increasing
 %                                   array will be flipped automatically.
-%   [mutpos]        Optional    Provides mutant position array. Format in double array. 
-%                                   If not provided, will be read out from D_RDAT.MUTPOS. 
+%   [mutpos]        Optional    Provides mutant position array. Format in double array.
+%                                   If not provided, will be read out from D_RDAT.MUTPOS.
 %                                   If not provided by D_RDAT (which is the case for RDAT
-%                                   version 0.33+), will be generated from 
+%                                   version 0.33+), will be generated from
 %                                   D_RDAT.DATA_ANNOTATIONS.
-%   [xsel]          Optional    Provides annotation Y position. Format in double array.  
-%                                   If not provided, willbe read out from D_RDAT.XSEL. 
-%                                   Should be strict monotonicly increasing, decreasing  
+%   [xsel]          Optional    Provides annotation Y position. Format in double array.
+%                                   If not provided, willbe read out from D_RDAT.XSEL.
+%                                   Should be strict monotonicly increasing, decreasing
 %                                   array will be flipped automatically.
-%   [sequence]      Optional    Provides sequence. Format in string. If not provided, 
+%   [sequence]      Optional    Provides sequence. Format in string. If not provided,
 %                                   will be read out from D_RDAT.SEQUENCE.
-%   [offset]        Optional    Provides offset. Format in double. If not provided, will  
+%   [offset]        Optional    Provides offset. Format in double. If not provided, will
 %                                   be read out from D_RDAT.OFFSET.
-%   [number_flag]   Optional    Provides the layout format that will split into H x W 
-%   [H  W  SC                       pages with vertical blank edge SP, using SC for 
-%    SP LS SO                       intensity scaling, making lines every LS lanes. 
+%   [area_pred]     Optional    Provides the predicted band positions. If not provided,
+%                                   no circles will be drawn.
+%   [number_flag]   Optional    Provides the layout format that will split into H x W
+%   [H  W  SC                       pages with vertical blank edge SP, using SC for
+%    SP LS SO                       intensity scaling, making lines every LS lanes.
 %    UO LO                          D_ALIGN will be auto-trimmed by UO and LO if asked,
 %    YO XO]                         and axis titles will be placed with offset YO and
 %                                   XO. Format in double array, default [0 0 0 50 10 ...
@@ -45,66 +47,69 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %                               'W' (width) denotes the number of pages horizontally,
 %                                   0 means use auto_size if AS in BOOLEAN_FLAG;
 %                               'SC' (scale_factor) denotes the scaling factor of image,
-%                                   default is calculated to display optimally according 
+%                                   default is calculated to display optimally according
 %                                   to sc = 22.5 / mean(mean(d_align));
-%                               'SP' (spacer) denotes the spacer width on both top and 
+%                               'SP' (spacer) denotes the spacer width on both top and
 %                                   bottom of each sub-figure;
-%                               'LS' (line_spacer) denotes the interval of blue thick 
+%                               'LS' (line_spacer) denotes the interval of blue thick
 %                                   lines;
-%                               'SO' (line_offset) denotes the offset of blue thick 
-%                                   lines. Default -1 means starts with MUTPOS 
+%                               'SO' (line_offset) denotes the offset of blue thick
+%                                   lines. Default -1 means starts with MUTPOS
 %                                   divisible by 10;
-%                               'UO' (upper_bound) denotes the excess D_ALIGN image 
-%                                   shown above the first SEQPOS label; 
-%                               'LO' (lower_bound) denotes the excess D_ALIGN image 
-%                                   shown under the last SEQPOS label; 
+%                               'UO' (upper_bound) denotes the excess D_ALIGN image
+%                                   shown above the first SEQPOS label;
+%                               'LO' (lower_bound) denotes the excess D_ALIGN image
+%                                   shown under the last SEQPOS label;
 %                               'YO' (y_title_offset) denotes the distance of y-axis
 %                                   title to the axis;
 %                               'XO' (x_title_offset) denotes the distance of x-axis
 %                                   title to the axis.
-%   [boolean_flag]  Optional    Provides the layout format that whether auto-trim 
-%   [AT AS AL                       vertical boundaries, whether auto decide overall size, 
-%    LN PR SQ                       whether auto decide text length for titles, whether draw 
-%    TL VR PN]                      lines, whether print to file, whether squared page, 
-%                                   whether add title, version label and page number. Format 
-%                                   in double array, default [1 1 1 1 1 0 1 1 1].
-%                               'AT' (is_auto_trim) denotes whether to auto trim top and 
-%                                   bottom of D_ALIGN for optimal display. Excess image 
+%   [boolean_flag]  Optional    Provides the layout format that whether auto-trim
+%   [AT AS AL AP                    vertical boundaries, whether auto decide overall size,
+%    LN PR SQ                       whether auto decide text length for titles, whether draw
+%    TL VR PN]                      area_pred circles, whether draw lines, whether print to
+%                                   file, whether squared page, whether add title, version
+%                                   label and page number. Format in double array, default
+%                                   [1 1 1 0 1 1 0 1 1 1].
+%                               'AT' (is_auto_trim) denotes whether to auto trim top and
+%                                   bottom of D_ALIGN for optimal display. Excess image
 %                                   size is denoted by UO and LO in NUMBER_FLAG;
-%                               'AS' (is_auto_size) denotes whether to auto decide number 
-%                                   of pages based on D_ALIGN and SEQUENCE. This will 
+%                               'AS' (is_auto_size) denotes whether to auto decide number
+%                                   of pages based on D_ALIGN and SEQUENCE. This will
 %                                   override H and W in NUMBER_FLAG;
-%                               'AL' (is_auto_length) denotes whether auto-decide font 
+%                               'AL' (is_auto_length) denotes whether auto-decide font
 %                                   size of titles to fit in page margins. This will
 %                                   override T1, T2, and T3 in FONT_SIZE;
-%                               'LN' (is_line) denotes whether to make lines every LS of 
+%                               'AP' (is_area_pred) denotes whether to draw circles based
+%                                   on area_pred.
+%                               'LN' (is_line) denotes whether to make lines every LS of
 %                                   NUMBER_FLAG lanes or not;
-%                               'PR' (if_print) denotes whether to print to .eps files, 
+%                               'PR' (if_print) denotes whether to print to .eps files,
 %                                   prints will be saved in folder DN of STRING_FLAG;
 %                               'SQ' (is_square) denotes whether each page is squared;
 %                               'TL' (is_title) denotes whether title is added to figure;
-%                               'VR' (is_version) denotes whether version label is 
+%                               'VR' (is_version) denotes whether version label is
 %                                   added to bottom right corner;
-%                               'PN' (is_page_number) denotes whether page number is 
+%                               'PN' (is_page_number) denotes whether page number is
 %                                   added to the corners of each figure;
 %                               1 equals TRUE; 0 equals FALSE.
-%   [string_flag]   Optional    Provides the string input for output .eps file name, 
+%   [string_flag]   Optional    Provides the string input for output .eps file name,
 %   [FN DN MF                       folder name, modifier label, authorship and date on
 %    AU DT VR]                      printout. Also provides font weight options. Format
 %    T1 T2 T3                        in string cell, default {'', 'print_CE_split_output', ...
 %    VE YL YT                       {modifier}, '', 'mmm yyyy', '', 'Bold', 'Normal', ...
 %       XL XT]                      'Bold', 'Normal', 'Normal', 'Normal', 'Normal', 'Normal'}.
-%                               'FN' (file_name) denotes file name for print files;  
-%                                   Numbers, underscore, and '.eps' extension will 
+%                               'FN' (file_name) denotes file name for print files;
+%                                   Numbers, underscore, and '.eps' extension will
 %                                   automatically append;
 %                               'DN' (dir_name) denotes folder name for all files;
-%                               'MF' (modifier_name) denotes modifier label. Default 
+%                               'MF' (modifier_name) denotes modifier label. Default
 %                                   will use modifier entry from
-%                                   D_RDAT.DATA_ANNOTATIONS. Useful when specifying 
+%                                   D_RDAT.DATA_ANNOTATIONS. Useful when specifying
 %                                   SHAPE reagent with concentration used;
-%                               'AU' (author_name) denotes authorship series. 'by' and 
+%                               'AU' (author_name) denotes authorship series. 'by' and
 %                                   '@' will automatically append;
-%                               'DT' (date_string) denotes date string appearing on top 
+%                               'DT' (date_string) denotes date string appearing on top
 %                                   right corner. Default will use current date;
 %                               'VR' (hitrace_ver) denotes current HiTRACE subversion;
 %                               'T1' font weight for title (name) on page (1, 1);
@@ -115,30 +120,32 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %                               'YT' font weight of y-axis tick label;
 %                               'XL' font weight of x-axis title (Mutation Position);
 %                               'XT' font weight of x-axis tick label;
-%   [size_flag]     Optional    Provides font size and line width values for figures; 
-%   [T1 T2 T3                       Format in double array, default [25 15 15 9 20 8 ...
-%    VE YL YT                       20 10 1 2 0.5].
-%       XL XT                   'T1' font size of title (name) on page (1, 1);
-%    L1 L2 L3]                  'T2' font size of title (conditions) on page (1, 2);
+%   [size_flag]     Optional    Provides font size and line width values for figures;
+%   [T1 T2 T3 VE                    Format in double array, default [25 15 15 9 20 8 ...
+%    YL YT XL XT                 20 10 5 1 2 0.5].
+%    AP L1 L2 L3]               'T1' font size of title (name) on page (1, 1);
+%                               'T2' font size of title (conditions) on page (1, 2);
 %                               'T3' font size of title (date) on page (1, 3);
 %                               'VE' font size of version label on last page;
 %                               'YL' font size of y-axis title (Sequence Position);
 %                               'YT' font size of y-axis tick label;
 %                               'XL' font size of x-axis title (Mutation Position);
 %                               'XT' font size of x-axis tick label;
+%                               'AP' circle diameter of area_pred;
 %                               'L1' line width of borders on each page;
 %                               'L2' line width of all LS of NUMBER_FLAG thick lines;
 %                               'L3' line width of borders on each lane.
 %   [color_flag]    Optional    Provides color codes for figures. Format in string,
-%   [T1 T2 T3                       default 'krbkgkgkrbk'.
-%    VE YL YT                   'T1' font color of title (name) on page (1, 1);    
-%       XL XT                   'T2' font color of title (conditions) on page (1, 2);
-%    L1 L2 L3]                  'T3' font color of title (date) on page (1, 3);
+%   [T1 T2 T3 VE                    default 'krbkgkgkyrbk'.
+%    YL YT XL XT                'T1' font color of title (name) on page (1, 1);
+%    AP L1 L2 L3]               'T2' font color of title (conditions) on page (1, 2);
+%                               'T3' font color of title (date) on page (1, 3);
 %                               'VE' font color of version label on last page;
 %                               'YL' font color of y-axis title (Sequence Position);
 %                               'YT' font color of y-axis tick label;
 %                               'XL' font color of x-axis title (Mutation Position);
 %                               'XT' font color of x-axis tick label;
+%                               'AP' circle color of area_pred;
 %                               'L1' line color of borders on each page;
 %                               'L2' line color of all LS of NUMBER_FLAG thick lines;
 %                               'L3' line color of borders on each lane.
@@ -152,10 +159,10 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 % Notes
 % =====
 % Open all .eps files in single Preview window and print using a color printer.
-%   Deselect auto-rotate and auto-scale in the print dialog, make sure scale 
-%   is 100%. Spaces on each border are included for easy splicing. Cut at red 
+%   Deselect auto-rotate and auto-scale in the print dialog, make sure scale
+%   is 100%. Spaces on each border are included for easy splicing. Cut at red
 %   lines on each page. Assemble rows first, then put together the entire image.
-% 
+%
 % ALL current opened figures will be LOST! Save before run.
 %
 %
@@ -163,7 +170,7 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %
 
 if nargin == 0; help( mfilename ); return; end;
-Script_VER = '2.3';
+Script_VER = '2.4';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % preparation before splitting
@@ -171,53 +178,69 @@ Script_VER = '2.3';
 fprintf(['print_CE_split version ', Script_VER, '.\n']);
 fprintf(['RDAT format version ', d_rdat.version,'.\n\n']);
 fprintf(['d_align (',num2str(size(d_align,1)),' x ',num2str(size(d_align,2)),') provided by user.\n']);
-d_align_size_H_org = size(d_align, 1);
-d_align_size_W_org = size(d_align, 2);
+[d_align_size_H_org, d_align_size_W_org] = size(d_align);
 fprintf(['d_rdat (', d_rdat.name, ') provided by user.\n']);
 
 if ~exist('seqpos','var') || isempty(seqpos)
     seqpos = d_rdat.seqpos;
-    fprintf(['seqpos (1 x ',num2str(length(seqpos)),') fetched from d_rdat.\n']); 
+    fprintf(['seqpos (1 x ',num2str(length(seqpos)),') fetched from d_rdat.\n']);
 else
-    fprintf(['seqpos (1 x ',num2str(length(seqpos)),') provided by user.\n']); 
+    fprintf(['seqpos (1 x ',num2str(length(seqpos)),') provided by user.\n']);
 end;
 if ~exist('mutpos','var') || isempty(mutpos)
-    if exist('d.mutpos','var');
+    if exist('d_rdat.mutpos','var');
         mutpos = d_rdat.mutpos;
     else
         mutpos = [];
     end;
-    fprintf(['mutpos (1 x ',num2str(length(mutpos)),') fetched from d_rdat.\n']); 
+    if ~isempty(mutpos)
+        fprintf(['mutpos (1 x ',num2str(length(mutpos)),') fetched from d_rdat.\n']);
+    end;
 else
-    fprintf(['mutpos (1 x ',num2str(length(mutpos)),') provided by user.\n']);     
+    fprintf(['mutpos (1 x ',num2str(length(mutpos)),') provided by user.\n']);
 end;
 
 % generate mutpos if not supplied by either argument or d_rdat
 if isempty('mutpos') || length(mutpos) ~= size(d_align, 2)
-    mutpos = generate_mutpos_from_rdat(d_rdat.data_annotations); 
+    mutpos = generate_mutpos_from_rdat(d_rdat.data_annotations);
 end;
 
 if ~exist('xsel','var') || isempty(xsel)
-    xsel = d_rdat.xsel; 
+    xsel = d_rdat.xsel;
     fprintf(['xsel (1 x ',num2str(length(xsel)),') fetched from d_rdat.\n']);
 else
     fprintf(['xsel (1 x ',num2str(length(xsel)),') provided by user.\n']);
 end;
 if ~exist('sequence','var') || isempty(sequence)
     sequence = d_rdat.sequence;
-    fprintf(['sequence (1 x ',num2str(length(sequence)),') fetched from d_rdat.\n']); 
+    fprintf(['sequence (1 x ',num2str(length(sequence)),') fetched from d_rdat.\n']);
 else
-    fprintf(['sequence (1 x ',num2str(length(sequence)),') provided by user.\n']);     
+    fprintf(['sequence (1 x ',num2str(length(sequence)),') provided by user.\n']);
 end;
 if ~exist('offset','var') || isempty(offset)
-    offset = d_rdat.offset; 
-    fprintf(['offset (',num2str(offset),') fetched from d_rdat.\n']); 
+    offset = d_rdat.offset;
+    fprintf(['offset (',num2str(offset),') fetched from d_rdat.\n']);
 else
-    fprintf(['offset (',num2str(offset),') provided by user.\n']); 
+    fprintf(['offset (',num2str(offset),') provided by user.\n']);
 end;
 offset = round(offset);
+if ~exist('area_pred','var') || isempty(area_pred)
+    data_types = cell(1,length(mutpos));
+    for i = 1:length(mutpos)
+        data_types{i} = num2str(mutpos(i));
+    end;
+    area_pred = generate_area_pred(sequence, d_rdat.structure, offset, data_types,  size(d_align,2));
+    fprintf(['area_pred (', num2str(size(area_pred,1)), ' x ', num2str(size(area_pred,2)), ') generated from d_rdat.\n']);
+else
+    fprintf(['area_pred (', num2str(size(area_pred,1)), ' x ', num2str(size(area_pred,2)), ') provided by user.\n']);
+end;
 fprintf('\n'); fprintf(['sequence  ', sequence, '\n']);
-fprintf(['structure ', d_rdat.structure, '\n\n']);
+fprintf('structure ');
+if ~isempty(d_rdat.structure)
+    fprintf([d_rdat.structure, '\n\n']);
+else
+    fprintf([repmat('.',1,length(sequence)), '\n\n']);
+end;
 
 
 % set all auxillary parameters
@@ -236,13 +259,13 @@ num_up_offset = num_flg(7); num_low_offset = num_flg(8);
 num_y_offset = num_flg(9); num_x_offset = num_flg(10);
 
 if ~exist('bol_flg','var'); bol_flg = []; end;
-bol_flg = is_valid_flag(bol_flg, [1 1 1 1 1 0 1 1 1]);
-for i = length(bol_flg)
+bol_flg = is_valid_flag(bol_flg, [1 1 1 0 1 1 0 1 1 1]);
+for i = length(bol_flg)                 %
     bol_flg(i) = is_valid_boolean(bol_flg(i));
 end;
-is_auto_trim = bol_flg(1); is_auto_size = bol_flg(2); is_auto_length = bol_flg(3);
-is_line = bol_flg(4); is_print = bol_flg(5); is_square = bol_flg(6);
-is_title = bol_flg(7); is_version = bol_flg(8); is_page_no = bol_flg(9); 
+is_auto_trim = bol_flg(1); is_auto_size = bol_flg(2); is_auto_length = bol_flg(3); is_area_pred = bol_flg(4);
+is_line = bol_flg(5); is_print = bol_flg(6); is_square = bol_flg(7);
+is_title = bol_flg(8); is_version = bol_flg(9); is_page_no = bol_flg(10);
 
 if ~exist('str_flg','var'); str_flg = {}; end;
 str_flg = is_valid_flag(str_flg, {'', 'print_CE_split_output', '', '', datestr(date, 'mmm yyyy'), '', ...
@@ -250,7 +273,7 @@ str_flg = is_valid_flag(str_flg, {'', 'print_CE_split_output', '', '', datestr(d
 file_name = str_flg{1}; dir_name = str_flg{2}; mdfr_str = str_flg{3};
 author_str = str_flg{4}; date_str = [' @ ' str_flg{5}]; ver_hitrace = str_flg{6};
 ft_w_title_1 = str_flg{7}; ft_w_title_2 = str_flg{8}; ft_w_title_3 = str_flg{9};
-ft_w_ver = str_flg{10}; 
+ft_w_ver = str_flg{10};
 ft_w_y_title = str_flg{11}; ft_w_y_tick = str_flg{12};
 ft_w_x_title = str_flg{13}; ft_w_x_tick = str_flg{14};
 if ~isempty(file_name); file_name = [file_name '_']; end;
@@ -260,24 +283,24 @@ if strcmp(date_str, ' @ '); date_str = [' @ ' datestr(date, 'mmm yyyy')]; end;
 if isempty(ver_hitrace); ver_hitrace = 'N/A'; end;
 
 if ~exist('ft_sz','var'); ft_sz = []; end;
-ft_sz = is_valid_flag(ft_sz, [25 15 15 9 20 8 20 10 1 2 0.5]);
+ft_sz = is_valid_flag(ft_sz, [25 15 15 9 20 8 20 10 5 1 2 0.5]);
 ft_sz_title_1 = ft_sz(1); ft_sz_title_2 = ft_sz(2); ft_sz_title_3 = ft_sz(3);
 ft_sz_ver = ft_sz(4);
 ft_sz_y_title = ft_sz(5); ft_sz_y_tick = ft_sz(6);
 ft_sz_x_title = ft_sz(7); ft_sz_x_tick = ft_sz(8);
-ln_wt_1 = ft_sz(9); ln_wt_2 = ft_sz(10); ln_wt_3 = ft_sz(11);
+cir_wt = ft_sz(9); ln_wt_1 = ft_sz(10); ln_wt_2 = ft_sz(11); ln_wt_3 = ft_sz(12);
 
 if ~exist('clr_cd','var'); clr_cd = ''; end;
 clr = parse_color_string(clr_cd);
-clr = is_valid_flag(clr, {'k', 'r', 'b', 'k', 'g', 'k', 'g', 'k', 'r', 'b', 'k'});
+clr = is_valid_flag(clr, {'k', 'r', 'b', 'k', 'g', 'k', 'g', 'k', 'y', 'r', 'b', 'k'});
 for i = 1:length(clr)
     if clr{i} == 'g'; clr{i} = [0 0.5 0]; end;
 end;
 color_title_1 = clr{1}; color_title_2 = clr{2}; color_title_3 = clr{3};
-color_ver = clr{4};
+color_ver = clr{4}; color_cir = clr{9};
 color_y_title = clr{5}; color_y_tick = clr{6};
 color_x_title = clr{7}; color_x_tick = clr{8};
-color_line_1 = clr{9}; color_line_2 = clr{10}; color_line_3 = clr{11};
+color_line_1 = clr{10}; color_line_2 = clr{11}; color_line_3 = clr{12};
 
 
 % auto_size if asked
@@ -286,7 +309,7 @@ is_auto_size_force = (page_num_H == 0) && (page_num_W == 0);
 
 % print out summary
 fprintf(['Divide into ', num2str(page_num_H), ' x ', num2str(page_num_W), ' pages, auto-size (', ...
-    num2yn(is_auto_size || is_auto_size_force), ').\n']);
+    num2yn(is_auto_size || is_auto_size_force), '), draw area_pred circles (', num2yn(is_area_pred), ').\n']);
 fprintf(['Spacer ', num2str(num_sp), ', make lines (', num2yn(is_line), ') every ', ...
     num2str(num_line_sp), ' lanes with offset (', num2str(num_line_offset), '), squared page (', num2yn(is_square), ').\n']);
 fprintf(['Show title (', num2yn(is_title), '), show page number (', num2yn(is_page_no), ') show version (', ...
@@ -317,15 +340,15 @@ d = d_split_add_spacer(d_align, page_num_H, h_length, num_sp, page_num_W, w_leng
 
 
 % read in mutants names (X-axis), trim to 'G145C' format
-names = cell(1,size(d_align, 2)); 
+names = cell(1,size(d_align, 2));
 for i = 1:length(mutpos)
     names{i} = strrep(d_rdat.data_annotations{i}{1}, 'mutation:', '');
 end;
 
 % split mutants names array into w*w_length array
-name = cell(page_num_W, (w_length + 2)); 
+name = cell(page_num_W, (w_length + 2));
 for i = 1:page_num_W
-    name(i, 2:(w_length + 1)) = names((w_length * (i - 1) + 1):(w_length * i));    
+    name(i, 2:(w_length + 1)) = names((w_length * (i - 1) + 1):(w_length * i));
 end;
 
 
@@ -353,6 +376,12 @@ if extra_blank_lanes > 0;
     end;
 end;
 
+% prepare area_pred dimensions and flip to right orientation
+if size(area_pred,1) > length(xsel);
+    area_pred = area_pred(1:length(xsel),:);
+end;
+area_pred = flipud(area_pred);
+
 % pause point
 fprintf(['In each page, there are ',num2str(w_length),' lanes (X-axis), and ',...
     num2str(h_length),' of traces (Y-axis):\n']);
@@ -370,7 +399,7 @@ for i = 1:page_num_W
     for j = 1:page_num_H
         
         % extract y-axis information from cell
-        d_temp = []; 
+        d_temp = [];
         d_temp(1:size(d, 3), 1:size(d, 4)) = d(i, j, :, :);
         [xsel_pos_sub, xsel_txt_sub] = parse_xsel_label(band, j, 2);
         
@@ -394,15 +423,16 @@ for i = 1:page_num_W
         fig_w = 600; title_size_fc = 0.775; title_h = 0.45;
         set(gcf, 'PaperOrientation', 'Portrait', 'PaperPositionMode', 'Manual', ...
             'PaperSize', [8.5 11], 'Color', 'White');
-        if is_square; 
+        if is_square;
             set(gcf, 'PaperPosition', [0 2 8.5 8.5]);
             fig_h = 600; title_offset = 0.025;
-        else 
-            set(gcf, 'PaperPosition', [0 1 8.5 10]);
+        else
+            set(gcf, 'PaperPosition', [0 0 8.5 11]);
             fig_h = 800; title_offset = 0;
         end;
         set(h, 'Position', [(fig_num - 1) * 20, 0, fig_w, fig_h]);
-        image(d_temp * scale_fc);
+        
+        image(d_temp * scale_fc); hold on;
         colormap(1 - gray());
         
         % make lines
@@ -418,18 +448,21 @@ for i = 1:page_num_W
             line_start = mod(num_line_offset + num_line_sp + 1 - mod(w_length * (i - 1), num_line_sp), num_line_sp);
             make_lines(line_start:num_line_sp:(w_length + 1), color_line_2, ln_wt_2);
         end;
+        hold on;
         
         % red border lines
         make_lines_horizontal(num_sp, color_line_1, ln_wt_1);
         make_lines_horizontal(size(d_temp,1) - num_sp, color_line_1, ln_wt_1);
         make_lines(1, color_line_1, ln_wt_1);
         make_lines(size(d_temp, 2)-1, color_line_1, ln_wt_1);
+        hold on;
         
         % axis labeling
         % X-axis-tick, mutant names
         set(gca, 'FontSize', ft_sz_x_tick, 'FontWeight', ft_w_x_tick);
         set(gca, 'XTick', 1:size(name, 2), 'XTickLabel', char(name{i, :}), 'XColor', color_x_tick);
-        xticklabel_rotate(); 
+        xticklabel_rotate();
+        hold on;
         
         % Y-axis-tick, band positions
         set(gca, 'FontSize', ft_sz_y_tick, 'FontWeight', ft_w_y_tick, 'YColor', color_y_tick);
@@ -438,15 +471,32 @@ for i = 1:page_num_W
         else
             set(gca, 'YTick', xsel_pos_sub(:), 'YTickLabel', char(xsel_txt_sub(:)), 'YAxisLoc', 'Left');
         end;
+        hold on;
         
-        % both side of y-axis if only 1 column of pages 
+        % make circles based from area_pred
+        if is_area_pred
+            area_pred_sub = area_pred( ...
+                (sum(h_l(1:j)) - h_l(j) + 1): sum(h_l(1:j)), ...
+                (w_length * (i - 1) + 1): w_length * i);
+            xsel_sub = xsel_pos_sub(xsel_pos_sub ~= 0);
+            xsel_sub = xsel_sub(2:end);
+            for m = 1:size(area_pred_sub, 1)
+                mark_points = find( area_pred_sub(m, :) > 0.5 );
+                if ~isempty(mark_points);
+                    plot(mark_points + 1, xsel_sub(m), 'o', 'MarkerEdgeColor', color_cir, 'MarkerSize', cir_wt);
+                end;
+                hold on;
+            end;
+        end;
+        
+        % both side of y-axis if only 1 column of pages
         if page_num_W == 1;
             y_1 = gca; y_2 = copyobj(y_1, gcf);
             set(y_2, 'YAxisLocation', 'Left');
         end;
         
         % X-axis-caption
-        xlabel('Mutation Position', 'Color', color_x_title); 
+        xlabel('Mutation Position', 'Color', color_x_title);
         if j == page_num_H;
             xlabh = get(gca, 'XLabel'); set(xlabh, 'FontSize', ft_sz_x_title, 'FontWeight', ft_w_x_title);
             set(xlabh, 'Position', get(xlabh, 'Position') + [0 (num_x_offset + title_offset) 0]);
@@ -471,8 +521,8 @@ for i = 1:page_num_W
                 tit = get(gca, 'Title'); pos = get(tit, 'Position');
                 set(tit, 'Position', [0 (pos(2) + title_offset) pos(3)]);
                 if is_auto_length; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
-
-            % title of second top page, for experiment details    
+                
+                % title of second top page, for experiment details
             elseif (j == 1 && i == 2);
                 
                 % two-line format, second line for all chemicals
@@ -489,8 +539,8 @@ for i = 1:page_num_W
                 tit = get(gca, 'Title'); pos = get(tit, 'Position');
                 set (tit, 'Position', [1 (pos(2) + title_offset) pos(3)]);
                 if is_auto_length; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
-
-            % title of right-top corner, for experiment date and authorship
+                
+                % title of right-top corner, for experiment date and authorship
             elseif (j == 1 && i == page_num_W)
                 comment = [mdfr_str author_str date_str '  '];
                 
@@ -511,7 +561,7 @@ for i = 1:page_num_W
             text(xlim(2), ylim(2), ver_str, 'HorizontalAlignment', 'Right', 'VerticalALignment', 'Bottom', ...
                 'FontWeight', ft_w_ver, 'FontSize', ft_sz_ver, 'Color', color_ver);
         end;
-            
+        
         % print to file if asked
         if is_print; print_save_figure(h, [file_name, num2str(fig_num)], dir_name, 0); end;
     end;

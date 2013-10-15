@@ -42,4 +42,3 @@ if flg == 1;
     hgsave(fig, tag);
 end;
 
-clear dir_name;
