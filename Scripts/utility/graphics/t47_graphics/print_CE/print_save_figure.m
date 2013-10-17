@@ -13,8 +13,9 @@ function print_save_figure(fig, file_name, dir_name, flg)
 %                                   string. Extension will automatically
 %                                   append.
 %   dir_name    Optional        Provides the output folder name. Format in
-%                                   string. It will the create folder if 
+%                                   string. It will the create folder if
 %                                   does not exist. Default is 'Figures'.
+%                                   Use '/' for current path.
 %   flag        Optional        Provides whether to output to .fig files.
 %                                   0 for NO, 1 for YES. Default is 0.
 %
@@ -29,10 +30,14 @@ file_name = strrep(strrep(file_name, '/', ''), ' ', '');
 current_dir = pwd;
 
 if ~exist('dir_name', 'var') || isempty(dir_name); dir_name = 'Figures'; end;
-dir_name = strcat(current_dir, '/', dir_name);
-if ~exist(dir_name, 'dir'); mkdir(dir_name); end;
+if strcmp(dir_name, '/');
+    dir_name = '';
+else
+    if ~exist(dir_name, 'dir'); mkdir(dir_name); end;
+    dir_name = strcat(current_dir, '/', dir_name,'/');
+end;
 
-full_path = [dir_name, '/', file_name,'.eps'];
+full_path = [dir_name, file_name,'.eps'];
 print(fig, '-depsc2', '-loose', '-r300', full_path);
 fprintf( ['Created: ', full_path, '\n'] );
 

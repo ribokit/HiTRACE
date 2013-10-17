@@ -166,7 +166,7 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 % ALL current opened figures will be LOST! Save before run.
 %
 %
-% by T47, Apr 2013 - May 2013.
+% by T47, Apr 2013 - Oct 2013.
 %
 
 if nargin == 0; help( mfilename ); return; end;
