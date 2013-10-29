@@ -57,7 +57,7 @@ if nargin == 0; help( mfilename ); return; end;
 
 if ~exist('caption','var') || isempty(caption); caption = ''; end;
 if ~exist('flg','var') || isempty(flg) || length(flg) < 5; flg = [1, 1, 1, 1, 0]; end;
-if ~exist('ft_sz','var') || isempty(ft_sz) || length(ft_sz) < 5; ft_sz = [20 12 15 54 .25]; end;
+if ~exist('ft_sz','var') || isempty(ft_sz) || length(ft_sz) < 5; ft_sz = [18 12 15 54 .2]; end;
 if ~exist('clr','var') || isempty(clr) || length(clr) < 5; clr = {'k','k','r','b','k'}; end;
 if ~exist('filename','var') || isempty(filename); filename = 'dbl_mnt'; end;
 
@@ -65,27 +65,27 @@ if ~exist('filename','var') || isempty(filename); filename = 'dbl_mnt'; end;
 if size(labels) ~= size(d_align,2)/2; fprintf('Label number mismatch!\n'); end;
 
 % calculates auto scale and inform user
-if scale_factor == 0; scale_factor = 40/mean(mean(d_align)); end;
+if scale_factor == 0; scale_factor = 25/mean(mean(d_align)); end;
 fprintf('\n');
 fprintf(['scale_factor_used = ', num2str(scale_factor),'\n']);
 
 % append caption and generate blanks for xtick
 caption = [caption ' Double Mutants'];
-labels = [repmat({''},1,size(d_align,2)/2), labels];
+labels = [repmat({' '},1,size(d_align,2)/2), labels];
 
-h = figure(1);
-set(h, 'Position', [0, 0, 600, 800]);   
-set(gcf, 'PaperOrientation', 'portrait', 'PaperPositionMode', 'auto', 'color', 'white');
-image(d_align * scale_factor); colormap(1 - gray());
+h = figure; clf;
+set_print_page(h);
+image(d_align * scale_factor);
+colormap(1 - gray());
 
 % make lines if asked
-make_lines(0:1:size(d_align,2), clr{5}, 1);
+make_lines(0:1:size(d_align,2), clr{5}, 1); hold on;
 if flg(2); make_lines(size(d_align,2)/2, clr{4}, 2); end;
 
 % add title and xtick
-title(caption,'FontWeight','Bold','FontSize',ft_sz(1),'Color', clr{1});
-set(gca, 'xtick', 1:length(labels), 'xticklabel', labels,'fontsize',ft_sz(2),'color',clr{2});
+set(gca, 'XTick', 1:length(labels), 'XTickLabel', labels,'FontSize',ft_sz(2),'XColor',clr{2});
 if flg(1); xticklabel_rotate; end;
+title(caption,'FontWeight','Bold','FontSize',ft_sz(1),'Color', clr{1});
 
 % add xlabel of modifier and set position if asked
 if flg(4);
@@ -94,12 +94,15 @@ if flg(4);
     if flg(3) == 2; mdfr = 'DMS'; end;
     if flg(3) == 3; mdfr = 'CMCT'; end;
     
-    xlabel(['nomod', blanks(ft_sz(4)), mdfr]);
-    xlabh = get(gca, 'XLabel'); set(xlabh, 'FontSize', ft_sz(3), 'Color', clr{3});
+    xlabel(['nomod', blanks(ft_sz(4)), mdfr], 'Color', clr{3});
+    xlabh = get(gca, 'XLabel'); set(xlabh, 'FontSize', ft_sz(3));
     set(xlabh, 'Position', get(xlabh, 'Position') + [0 ft_sz(5) 0]);
 end;
 
+set(gca, 'YTick', []);
+make_lines_horizontal([330,1770],'g',1);
+
 % print to file if asked
-if flg(5); print(h,'-depsc2',[filename,'.eps']); end;
+if flg(5); print_save_figure(h,filename); end;
 
 

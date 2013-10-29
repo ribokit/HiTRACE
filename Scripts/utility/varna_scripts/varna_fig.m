@@ -21,7 +21,7 @@ function []=varna_fig(filename,sequence,structure,DATA,colorscheme,offset,specia
 
 if nargin == 0;  help( mfilename ); return; end;
 
-if ~exist( 'colorscheme' ); colorscheme = 1; end;
+if ~exist( 'colorscheme','var' ); colorscheme = 1; end;
 
 if ~isempty( DATA )
   %% DATA Prep
@@ -61,7 +61,7 @@ if ~isempty( DATA )
   fprintf(fid,'%s\n','"/>');
 end
 
-if exist( 'Z' )
+if exist( 'Z','var' )
   switch colorscheme
    case 0 % previous default
     fprintf(fid,'%s\n','<param name="colorMapStyle" value="0:#0000FF;10:#0000FF;40:#FFFFFF;60:#FFFFFF;90:#FF0000;100:#FF0000" />'); 
@@ -89,7 +89,7 @@ fprintf( fid, '<param name="baseInner" value="#FFFFFF" />\n' );
 fprintf( fid, '<param name="baseOutline" value="#FFFFFF" />\n' );
 fprintf( fid, '<param name="bp" value="#000000" />\n' );
 
-if exist( 'special_base_pairs' )
+if exist( 'special_base_pairs','var' )
   if length( special_base_pairs ) ~= length( special_colors );  fprintf( 'Must specify a special_color for each special_base_pair set\n'); end;
 
   fprintf(fid,'<param name="auxBPs" value="' ); 
@@ -105,15 +105,15 @@ if exist( 'special_base_pairs' )
     
 end
 
-if ( exist( 'offset' ) | exist( 'bpp_values' ) )
+if ( exist( 'offset','var' ) || exist( 'bpp_values','var' ) )
   
-  if exist( 'offset' )
+  if exist( 'offset','var' )
     fprintf( fid, '<param name="baseNum" value="#FFFFFF" />\n' );
     fprintf( fid, '<param name="periodNum" value="1000" />\n' );
   end
   
   fprintf( fid, '<param name="annotations" value="' );
-  if exist( 'offset' )
+  if exist( 'offset','var' )
     PERIOD = 10;
     for i = 1:length( sequence )
       if ( mod( i+offset, PERIOD) == 0 )
@@ -122,7 +122,7 @@ if ( exist( 'offset' ) | exist( 'bpp_values' ) )
     end
   end
 
-  if exist( 'bpp_values' ) & length( bpp_values ) > 0
+  if exist( 'bpp_values','var' ) && ~isempty( bpp_values )
     if length( bpp_values ) ~= length( bpp_anchor_bases );  fprintf( 'Must specify a bpp_anchor_base for each bpp_value \n'); end;
     for i = 1:length( bpp_values )
       %fprintf( fid, '%3.0f%%:type=L,anchor=%d,color=#303030,size=9;', 100*bpp_values(i), bpp_anchor_bases(i) );
@@ -145,7 +145,7 @@ fclose( fid );
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function hex_string = convert_rgb_to_hexadecimal( rgb );
+function hex_string = convert_rgb_to_hexadecimal( rgb )
 
 hex_string = '';
 for i = 1:3
@@ -153,7 +153,7 @@ for i = 1:3
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function s = pad_with_zero( s );
+function s = pad_with_zero( s )
 if length( s) == 1; 
   s = ['0',s];
 end
