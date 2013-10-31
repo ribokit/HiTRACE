@@ -149,6 +149,7 @@ tag = tags{ end };
 filepath = '';
 [ data_all, filenames_all, data_set_starts, data_length ] = ...
     read_abi_dirs( filepath, dirnames, dye_names_full, PLOT_STUFF );        %Reads in ABI files, performs leakage correction if specified, then plots traces
+drawnow
 
 if isempty( data_all ) ; return; end;
 
@@ -241,6 +242,7 @@ if PLOT_STUFF
   xticklabel_rotate;
   
   colormap( 1- gray(100));
+  drawnow;
 end
 
 
@@ -359,8 +361,7 @@ if PLOT_STUFF
   set( h,'interpreter','none','fontweight','bold' )
   colormap(  1 - gray(100) )
 
-  %print( '-depsc2',[tag,'_Figure3.eps']);
-
+  drawnow
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -404,8 +405,7 @@ if PLOT_STUFF
   set( h,'interpreter','none' )
   colormap(  1 - gray(100) )
 
-  %print( '-depsc2',[tag,'_Figure4.eps']);
-
+  drawnow;
   
   h = figure(5); clf;
   set_print_page(h, 1, [200 200 600 800], 'Final (reference)');
@@ -424,18 +424,12 @@ if PLOT_STUFF
   title( 'Reference ladder (channel 4)')
   
   colormap(  1 -gray(100) )
+  drawnow;
   
   figure(2)
   figure(4)
  
 end
-
-if PLOT_STUFF
-  %fprintf( ['\nCreated: ',tag,'_Figure2.eps\n'] );
-  %fprintf( ['Created: ',tag,'_Figure3.eps\n'] );
-  %fprintf( ['Created: ',tag,'_Figure4.eps\n'] );
-end
-
 
 %% Clarence Cheng - save all figures as .eps and .fig
 print_save_figure(figure(1), [tag,'_1Traces'], '', 1);
@@ -446,7 +440,6 @@ print_save_figure(figure(5), [tag,'_5FinalReference'], '', 1);
 
 
 %%
-
 figure(4);
 
 fprintf( '\n' );

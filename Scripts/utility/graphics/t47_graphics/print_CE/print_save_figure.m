@@ -38,7 +38,13 @@ else
 end;
 
 full_path = [dir_name, file_name,'.eps'];
-print(fig, '-depsc2', '-loose', '-r300', full_path);
+if exist( 'export_fig' ) == 2
+  full_path = strrep( full_path, '.eps', '.pdf' );
+  export_fig( full_path );
+else
+  print(fig, '-depsc2', '-loose', '-r300', full_path);
+end
+
 fprintf( ['Created: ', full_path, '\n'] );
 
 if ~exist('flg','var') || isempty(flg); flg = 0 ; end;
