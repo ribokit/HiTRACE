@@ -1,10 +1,10 @@
-function [ reactivity, reactivity_error, seqpos_out, unsaturated, attenuation_corrected, reactionProb] = get_reactivities( undiluted, diluted, undiluted_error, diluted_error, bkg_col, refpos, seqpos, exclude_pos_for_unsaturation, sd_cutoff )
+function [ reactivity, reactivity_error, seqpos_out, extra_annotations, unsaturated, attenuation_corrected, reactionProb] = get_reactivities( undiluted, diluted, undiluted_error, diluted_error, bkg_col, refpos, seqpos, exclude_pos_for_unsaturation, data_type, sequence, offset, sd_cutoff )
 % GET_REACTIVITIES: Correct data for saturating bands; subtract background; normalize; and propagate errors.
 %
 %  [reactivity, reactivity_error, seqpos_out, ...
 %   area_peak_corrected, attenuation_corrected, reactionProb] = 
 %       GET_REACTIVITIES(undiluted, diluted, undiluted_error, diluted_error,  ...
-%                        bkg_col, refpos, seqpos, sd_cutoff)
+%                        bkg_col, refpos, seqpos, data_type, sequence, offset, sd_cutoff)
 %
 % Required inputs:
 % undiluted = band intensities that may have some peaks that are saturating the detector
@@ -25,8 +25,11 @@ function [ reactivity, reactivity_error, seqpos_out, unsaturated, attenuation_co
 %
 % Optional inputs;
 % seqpos          = actual sequence positions specified in undiluted.
+% data_type       = cell of strings [like {'DMS','CMCT',...}] used to pick nucleotides within 
+%                     reference position for normalization.
+% sequence        = sequence of RNA, used to figure out subset of nucleotides for normalization.
+% offset          = offset to get from 1,2,... to conventional numbering (as specified in seqpos).
 % sd_cutoff       = standard deviation to use as a cutoff for saturation in 'unsaturate' step. 
-%
 %
 % Outputs:
 % reactivity = array of reactivities, ordered 5' to 3'. The first 
@@ -59,6 +62,9 @@ if nargin == 0; help( mfilename ); return; end;
 if ~exist( 'bkg_col','var' ); bkg_col = 0; end;
 if ~exist( 'refpos','var' ); refpos = []; end;
 if ~exist( 'seqpos','var' ); seqpos = [0 : size( undiluted, 1 ) - 1]; end;
+if ~exist( 'data_type','var' ); data_type = {}; end;
+if ~exist( 'sequence','var' );  sequence = ''; end;
+if ~exist( 'offset','var' ); offset = 0; end;
 if ~exist( 'exclude_pos_for_unsaturation','var' ); exclude_pos_for_unsaturation = []; end;
 attenuation_corrected = [];
 reactionProb = [];
@@ -118,19 +124,13 @@ if bkg_col(1) > 0;
   BACKGROUND_SUBTRACTED = 1;
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Normalization
-ref_pos_in = [];
-for k = 1:length( refpos )
-  ref_pos_in = [ ref_pos_in, find( seqpos == refpos(k) ) ];
-end
 
 %reactivity = reactionProb/mean(mean(reactionProb));
 reactivity       = reactionProb;
 reactivity_error = reactionProb_error;
 NORMALIZED = 0;
-if ~isempty( ref_pos_in )
-  [reactivity, norm_scalefactors, reactivity_error ] = quick_norm( reactionProb, ref_pos_in, reactionProb_error );
+if ~isempty( refpos )
+  [reactivity, reactivity_error ] = apply_normalization( reactionProb, reactionProb_error, refpos, seqpos, data_type, sequence, offset );
   image_scalefactor = 40;
   NORMALIZED = 1;
 end
@@ -148,16 +148,28 @@ reactivity_error = reactivity_error(2:end,:);
 REMOVED_FULL_EXTENSION_SITE = 1;
 
 fprintf( '\n' );
-if UNSATURATED;  fprintf( 'Unsaturated the data based on undiluted and diluted array.\n' );
+extra_annotations = {};
+if UNSATURATED
+    fprintf( 'Unsaturated the data based on undiluted and diluted array.\n' );
+    extra_annotations = [ extra_annotations, {'processing:unsaturation'} ];
 else fprintf( 'No attempt at unsaturation.\n' ); end;
 
-if BACKGROUND_SUBTRACTED; fprintf( 'Subtracted background.\n' );
+if BACKGROUND_SUBTRACTED; 
+  fprintf( 'Subtracted background.\n' );
+  extra_annotations = [ extra_annotations, {'processing:backgroundSubtraction'} ];
 else fprintf( 'No background subtraction.\n' ); end;
 
-if NORMALIZED; fprintf( 'Normalized base on refpos.\n' );
+extra_annotations = [ extra_annotations, 'processing:overmodificationCorrectionExact'];
+
+if NORMALIZED; 
+  fprintf( 'Normalized base on refpos.\n' );
+  extra_annotations = [ extra_annotations, {['processing:normalization:',make_tag_with_dashes(refpos,',')]} ];
 else fprintf( 'No normalization -- ''absolute'' reactivities outputted.\n' ); end;
 
 if REMOVED_FULL_EXTENSION_SITE; fprintf( 'Removed  "site 0", corresponding the fully extended cDNA [Use seqpos_out, which also removes that first data point.]\n'); end;
 
+
+fprintf( '\nFollowing is in extra_annotations variable:\n' )
+for j = 1:length( extra_annotations ); fprintf( ' %s\n', extra_annotations{j}  );end
 
 
