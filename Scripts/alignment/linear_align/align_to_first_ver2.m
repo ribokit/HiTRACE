@@ -1,4 +1,4 @@
-function [data_align, x_realign] = align_to_first_ver2( data, PLOT_STUFF, refcol ); 
+function [data_align, x_realign] = align_to_first_ver2( data, PLOT_STUFF, refcol );
 %
 % ALIGN_TO_FIRST_VER2:  (linear-time) alignment of a matrix of electropheretic traces to first trace
 %
@@ -43,15 +43,17 @@ shifts = [-max_shift:max_shift]; % rhiju
 scales = [0.95:0.005:1.05]; % sryoon
 
 if parallelization_exists()
-    parfor n = 1: num_capillaries   
-    fprintf(1,'Calculating correlation...%d\n',n);
-	[data_realign(:,n), x_realign(:,n) ] = align_to_first_inner_loop( data(:,n), FULL_SIGNAL_WINDOW, scales, shifts, d1, x, minbin_ref, maxbin_ref, PLOT_STUFF );
-  end
+    parfor n = 1: num_capillaries
+        fprintf(1,'Calculating correlation...%d\n',n);
+        [data_realign(:,n), x_realign(:,n) ] = align_to_first_inner_loop( data(:,n), FULL_SIGNAL_WINDOW, scales, shifts, d1, x, minbin_ref, maxbin_ref, PLOT_STUFF );
+    end
 else
-  for n = 1: num_capillaries   
-    fprintf(1,'Calculating correlation...%d\n',n);
-	[data_realign(:,n), x_realign(:,n) ] = align_to_first_inner_loop( data(:,n), FULL_SIGNAL_WINDOW, scales, shifts, d1, x, minbin_ref, maxbin_ref, PLOT_STUFF );
-  end
+    fprintf('\n'); revStr = ' '; fprintf(' \n');
+    
+    for n = 1: num_capillaries
+        revStr = lprintf(revStr,['Calculating correlation ', num2str(n), ' of ', num2str(num_capillaries), ' ... \n'], 2);
+        [data_realign(:,n), x_realign(:,n) ] = align_to_first_inner_loop( data(:,n), FULL_SIGNAL_WINDOW, scales, shifts, d1, x, minbin_ref, maxbin_ref, PLOT_STUFF );
+    end
 end
 
 
@@ -60,74 +62,74 @@ data_align = data_realign;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [data_align, x_realign] =  align_to_first_inner_loop( d, FULL_SIGNAL_WINDOW, scales, shifts, d1, x,minbin_ref, maxbin_ref, PLOT_STUFF );
 
-  %d     = baseline_subtract( data(:,n) );
+%d     = baseline_subtract( data(:,n) );
 
-  [minbin, middlebin, maxbin ] = get_signal_bins( d, FULL_SIGNAL_WINDOW );
-  %d2 = extract_profile( dezinger(d), minbin, maxbin );
-  
-  d2 = extract_profile( d, minbin, maxbin );
-  %d2 = d2 - smooth( d2, 100);
-  
-  %numpts = length(d1); % sryoon
+[minbin, middlebin, maxbin ] = get_signal_bins( d, FULL_SIGNAL_WINDOW );
+%d2 = extract_profile( dezinger(d), minbin, maxbin );
 
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  %shifts = [(-numpts+1):(numpts-1)]; %sryoon
+d2 = extract_profile( d, minbin, maxbin );
+%d2 = d2 - smooth( d2, 100);
 
-  % First do grid search
-  %scales = [0.95:0.005:1.05]; %sryoon
-  %scales = [0.8:0.01:1.2];
-  [best_scale, best_shift] = find_best_scale_shift( scales, shifts, ...
-						    d1, d2 );
+%numpts = length(d1); % sryoon
 
-  % Following helps a little, but doesn't really allow us to skip a
-  % fine grid search!
-  REFINE = 0;
-  if REFINE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%shifts = [(-numpts+1):(numpts-1)]; %sryoon
+
+% First do grid search
+%scales = [0.95:0.005:1.05]; %sryoon
+%scales = [0.8:0.01:1.2];
+[best_scale, best_shift] = find_best_scale_shift( scales, shifts, ...
+    d1, d2 );
+
+% Following helps a little, but doesn't really allow us to skip a
+% fine grid search!
+REFINE = 0;
+if REFINE
     scales = best_scale + [-0.02:0.005:0.02];
     [best_scale, best_shift] = find_best_scale_shift( scales, shifts, ...
-						      d1, d2 );
-
+        d1, d2 );
+    
     scales = best_scale + [-0.01:0.0005:0.01];
     [best_scale, best_shift] = find_best_scale_shift( scales, shifts, ...
-						      d1, d2 );
-  end
-  
-  %  Then refine
-  %  [Doesn't help too much.]
-  MINIMIZE_REFINE = 0;
-  if MINIMIZE_REFINE
+        d1, d2 );
+end
+
+%  Then refine
+%  [Doesn't help too much.]
+MINIMIZE_REFINE = 0;
+if MINIMIZE_REFINE
     options = optimset( 'MaxFunEvals',10,'Display','off','TolX',0.001);
     best_scale = ...
-	fminbnd( 'best_align', best_scale - 0.02, best_scale + 0.02, options, d1, d2 );
+        fminbnd( 'best_align', best_scale - 0.02, best_scale + 0.02, options, d1, d2 );
     [dummy, best_shift_index] = best_align( best_scale, d1, d2 );
     best_shift = shifts( best_shift_index );
-  end
-  
-  if PLOT_STUFF
-    subplot(1,1,1);    
-    if 0
-      d2a = interp1( x, d2, scales(best_scale_index)*x, 'linear',0);
-      %plot( x, (d1.^2)/ mean( d1.^2), 'b',x, (d2a.^2)/mean(d2.^2),'r' );
-      plot( x, d1, 'b',x+shifts( best_shift_index), d2a,'r' );
-      axis([0 numpts 0 20]);
-      pause;    
-    end
-  end
-  
-  %numpts = length( d_ref ); % sryoon
-  %x = [ 1: numpts_d_ref ]; % sryoon
-  new_x = best_scale * (x-minbin_ref+1 - best_shift)  + minbin - 1  ;
-  da = interp1( x, d, new_x, 'linear',0);
-  x_realign = new_x;
-  %da = baseline_subtract( da );
-  data_align = da;
+end
 
-  if PLOT_STUFF
+if PLOT_STUFF
+    subplot(1,1,1);
+    if 0
+        d2a = interp1( x, d2, scales(best_scale_index)*x, 'linear',0);
+        %plot( x, (d1.^2)/ mean( d1.^2), 'b',x, (d2a.^2)/mean(d2.^2),'r' );
+        plot( x, d1, 'b',x+shifts( best_shift_index), d2a,'r' );
+        axis([0 numpts 0 20]);
+        pause;
+    end
+end
+
+%numpts = length( d_ref ); % sryoon
+%x = [ 1: numpts_d_ref ]; % sryoon
+new_x = best_scale * (x-minbin_ref+1 - best_shift)  + minbin - 1  ;
+da = interp1( x, d, new_x, 'linear',0);
+x_realign = new_x;
+%da = baseline_subtract( da );
+data_align = da;
+
+if PLOT_STUFF
     plot( x, d_ref/mean(d_ref(minbin_ref:maxbin_ref)), 'b', ...
-	  x, da/mean(da( minbin_ref:maxbin_ref)), 'r' );
-    axis([ minbin-200 maxbin+200 -10 40]);    
+        x, da/mean(da( minbin_ref:maxbin_ref)), 'r' );
+    axis([ minbin-200 maxbin+200 -10 40]);
     pause;
-  end
+end
 
 
 
@@ -153,12 +155,12 @@ minbin = maxbin - FULL_SIGNAL_WINDOW + 1;
 middlebin = floor( 0.75*maxbin + 0.25*minbin  );
 
 if 0
-clf
-plot( d*100,'r' );
-hold on
-plot( tot_signal );
-hold off
-pause;
+    clf
+    plot( d*100,'r' );
+    hold on
+    plot( tot_signal );
+    hold off
+    pause;
 end
 
 %minbin = 1500; %jk
@@ -182,10 +184,10 @@ return;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function   [best_scale, best_shift] = find_best_scale_shift( scales, ...
-						  shifts, d1, d2 );
+    shifts, d1, d2 );
 
 % numscales = length( scales );
-% x = 1:length(d1); 
+% x = 1:length(d1);
 % d2x = [];
 %  for k = 1:numscales
 %    d2x(:,k) = interp1( x, d2, scales(k)*x,'linear', d2(end) );

@@ -29,7 +29,7 @@ if nargin == 0;  help( mfilename ); return; end;
 d_out = [];
 
 %if no 'block's are specified, align the whole thing to column 1
-if ~exist( 'align_blocks_in' ) | length( align_blocks_in) == 0;  align_blocks_in = { [1:size(d,2) ] }; end
+if ~exist( 'align_blocks_in','var' ) | isempty( align_blocks_in);  align_blocks_in = { [1:size(d,2) ] }; end
 if ~iscell( align_blocks_in ); 
   if length( align_blocks_in) == 1% might be a single refcol
     refcol = align_blocks_in;
