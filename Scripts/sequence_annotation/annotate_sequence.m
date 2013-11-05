@@ -136,11 +136,11 @@ while ~stop_sel
         if double( keychar ) == 29; keychar = '-'; end; % right arrow
         if double( keychar ) == 30; keychar = 'i'; end; % up arrow
         if double( keychar ) == 31; keychar = 'k'; end; % down arrow
-
-	%if double( keychar ) == 33; keychar = 'w'; end; % page up
-	%f double( keychar ) == 34; keychar = 's'; end; % page down
-
-	switch keychar
+        
+        %if double( keychar ) == 33; keychar = 'w'; end; % page up
+        %f double( keychar ) == 34; keychar = 's'; end; % page down
+        
+        switch keychar
             case {'p', 'P'}
                 [name path] = uiputfile('xsel.mat', 'Write xsel to matlab file');
                 if(name)
@@ -172,7 +172,7 @@ while ~stop_sel
             case {'e','E'} % doesn't work -- use mouse middle-click to erase.
                 xsel = remove_pick( xsel, xselpick );
                 update_plot = 1;
-	    case {'j','J','+','='}
+            case {'j','J','+','='}
                 %xselpick =  (ymax + ymin)/2;
                 current_relative_pos =  (xselpick - ymin)/(ymax-ymin);
                 yscale = (ymax - ymin)*0.75;
@@ -233,23 +233,23 @@ while ~stop_sel
             case {'r', 'R'}
                 xsel = []; % reset
                 update_plot = 1;
-            case {'x','X'}                
+            case {'x','X'}
                 peak_spacing = 0; %size( d_align, 1 )/ length(  sequence );
                 
                 if ~exist( 'area_pred','var' ) || isempty( area_pred )
                     fprintf( 'You need to input data_types or area_pred if you want to use auto-assign!\n' )
                 else
-		  input_bounds = [];
-		  if length( xsel ) == 2;
-		    input_bounds = sort(xsel);
-		    peak_spacing = ( input_bounds(2) - input_bounds(1) ) / length( sequence );
-		  end;
-		  area_pred_reverse = area_pred(end:-1:1,:); % should fix auto_assign to reverse.
-		  fprintf( 'Running auto-assign. This might take a minute.\n');
-
-		  xsel = auto_assign_sequence( d_align, sequence, area_pred_reverse, peak_spacing, input_bounds, data_types );
-	      
-		  xsel = reverse_sort( xsel ); % should fix auto_assign to reverse.
+                    input_bounds = [];
+                    if length( xsel ) == 2;
+                        input_bounds = sort(xsel);
+                        peak_spacing = ( input_bounds(2) - input_bounds(1) ) / length( sequence );
+                    end;
+                    area_pred_reverse = area_pred(end:-1:1,:); % should fix auto_assign to reverse.
+                    fprintf( 'Running auto-assign. This might take a minute.\n');
+                    
+                    xsel = auto_assign_sequence( d_align, sequence, area_pred_reverse, peak_spacing, input_bounds, data_types );
+                    
+                    xsel = reverse_sort( xsel ); % should fix auto_assign to reverse.
                 end
                 update_plot = 1;
         end

@@ -137,11 +137,11 @@ function print_xsel_split(d_align, xsel, seqpos, sequence, offset, area_pred, la
 %
 
 if nargin == 0; help( mfilename ); return; end;
-Script_VER = '1.2';
+Script_VER = '1.3';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % preparation before splitting
-fprintf(['print_xsel_split version ', Script_VER, '.\n\n']);
+fprintf(['print_xsel_split version ', print_str(Script_VER), '.\n\n']);
 
 fprintf(['d_align (',num2str(size(d_align,1)),' x ',num2str(size(d_align,2)),') provided by user.\n']);
 fprintf(['xsel (1 x ',num2str(length(xsel)),') provided by user.\n']);
@@ -230,23 +230,23 @@ is_auto_size_force = (page_num_H == 0) && (page_num_W == 0);
 [page_num_H, page_num_W] = auto_size(page_num_H, seqpos, page_num_W, size(d_align, 2), is_auto_size);
 
 % print out summary
-fprintf(['Divide into ', num2str(page_num_H), ' x ', num2str(page_num_W), ' pages, auto-size (', ...
-    num2yn(is_auto_size || is_auto_size_force), ').\n']);
-fprintf(['Spacer ', num2str(num_sp), ', make lines (']);
+fprintf(['Divide into ', print_str(page_num_H), ' x ', print_str(page_num_W), ' pages, auto-size (', ...
+    print_yn(is_auto_size || is_auto_size_force), ').\n']);
+fprintf(['Spacer ', print_str(num_sp), ', make lines (']);
 if all([num_l1_s, num_l1_i, num_l1_e, num_l2_s, num_l2_i, num_l2_e] == 0);
-    fprintf('NO).\n');
+    fprintf([print_yn(0), ').\n']);
 else
-    fprintf([num2str(num_l1_s), ':', num2str(num_l1_i), ':', num2str(num_l1_e), ' and ', ...
-        num2str(num_l2_s), ':', num2str(num_l2_i), ':', num2str(num_l2_e), ').\n']);
+    fprintf([print_str(num_l1_s), ':', print_str(num_l1_i), ':', print_str(num_l1_e), ' and ', ...
+        print_str(num_l2_s), ':', print_str(num_l2_i), ':', print_str(num_l2_e), ').\n']);
 end;
-fprintf(['Show title (', num2yn(is_title), '), show page number (', num2yn(is_page_no), ') show version (', ...
-    num2yn(is_version), '), print to file (', num2yn(is_print), ').\n']);
+fprintf(['Show title (', print_yn(is_title), '), show page number (', print_yn(is_page_no), ') show version (', ...
+    print_yn(is_version), '), print to file (', print_yn(is_print), ').\n']);
 
 % auto_trim if asked
-fprintf(['Auto trim (', num2yn(is_auto_trim), ')']);
+fprintf(['Auto trim (', print_yn(is_auto_trim), ')']);
 [d_align, xsel] = auto_trim(d_align, xsel, num_up_offset, num_low_offset, is_auto_trim);
 fprintf('.\n');
-fprintf(['Auto title size (', num2yn(is_auto_length), ').\n\n']);
+fprintf(['Auto title size (', print_yn(is_auto_length), ').\n\n']);
 
 % calculate auto_scale
 auto_scale = 27.5 / mean(mean(d_align));
@@ -285,10 +285,10 @@ h_l = get_figure_h_array(band, page_num_H);
 area_pred = flipud(area_pred);
 
 % pause point
-fprintf(['In each page, there are ',num2str(w_length),' lanes (X-axis), and ',...
-    num2str(h_length),' of traces (Y-axis):\n']);
-fprintf([' ', strrep(num2str(h_l), '  ', ', ') ,' sequence positions on each page row.\n']);
-fprintf('\n'); fprintf('Press any key to continue...\n');
+fprintf(['In each page, there are ',print_str(w_length),' lanes (X-axis), and ',...
+    print_str(h_length),' of traces (Y-axis):\n']);
+fprintf([' <strong>', strrep(num2str(h_l), '  ', ', ') ,'</strong> sequence positions on each page row.\n']);
+fprintf('\n'); fprintf(2,'Press any key to continue...\n');
 pause;
 
 
@@ -420,3 +420,14 @@ for i = 1:page_num_W
 end;
 
 if is_print; fprintf([num2str(i*j),' pages printed to folder "', dir_name,'".\n']); end;
+
+
+
+%%%%%%
+function str = print_yn (flag)
+
+str = ['<strong>',num2yn(flag),'</strong>'];
+
+function str = print_str (flag)
+
+str = ['<strong>',num2str(flag),'</strong>'];

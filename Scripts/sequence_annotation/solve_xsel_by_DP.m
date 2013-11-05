@@ -224,9 +224,13 @@ D_overlap2 = 2 * overlap_n_nminus1;
 min_pos_raw = 0;
 max_pos_raw = num_pixels - sum(optimal_SEP) + optimal_SEP(1);
 
+fprintf('\n'); revStr = ' '; fprintf(' \n');
+
 for n = 2:N
   
-  if ~XSEL_GIVEN, fprintf( 'Checking band position: %d of %d\n', n, N ); end;
+  if ~XSEL_GIVEN;
+      revStr = lprintf( revStr, ['Checking band position: ', num2str(n), ' of ', num2str(N), ' ... \n'],2 ); 
+  end;
   
   min_pos_raw = min_pos_raw + optimal_SEP(n-1);
   max_pos_raw = max_pos_raw + optimal_SEP(n);

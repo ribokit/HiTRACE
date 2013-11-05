@@ -39,7 +39,7 @@ end;
 full_path = [dir_name, file_name,'.eps'];
 
 [~, check_gs] = system('which gs'); 
-if exist( 'export_fig', 'file' ) && ~isempty(check_gs);
+if exist( 'export_fig', 'file' ) && ~isempty(check_gs) %&& 0;
   full_path = strrep( full_path, '.eps', '.pdf' );
   export_fig( full_path );
 else
