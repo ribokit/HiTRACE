@@ -66,11 +66,11 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %                                   title to the axis.
 %   [boolean_flag]  Optional    Provides the layout format that whether auto-trim
 %   [AT AS AL AP                    vertical boundaries, whether auto decide overall size,
-%    LN PR SQ                       whether auto decide text length for titles, whether draw
-%    TL VR PN]                      area_pred circles, whether draw lines, whether print to
-%                                   file, whether squared page, whether add title, version
-%                                   label and page number. Format in double array, default
-%                                   [1 1 1 0 1 1 0 1 1 1].
+%    AC LN PR SQ                    whether auto decide text length for titles, whether draw
+%    TL VR PN]                      area_pred circles, whether auto adjust contrast, whether 
+%                                   draw lines, whether print to file, whether squared page, 
+%                                   whether add title, version label and page number. Format 
+%                                   in double array, default [1 1 1 0 0 1 1 0 1 1 1].
 %                               'AT' (is_auto_trim) denotes whether to auto trim top and
 %                                   bottom of D_ALIGN for optimal display. Excess image
 %                                   size is denoted by UO and LO in NUMBER_FLAG;
@@ -81,7 +81,11 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %                                   size of titles to fit in page margins. This will
 %                                   override T1, T2, and T3 in FONT_SIZE;
 %                               'AP' (is_area_pred) denotes whether to draw circles based
-%                                   on area_pred.
+%                                   on area_pred;
+%                               'AC' (is_auto_contrast) denotes whether auto-increase
+%                                   contrast between vertical panels, an increment of 
+%                                   1.25^H_num will be applied for visual attenuation
+%                                   alleviation, i.e. [1, 1.25, 1.5625, 1.9531]x;
 %                               'LN' (is_line) denotes whether to make lines every LS of
 %                                   NUMBER_FLAG lanes or not;
 %                               'PR' (if_print) denotes whether to print to .eps files,
@@ -95,7 +99,7 @@ function print_CE_split(d_align, d_rdat, seqpos, mutpos, xsel, sequence, offset,
 %                               1 equals TRUE; 0 equals FALSE.
 %   [string_flag]   Optional    Provides the string input for output .eps file name,
 %   [FN DN MF                       folder name, modifier label, authorship and date on
-%    AU DT VR]                      printout. Also provides font weight options. Format
+%    AU DT VR                       printout. Also provides font weight options. Format
 %    T1 T2 T3                        in string cell, default {'', 'print_CE_split_output', ...
 %    VE YL YT                       {modifier}, '', 'mmm yyyy', '', 'Bold', 'Normal', ...
 %       XL XT]                      'Bold', 'Normal', 'Normal', 'Normal', 'Normal', 'Normal'}.
@@ -259,13 +263,13 @@ num_up_offset = num_flg(7); num_low_offset = num_flg(8);
 num_y_offset = num_flg(9); num_x_offset = num_flg(10);
 
 if ~exist('bol_flg','var'); bol_flg = []; end;
-bol_flg = is_valid_flag(bol_flg, [1 1 1 0 1 1 0 1 1 1]);
+bol_flg = is_valid_flag(bol_flg, [1 1 1 0 0 1 1 0 1 1 1]);
 for i = length(bol_flg)                 %
     bol_flg(i) = is_valid_boolean(bol_flg(i));
 end;
 is_auto_trim = bol_flg(1); is_auto_size = bol_flg(2); is_auto_length = bol_flg(3); is_area_pred = bol_flg(4);
-is_line = bol_flg(5); is_print = bol_flg(6); is_square = bol_flg(7);
-is_title = bol_flg(8); is_version = bol_flg(9); is_page_no = bol_flg(10);
+is_auto_contrast = bol_flg(5); is_line = bol_flg(6); is_print = bol_flg(7); is_square = bol_flg(8);
+is_title = bol_flg(9); is_version = bol_flg(10); is_page_no = bol_flg(11);
 
 if ~exist('str_flg','var'); str_flg = {}; end;
 str_flg = is_valid_flag(str_flg, {'', 'print_CE_split_output', '', '', datestr(date, 'mmm yyyy'), '', ...
@@ -308,8 +312,9 @@ is_auto_size_force = (page_num_H == 0) && (page_num_W == 0);
 [page_num_H, page_num_W] = auto_size(page_num_H, seqpos, page_num_W, mutpos, is_auto_size);
 
 % print out summary
-fprintf(['Divide into ', print_str(page_num_H), ' x ', print_str(page_num_W), ' pages, auto-size (', ...
-    print_yn(is_auto_size || is_auto_size_force), '), draw area_pred circles (', print_yn(is_area_pred), ').\n']);
+fprintf(['Divide into ', print_str(page_num_H), ' x ', print_str(page_num_W), ' pages, auto size (', ...
+    print_yn(is_auto_size || is_auto_size_force), '), draw area_pred circles (', print_yn(is_area_pred), '), auto constrast (' ,...
+    print_yn(is_auto_contrast), ').\n']);
 fprintf(['Spacer ', print_str(num_sp), ', make lines (', print_yn(is_line), ') every ', ...
     print_str(num_line_sp), ' lanes with offset (', print_str(num_line_offset), '), squared page (', print_yn(is_square), ').\n']);
 fprintf(['Show title (', print_yn(is_title), '), show page number (', print_yn(is_page_no), ') show version (', ...
@@ -432,7 +437,10 @@ for i = 1:page_num_W
         end;
         set(h, 'Position', [(fig_num - 1) * 20, 0, fig_w, fig_h]);
         
-        image(d_temp * scale_fc); hold on;
+        % auto-contrast scale_factor adjustment
+        scale_fc_h = scale_fc;
+        if is_auto_contrast; scale_fc_h = scale_fc*1.25^(j-1); end;
+        image(d_temp * scale_fc_h); hold on;
         colormap(1 - gray());
         
         % make lines
@@ -475,9 +483,11 @@ for i = 1:page_num_W
         
         % make circles based from area_pred
         if is_area_pred
+            
+            w_lim = min(size(area_pred,2), w_length * i);
             area_pred_sub = area_pred( ...
                 (sum(h_l(1:j)) - h_l(j) + 1): sum(h_l(1:j)), ...
-                (w_length * (i - 1) + 1): w_length * i);
+                (w_length * (i - 1) + 1): w_lim);
             xsel_sub = xsel_pos_sub(xsel_pos_sub ~= 0);
             xsel_sub = xsel_sub(2:end);
             for m = 1:size(area_pred_sub, 1)

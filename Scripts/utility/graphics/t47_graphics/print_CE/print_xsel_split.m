@@ -52,12 +52,17 @@ function print_xsel_split(d_align, xsel, seqpos, sequence, offset, area_pred, la
 %                               'L2S:L2I:L2E' (line_2 start:interval:end) denotes the
 %                                   positions for separating line set 2. All 0 means
 %                                   not drawing.
-%   [boolean_flag]  Optional    Provides the layout format that whether auto-trim
-%   [AT AS AL PR                    vertical boundaries, whether auto decide overall size,
-%    TL VR PN]                      whether auto decide text length for titles, whether
+%   [boolean_flag]  Optional    Provides the layout format that whether one-page only, 
+%   [OP AT AS                       whether auto-trim vertical boundaries, whether auto 
+%    AL AC PR                       decide overall size, whether auto decide text length 
+%    TL VR PN]                      for titles, whether auto adjust contrast, whether  
 %                                   print to file, whether add title, version label and
-%                                   page number. Format in double array, default is
-%                                   [1 1 1 1 1 1 1].
+%                                   page number. Format in  double  array, default is 
+%                                   [0 1 1 1 0 1 1 1 1].
+%                               'OP' (is_one_page) denotes whether use compact one-page 
+%                                   mode. Instead of multi-pages, it will arrange by 
+%                                   multi-subplots. y-axis labels will only be shown on 
+%                                   right-side, W will be forced to 1;
 %                               'AT' (is_auto_trim) denotes whether to auto trim top and
 %                                   bottom of D_ALIGN for optimal display. Excess image
 %                                   size is denoted by UO and LO in NUMBER_FLAG;
@@ -67,6 +72,10 @@ function print_xsel_split(d_align, xsel, seqpos, sequence, offset, area_pred, la
 %                               'AL' (is_auto_length) denotes whether auto-decide font
 %                                   size of titles to fit in page margins. This will
 %                                   override T1, T2, and T3 in FONT_SIZE;
+%                               'AC' (is_auto_contrast) denotes whether auto-increase
+%                                   contrast between vertical panels, an increment of 
+%                                   1.25^H_num will be applied for visual attenuation
+%                                   alleviation, i.e. [1, 1.25, 1.5625, 1.9531]x;
 %                               'PR' (if_print) denotes whether to print to .eps files,
 %                                   prints will be saved in folder DN of STRING_FLAG;
 %                               'TL' (is_title) denotes whether title is added to figure;
@@ -187,12 +196,13 @@ num_l1_s = num_flg(7); num_l1_i = num_flg(8); num_l1_e = num_flg(9);
 num_l2_s = num_flg(10); num_l2_i = num_flg(11); num_l2_e = num_flg(12);
 
 if ~exist('bol_flg','var'); bol_flg = []; end;
-bol_flg = is_valid_flag(bol_flg, [1 1 1 1 1 1 1]);
+bol_flg = is_valid_flag(bol_flg, [0 1 1 1 0 1 1 1 1]);
 for i = length(bol_flg)
     bol_flg(i) = is_valid_boolean(bol_flg(i));
 end;
-is_auto_trim = bol_flg(1); is_auto_size = bol_flg(2); is_auto_length = bol_flg(3);
-is_print = bol_flg(4); is_title = bol_flg(5); is_version = bol_flg(6); is_page_no = bol_flg(7);
+is_one_page = bol_flg(1);
+is_auto_trim = bol_flg(2); is_auto_size = bol_flg(3); is_auto_length = bol_flg(4); is_auto_contrast = bol_flg(5);
+is_print = bol_flg(6); is_title = bol_flg(7); is_version = bol_flg(8); is_page_no = bol_flg(9);
 
 if ~exist('str_flg','var'); str_flg = {}; end;
 str_flg = is_valid_flag(str_flg, {'', '', 'print_xsel_split_output', '', datestr(date, 'mmm yyyy'), '', ...
@@ -230,8 +240,14 @@ is_auto_size_force = (page_num_H == 0) && (page_num_W == 0);
 [page_num_H, page_num_W] = auto_size(page_num_H, seqpos, page_num_W, size(d_align, 2), is_auto_size);
 
 % print out summary
-fprintf(['Divide into ', print_str(page_num_H), ' x ', print_str(page_num_W), ' pages, auto-size (', ...
-    print_yn(is_auto_size || is_auto_size_force), ').\n']);
+fprintf(['Divide into ', print_str(page_num_H)]);
+if is_one_page; 
+    fprintf(' panels');
+else
+    fprintf([' x ', print_str(page_num_W), ' pages']);
+end;
+fprintf([', one page (', print_yn(is_one_page), '), auto size (', ...
+    print_yn(is_auto_size || is_auto_size_force), '), auto contrast (', print_yn(is_auto_contrast), ').\n']);
 fprintf(['Spacer ', print_str(num_sp), ', make lines (']);
 if all([num_l1_s, num_l1_i, num_l1_e, num_l2_s, num_l2_i, num_l2_e] == 0);
     fprintf([print_yn(0), ').\n']);
@@ -257,6 +273,7 @@ fprintf( 'scale_used = %f\n', scale_fc);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % split d_align into h*w sub matrices
 % expand d_align to divisible size by h and w
+if is_one_page; page_num_W = 1; end;
 [d_align, h_length, w_length] = d_expand_divisible(d_align, page_num_H, page_num_W);
 
 % add spacers on each border of each figure
@@ -296,6 +313,13 @@ pause;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % plot each figure
 close all;
+if is_one_page;
+    figure();
+    set(gcf, 'PaperOrientation', 'Portrait', 'PaperPositionMode', 'Manual', ...
+        'PaperSize', [8.5 11], 'Color', 'White');
+    set(gcf, 'PaperPosition', [0 0 8.5 11]);
+    set(gcf, 'Position', [0, 0, 600, 800]);
+end;
 
 for i = 1:page_num_W
     for j = 1:page_num_H
@@ -306,7 +330,11 @@ for i = 1:page_num_W
         [xsel_pos_sub, xsel_txt_sub] = parse_xsel_label(band, j, 2);
         
         % add figure number to the top left and bottom right corner
-        fig_name = ['[', num2str(j), ', ', num2str(i), ']'];
+        if is_one_page;
+            fig_name = ['[', num2str(j), ']'];
+        else
+            fig_name = ['[', num2str(j), ', ', num2str(i), ']'];
+        end;
         if is_page_no == 1;
             xsel_pos_sub(1) = round(num_sp / 2);
             xsel_txt_sub{1} = fig_name;
@@ -319,17 +347,32 @@ for i = 1:page_num_W
         name(i) = fill_space_label(name(i), 0);
         xsel_txt_sub = fill_space_label(xsel_txt_sub, 1);
         
-        fig_num = (i - 1) * page_num_H + j;
-        h = figure(fig_num);
+        % setup subplot panels for one_page
+        if is_one_page;
+            h = subplot(1, page_num_H, j);
+            fig_num = j;
+        else
+            fig_num = (i - 1) * page_num_H + j;
+            h = figure(fig_num);
+        end;
         
         % adjustment for auto_title_length
-        fig_w = 600; title_size_fc = 0.7; title_h = 0.45;
-        set(gcf, 'PaperOrientation', 'Portrait', 'PaperPositionMode', 'Manual', ...
-            'PaperSize', [8.5 11], 'Color', 'White');
-        set(gcf, 'PaperPosition', [0 1 8.5 10]);
-        fig_h = 800; title_offset = 0;
-        set(h, 'Position', [(fig_num - 1) * 20, 0, fig_w, fig_h]);
-        image(d_temp * scale_fc); hold on;
+        if ~is_one_page;
+            fig_w = 600; fig_h = 800; 
+            set(gcf, 'PaperOrientation', 'Portrait', 'PaperPositionMode', 'Manual', ...
+                'PaperSize', [8.5 11], 'Color', 'White');
+            set(gcf, 'PaperPosition', [0 0 8.5 11]);
+            set(h, 'Position', [(fig_num - 1) * 20, 0, fig_w, fig_h]);
+            title_h = 0.45;
+        else
+            title_h = 0.35;
+        end;
+        title_size_fc = 0.7;  title_offset = 0;
+        
+        % auto-contrast scale_factor adjustment
+        scale_fc_h = scale_fc;
+        if is_auto_contrast; scale_fc_h = scale_fc*1.25^(j-1); end;
+        image(d_temp * scale_fc_h); hold on;
         colormap(1 - gray());
         
         % make lines
@@ -387,39 +430,57 @@ for i = 1:page_num_W
         % version label of right-bottom corner
         if (is_version && j == page_num_H && i == page_num_W)
             ver_str = ['HiTRACE rev. ', num2str(ver_hitrace), ' / print\_xsel\_split ver. ', Script_VER, '   '];
-            ylim = get(gca, 'YLim'); xlim = get(gca, 'XLim');
+            ylim = get(gca, 'YLim') - is_one_page*10; xlim = get(gca, 'XLim');
             text(xlim(2), ylim(2), ver_str, 'HorizontalAlignment', 'Right', 'VerticalALignment', 'Bottom', ...
                 'FontWeight', ft_w_ver, 'FontSize', ft_sz_ver, 'Color', color_ver);
         end;
 
         % second y-axis labels
-        y_1 = gca; y_2 = copyobj(y_1, gcf);
-        set(y_2, 'YAxisLoc', 'Left');
-        hold on;
+        if ~is_one_page;
+            y_1 = gca; y_2 = copyobj(y_1, gcf);
+            set(y_2, 'YAxisLoc', 'Left');
+            hold on;
+        end;
         
         % add title if asked
-        if (is_title && j == 1 && i == page_num_W);
-            title([' ' title_name ' '], 'HorizontalAlignment', 'Left', 'VerticalAlignment', 'Bottom',...
-                'FontWeight', ft_w_title_1, 'FontSize', ft_sz_title_1, 'FontName', 'Courier', 'Color', color_title_1);
-            tit = get(gca, 'Title'); pos = get(tit, 'Position');
-            set(tit, 'Position', [0 (pos(2) + title_offset) pos(3)]);
-            if is_auto_length && ~isempty(title_name); auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc * 0.8, title_h); end;
-            
+        if (is_title && i == page_num_W && ((~is_one_page && j == 1) || (is_one_page && j == page_num_H)) );
+        
             comment = [author_str, date_str];
             xlim = get(gca, 'XLim');
             txt = text(xlim(2), 0, comment);
             set(txt, 'HorizontalAlignment', 'Right', 'VerticalAlignment', 'Bottom',...
                 'FontWeight', ft_w_title_2, 'FontSize', ft_sz_title_2, 'FontName', 'Courier', 'Color', color_title_2);
             if is_auto_length; auto_font_size(txt, min((get(gcf,'PaperSize'))) * title_size_fc * 0.2, title_h / 2); end;
+           
+            title([' ' title_name ' '], 'HorizontalAlignment', 'Left', 'VerticalAlignment', 'Bottom',...
+                'FontWeight', ft_w_title_1, 'FontSize', ft_sz_title_1, 'FontName', 'Courier', 'Color', color_title_1);
+            tit = get(gca, 'Title'); pos = get(tit, 'Position');
+            
+            if ~is_one_page;
+                set(tit, 'Position', [0 (pos(2) + title_offset) pos(3)]);
+                tit_adjst = 0.8;
+            else
+                tit_x_adjst = [0 0.22 0.45 0.65 0.9];
+                set(tit, 'Position', [-min((get(gcf,'PaperSize'))) * title_size_fc * tit_x_adjst(page_num_H) (pos(2) + title_offset) pos(3)]);
+                tit_adjst = 0.6;
+            end;
+            if is_auto_length && ~isempty(title_name); auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc * tit_adjst, title_h); end;
         end;
         hold off;
         
         % print to file if asked
-        if is_print; print_save_figure(h, [file_name, num2str(fig_num)], dir_name, 0); end;
+        if is_print && ~is_one_page; print_save_figure(h, [file_name, num2str(fig_num)], dir_name, 0); end;
     end;
 end;
 
-if is_print; fprintf([num2str(i*j),' pages printed to folder "', dir_name,'".\n']); end;
+if is_print; 
+    if is_one_page;
+        print_save_figure(gcf, [file_name, 'all'], dir_name, 0);
+        fprintf(['1 page printed to folder "', dir_name,'".\n']);
+    else
+        fprintf([num2str(i*j),' pages printed to folder "', dir_name,'".\n']);
+    end;
+end;
 
 
 
