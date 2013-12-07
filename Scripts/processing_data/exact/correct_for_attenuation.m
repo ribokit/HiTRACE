@@ -59,12 +59,12 @@ set_print_page(gcf, 0, [0 0 800 600], 'Attenuation Correction');
 
 subplot(1,2,1);
 image( [1:size(d_ratios,2)], seqpos, d_ratios*2000 );
-title( 'BEFORE  attenuation correction', 'FontSize', 11, 'FontWeight', 'Bold' );
+title( 'BEFORE', 'FontSize', 11, 'FontWeight', 'Bold' );
 if ( size( d_correct, 2 ) < 100 ) make_lines; end;
 subplot(1,2,2);
 
 image( [1:size(d_ratios,2)], seqpos, d_correct*2000 );
-title( 'AFTER  attenuation correction', 'FontSize', 11, 'FontWeight', 'Bold' );
+title( 'Attenuation Corrected', 'FontSize', 11, 'FontWeight', 'Bold' );
 colormap( 1 - gray(100) );
 if ( size( d_correct, 2 ) < 100 ) make_lines; end;
 

@@ -137,7 +137,7 @@ end
 
 
 image( 1:ntrace, seqpos, reactivity * image_scalefactor );
-title( 'Final', 'FontSize', 11, 'FontWeight', 'Bold');
+title( 'Normalized', 'FontSize', 11, 'FontWeight', 'Bold');
 if ( ntrace < 100 ) make_lines; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
