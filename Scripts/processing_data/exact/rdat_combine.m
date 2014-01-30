@@ -31,16 +31,22 @@ N_rdat = length( rdat_files );
 MIN_REL_ERROR = 0.1;
 N = 0;
 for i = 1:N_rdat
-  rdats{i} = read_rdat_file(rdat_files{i});
-
+  if ischar( rdat_files{i} )
+    rdats{i} = read_rdat_file(rdat_files{i});
+    rdat_tag = basename( rdat_files{i} );
+  else
+    rdats{i} = rdat_files{i};
+    rdat_tag = rdats{i}.name;
+  end
+  
   reactivity = rdats{i}.reactivity;
   for j = 1:size( reactivity,2 )
     if all( reactivity(:,j) == 0 ); continue; end;
     N = N + 1;
     reactivities{N} = reactivity(:,j);
     min_error = mean( max(reactivity(:,j),0) ) * MIN_REL_ERROR;
-    errors{N} = max( rdats{i}.reactivity_error(:,j), min_error );
-    rdat_file_legends{N} = basename( rdat_files{i} );
+    errors{N} = max( rdats{i}.reactivity_error(:,j), min_error );    
+    rdat_file_legends{N} = rdat_tag;
   end
   
 end;
@@ -49,14 +55,20 @@ for i = 1:N
   for j = 1:size( reactivities{i} )
     if ( reactivities{i}(j) < 0 ) errors{i}(j) = max( errors{i}(j), abs( reactivities{i}(j) ) ); end;
   end
+  L(i) = length( reactivities{i} );
+end
+minL = min( L );
+for i = 1:N
+  reactivities{i} = reactivities{i}(1:minL);
+  errors{i} = errors{i}(1:minL);
 end
 
 reactivities = cell2mat(reactivities);
 errors = cell2mat(errors); %reformatting to use std function
 L = size( reactivities, 1 );
-sequence = rdats{1}.sequence;
+sequence = rdats{1}.sequence(1:minL);
 offset = rdats{1}.offset;
-seqpos = rdats{1}.seqpos;
+seqpos = rdats{1}.seqpos(1:minL);
 
 [final_reactivity, final_error, flags ] = average_data_filter_outliers( reactivities, errors, seqpos ); %averages data, weighted by uncertainty
 

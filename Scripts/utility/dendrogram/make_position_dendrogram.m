@@ -1,4 +1,4 @@
-function [perm_seq,perm_mod,dm_seq,dm_mod,r,r_error] = make_position_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, labels, seq_labels, USE_CORRELATION );
+function [perm_seq,perm_mod,dm_seq,dm_mod,r,r_error] = make_position_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, seqpos, labels, seq_labels, USE_CORRELATION );
 % MAKE_POSITION_DENDROGRAM
 %
 %  [perm_seq_out,perm_mod_out] = make_position_dendrogram( reactivity, subset_seq, subset_mod, seqpos, labels, sequences, offsets, sources, source_names );

@@ -1,10 +1,10 @@
 function [ reactivity, reactivity_error, seqpos_out, extra_annotations, unsaturated, attenuation_corrected, reactionProb] = get_reactivities( undiluted, diluted, undiluted_error, diluted_error, bkg_col, refpos, seqpos, exclude_pos_for_unsaturation, data_type, sequence, offset, sd_cutoff )
 % GET_REACTIVITIES: Correct data for saturating bands; subtract background; normalize; and propagate errors.
 %
-%  [reactivity, reactivity_error, seqpos_out, ...
+%  [reactivity, reactivity_error, seqpos_out, extra_annotations,
 %   area_peak_corrected, attenuation_corrected, reactionProb] = 
 %       GET_REACTIVITIES(undiluted, diluted, undiluted_error, diluted_error,  ...
-%                        bkg_col, refpos, seqpos, data_type, sequence, offset, sd_cutoff)
+%                        bkg_col, refpos, seqpos, exclude_pos_for_unsaturation, data_type, sequence, offset, sd_cutoff)
 %
 % Required inputs:
 % undiluted = band intensities that may have some peaks that are saturating the detector

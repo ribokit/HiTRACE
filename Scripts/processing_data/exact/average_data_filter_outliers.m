@@ -56,11 +56,12 @@ for i = 1:L
   s = std( reactivities(i, gp) );
   final_error(i) = max( s/sqrt( length(gp)), 0 );
 end
+final_error = final_error';
 
 % now look over all input reactivity profiles -- are there some that are just crazy?
 bad_traces = [];
 for j = 1:N
-  mean_rel_error(j) = mean( max(abs(reactivities(:,j) - final_reactivity) ./ final_error',0) );
+  mean_rel_error(j) = mean( max(abs(reactivities(:,j) - final_reactivity) ./ final_error,0) );
 end
 for j = 1:N  
   %[mean_rel_error(j) median( mean_rel_error )]

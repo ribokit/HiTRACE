@@ -1,11 +1,11 @@
-function [perm_mod,dm,r] = make_modifier_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, labels, seqpos_tags, USE_CORRELATION );
+function [perm_mod,dm,r] = make_modifier_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, seqpos, labels, seqpos_tags, USE_CORRELATION );
 % MAKE_MODIFIER_DENDROGRAM
 %
-% [perm_mod,dm,r] = make_modifier_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, labels, seqpos_tags );
-%
+% [perm_mod,dm,r] = make_modifier_dendrogram( reactivity, reactivity_error, subset_seq, subset_mod, seqpos, labels, seqpos_tags );
 %
 %  Clustering of deep chemical profiles and a nice big plot.
 %
+% (C) R. Das, Stanford University, 2013.
 
 if (nargin < 1); help( mfilename ); return; end;
   
@@ -62,13 +62,13 @@ set(gcf,'Pointer','fullcross');
 
 dm = squareform(dm);
 
-if exist( 'seqpos_tags' ); 
-  set(gca,'ytick',seqpos( subset_seq ), 'yticklabel', seqpos_tags( subset_seq ),'fontsize',6,'ygrid','off' );
-  gp = find( mod( seqpos, 10 ) == 0 );
-  make_lines_horizontal( seqpos(gp), 'k',0.25,':');
-else 
-  gp = find( mod(seqpos(subset_seq),10) == 0 );
-  set(gca,'ytick',subset_seq(gp),'yticklabel',seqpos(subset_seq(gp)) );
-end
+%if exist( 'seqpos_tags' ); 
+set(gca,'ytick',1:length( subset_seq ), 'yticklabel', seqpos_tags( subset_seq ),'fontsize',6,'ygrid','off' );
+gp = find( mod( seqpos, 10 ) == 0 );
+make_lines_horizontal( seqpos(gp), 'k',0.25,':');
+%else 
+%  gp = find( mod(seqpos(subset_seq),10) == 0 );
+%  set(gca,'ytick',subset_seq(gp),'yticklabel',seqpos(subset_seq(gp)) );
+%end
 
 

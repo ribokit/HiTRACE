@@ -1,4 +1,4 @@
-function [d_out, m, s] = filter_outliers( d, stdev_cutoff )
+function [d_out, m, s, gp] = filter_outliers( d, stdev_cutoff )
 %  d_out = filter_outliers( d, stdev_cutoff )
 %
 
@@ -8,6 +8,6 @@ d_out = d;
 for n = 1:N_ITER
   s = std( d_out );
   m = mean( d_out );
-  gp = find( abs(d_out - m) / s < stdev_cutoff );
-  d_out = d_out( gp );
+  gp = find( abs(d - m) / s < stdev_cutoff );
+  d_out = d( gp );
 end
