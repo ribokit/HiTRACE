@@ -17,45 +17,46 @@ function [d_sub, bd] = baseline_subtract_smooth( d, ymin,ymax, A, B, PLOT_STUFF)
 %
 % Modification of Baseline Model V1.0 Yuanxin Xi, IDAV, UC Davis, originally
 %  used for baseline correction of chomatographic traces
-% 
+%
 
 if nargin == 0;  help( mfilename ); return; end;
 
 d_sub = []; bd = [];
 
 %Declare boundaries
-if ~exist( 'ymin') | ymin == 0;  ymin = 1;end
-if ~exist( 'ymax') | ymax == 0;  ymax = size(d,1); end
-if ~exist('A') | A == 0;  A = 2e9; end
-if ~exist('B') | B == 0;  B = 2e4; end
-if ~exist('PLOT_STUFF')  PLOT_STUFF = 1; end
+if ~exist( 'ymin','var') || ymin == 0;  ymin = 1;end;
+if ~exist( 'ymax','var') || ymax == 0;  ymax = size(d,1); end;
+if ~exist('A','var') || A == 0;  A = 2e9; end;
+if ~exist('B','var') || B == 0;  B = 2e4; end;
+if ~exist('PLOT_STUFF','var')  PLOT_STUFF = 1; end;
 
 
-if parallelization_exists()
-  parfor k = 1:size(d,2);
-      fprintf(1,'Baseline subtracting...%d\n',k);
-      [d_sub(:,k),bdx(:,k)] = baseline_subtract_smooth_one_profile( d(:,k), ymin,ymax,A,B);
-  end 
+if parallelization_exists();
+    parfor k = 1:size(d,2);
+        fprintf(1,'Baseline subtracting...%d\n',k);
+        [d_sub(:,k),bdx(:,k)] = baseline_subtract_smooth_one_profile( d(:,k), ymin,ymax,A,B);
+    end
 else
-  for k = 1:size(d,2)
-      fprintf(1,'Baseline subtracting...%d\n',k);
-      [d_sub(:,k),bd(:,k)] = baseline_subtract_smooth_one_profile( d(:,k), ymin,ymax,A,B);
-  end 
+    fprintf('\n'); revStr = ' '; fprintf(' \n');
+    
+    for k = 1:size(d,2)
+        revStr = lprintf(revStr, ['Baseline subtracting ', num2str(k), ' of ', num2str(size(d,2)), ' ... \n'], 2);
+        [d_sub(:,k),bd(:,k)] = baseline_subtract_smooth_one_profile( d(:,k), ymin,ymax,A,B);
+    end
 end
 
 if PLOT_STUFF
-  subplot(1,2,1);
-  scalefactor = 40/mean(mean(d(ymin:ymax,:)));
-  image( d(ymin:ymax,:) * scalefactor );
-  subplot(1,2,2);
-  image( d_sub(ymin:ymax,:) * scalefactor );
-  colormap( 1 - gray(100) );
+    subplot(1,2,1);
+    scalefactor = 40/mean(mean(d(ymin:ymax,:)));
+    image( d(ymin:ymax,:) * scalefactor );
+    subplot(1,2,2);
+    image( d_sub(ymin:ymax,:) * scalefactor );
+    colormap( 1 - gray(100) );
 end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [d_sub, bd ] = baseline_subtract_smooth_one_profile( d, ymin,ymax, ...
-						  A,B);
+function [d_sub, bd ] = baseline_subtract_smooth_one_profile( d, ymin,ymax, A,B)
 
 bd=zeros(length(d),1);
 %bd(ymin:ymax)=baseline_xi(d(ymin:ymax),2e35,2e29 );
@@ -82,9 +83,9 @@ d_sub=d - bd;
 %       s 1x1 noise standard deviation
 %Output:
 %       bd Nx1 baseline
-% 
+%
 % new -- filter out negativeoutlier before determining baseline
-% 
+%
 function bd=baseline_xi(b,A,B,s)
 
 b = filter_negative_outliers( b );
@@ -103,23 +104,23 @@ nm = norm( bd - bd0);
 nm0 = realmax;
 
 %
-% Going to solve:  D * bd = m  
+% Going to solve:  D * bd = m
 % Note that, relative to paper, D and m have been divided through
 % by A. Also, there's a mistake in the expression for M (should be
 % +1, not -1).
 %
-%M0 = - ones(L,1) / As; 
-M0 = s * ones( L, 1 ) / A; 
+%M0 = - ones(L,1) / As;
+M0 = s * ones( L, 1 ) / A;
 
 % initial D matrix
 e = ones(L,1);
 D0 = spdiags( [ 2*e -8*e 12*e -8*e 2*e], -2:2, L, L );
-D0(1,1) = 2; 
+D0(1,1) = 2;
 D0(L,L) = 2;
 
-D0(2,1) = -4; 
-D0(1,2) = -4; 
-D0(L,L-1) = -4; 
+D0(2,1) = -4;
+D0(1,2) = -4;
+D0(L,L-1) = -4;
 D0(L-1,L) =-4;
 
 D0(2,2) = 10;
@@ -129,24 +130,24 @@ D0(L-1,L-1) = 10;
 I=0;
 
 while (nm > 10 | I < 5) & I<30
-  %& nm<nm0;
-  I=I+1;
-
-  M=M0;D=D0;bd0=bd;nm0=nm;
-
-  for i=1:L
-    if bd(i)>b(i)
-      %M(i) = M(i) + 2 * Bs * b(i)/As;
-      %D(i,i) = D(i,i) + 2 * Bs/As;
-      M(i) = M(i) + 2 * (B / A) * b(i);
-      D(i,i) = D(i,i) + 2 * ( B / A);
+    %& nm<nm0;
+    I=I+1;
+    
+    M=M0;D=D0;bd0=bd;nm0=nm;
+    
+    for i=1:L
+        if bd(i)>b(i)
+            %M(i) = M(i) + 2 * Bs * b(i)/As;
+            %D(i,i) = D(i,i) + 2 * Bs/As;
+            M(i) = M(i) + 2 * (B / A) * b(i);
+            D(i,i) = D(i,i) + 2 * ( B / A);
+        end
     end
-  end
-
-  bd=D\M;
-  
-  % arbitrary convergence check
-  nm = norm( bd0 - bd );
+    
+    bd=D\M;
+    
+    % arbitrary convergence check
+    nm = norm( bd0 - bd );
 end
 
 

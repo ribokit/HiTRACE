@@ -33,7 +33,7 @@ dirnames = check_for_subdirs( dirnames );
 
 for j = 1:length( dirnames )
   % This script calls read_abi.m which has the actual file format.
-  fprintf( 1, 'Reading in:  %s\n',dirnames{j} ); 
+  fprintf( 2, ' Reading in:  %s\n',dirnames{j} ); 
   
   [data,filenames] = plot_ABI_runs( [filepath, dirnames{j}], dye_names_full, PLOT_STUFF ); 
 

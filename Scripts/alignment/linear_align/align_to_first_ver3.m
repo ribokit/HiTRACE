@@ -1,4 +1,4 @@
-function [data_align, x_realign, d1] = align_to_first_ver3( data, PLOT_STUFF, refcol );
+function [data_align, x_realign, d1] = align_to_first_ver3( data, PLOT_STUFF, refcol )
 %
 % ALIGN_TO_FIRST_VER3:  (linear-time) alignment of a matrix of electropheretic traces to first trace
 %
@@ -27,44 +27,45 @@ d1 = extract_profile( d_ref , minbin_ref, maxbin_ref );
 %d1 = d1 - smooth( d1, 100);
 
 numpts_d_ref = length( d_ref );
-x = [ 1: numpts_d_ref ]; 
-x_realign = zeros(numpts_d_ref,num_capillaries); 
+x = [ 1: numpts_d_ref ];
+x_realign = zeros(numpts_d_ref,num_capillaries);
 data_align = zeros(numpts_d_ref,num_capillaries);
-numpts = length(d1); 
+numpts = length(d1);
 max_shift = 1000; min_shift = -1 * max_shift;
-%scales = [0.93:0.005:1.08]; 
-scales = [0.8:0.0025:1.2]; 
-%scales = [1.0:0.05:1.4]; 
+%scales = [0.93:0.005:1.08];
+scales = [0.8:0.0025:1.2];
+%scales = [1.0:0.05:1.4];
 
+fprintf(' \n'); revStr = ' ';
 
 for n = 1: num_capillaries
-  %d     = baseline_subtract( data(:,n) );
-  d     = data(:,n);
-
-  [minbin, middlebin, maxbin ] = get_signal_bins( d, FULL_SIGNAL_WINDOW );
-  %d2 = extract_profile( dezinger(d), minbin, maxbin );
-  d2 = extract_profile( d, minbin, maxbin );
-  %d2 = d2 - smooth( d2, 100);
-  
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  fprintf(1,'Calculating correlation...%d\n',n);
-
-  % Do grid search
-  [best_scale, best_shift] = find_best_scale_shift_COARSE( scales, min_shift, max_shift, d1, d2 );
-  %[best_scale, best_shift] = find_best_scale_shift( scales, min_shift, max_shift, d1, d2 );
-
-  new_x = best_scale * (x-minbin_ref+1 - best_shift)  + minbin - 1  ;
-  da = interp1( x, d, new_x, 'linear',0);
-  x_realign(:,n) = new_x;
-  %da = baseline_subtract( da );
-  data_align(:,n) = da;
-
+    %d     = baseline_subtract( data(:,n) );
+    d     = data(:,n);
+    
+    [minbin, middlebin, maxbin ] = get_signal_bins( d, FULL_SIGNAL_WINDOW );
+    %d2 = extract_profile( dezinger(d), minbin, maxbin );
+    d2 = extract_profile( d, minbin, maxbin );
+    %d2 = d2 - smooth( d2, 100);
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    revStr = lprintf(revStr, ['Calculating correlation ', num2str(n), ' of ', num2str(num_capillaries), ' ... \n'], 2);
+    
+    % Do grid search
+    [best_scale, best_shift] = find_best_scale_shift_COARSE( scales, min_shift, max_shift, d1, d2 );
+    %[best_scale, best_shift] = find_best_scale_shift( scales, min_shift, max_shift, d1, d2 );
+    
+    new_x = best_scale * (x-minbin_ref+1 - best_shift)  + minbin - 1  ;
+    da = interp1( x, d, new_x, 'linear',0);
+    x_realign(:,n) = new_x;
+    %da = baseline_subtract( da );
+    data_align(:,n) = da;
+    
 end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function  [minbin, middlebin, maxbin ] =get_signal_bins_OLD( d, FULL_SIGNAL_WINDOW );
+function  [minbin, middlebin, maxbin ] =get_signal_bins_OLD( d, FULL_SIGNAL_WINDOW )
 %Find continuous chunk with the most signal.
 
 d = baseline_subtract( d );
@@ -83,7 +84,7 @@ middlebin = floor( 0.75*maxbin + 0.25*minbin  );
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function  [minbin, middlebin, maxbin ] =get_signal_bins( d, FULL_SIGNAL_WINDOW );
+function  [minbin, middlebin, maxbin ] =get_signal_bins( d, FULL_SIGNAL_WINDOW )
 
 minbin = 1;
 maxbin = length( d );
@@ -92,7 +93,7 @@ middlebin = floor( 0.75*maxbin + 0.25*minbin  );
 return;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function d1 = extract_profile( d, minbin, maxbin );
+function d1 = extract_profile( d, minbin, maxbin )
 
 %d1 = d( minbin:maxbin) - mean( d(maxbin+[1:100]) );
 %d1 = peak_detect( d );
@@ -121,10 +122,10 @@ len_d1 = length(d1);
 
 % probably a faster way to do this.
 for i = 1: floor(len_d1 / bin_size)
-  minbin = bin_size* ( i - 1 ) + 1;
-  maxbin = min( bin_size* ( i ) + 1, len_d1 );
-  d1_coarse( i ) = mean( d1( minbin:maxbin) );
-  d2_coarse( i ) = mean( d2( minbin:maxbin) );
+    minbin = bin_size* ( i - 1 ) + 1;
+    maxbin = min( bin_size* ( i ) + 1, len_d1 );
+    d1_coarse( i ) = mean( d1( minbin:maxbin) );
+    d2_coarse( i ) = mean( d2( minbin:maxbin) );
 end
 
 [ best_scale, best_shift ] = find_best_scale_shift( ...
@@ -139,7 +140,7 @@ return
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function   [best_scale, best_shift] = find_best_scale_shift( scales, ...
-						  min_shift, max_shift, d1, d2 );
+    min_shift, max_shift, d1, d2 )
 
 numscales = length( scales );
 
@@ -152,8 +153,8 @@ d2x=interp1(x, d2, x*scales, 'linear',d2(end));
 % subtract out mean -- we want a correlation coefficient.
 d1 = d1 - mean( d1 );
 for k = 1:numscales
-  d2x(:,k) = d2x(:,k) - mean( d2x(:,k));  
-  %norm_factor2( k ) = sqrt( sum( d2x(:,k).^2 ) );
+    d2x(:,k) = d2x(:,k) - mean( d2x(:,k));
+    %norm_factor2( k ) = sqrt( sum( d2x(:,k).^2 ) );
 end
 
 % Necessary for correlation coefficient.

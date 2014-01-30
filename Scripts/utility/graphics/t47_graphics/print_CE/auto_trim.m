@@ -40,6 +40,12 @@ if flg == 1;
     d_trim = d_org(d_upper_bound:d_lower_bound, :);
     xsel_trim = xsel_org - d_upper_bound + 1;
     
-    fprintf([', with upper offset (', num2str(up_offset), ') and lower offset (', ...
-        num2str(low_offset), '), and trimmed to ', num2str(d_upper_bound), ' : ', num2str(d_lower_bound)]);
+    fprintf([', with upper offset (', print_str(up_offset), ') and lower offset (', ...
+        print_str(low_offset), '), and trimmed to ', print_str(d_upper_bound), ' : ', print_str(d_lower_bound)]);
 end;
+
+
+%%%%
+function str = print_str (flag)
+
+str = ['<strong>',num2str(flag),'</strong>'];

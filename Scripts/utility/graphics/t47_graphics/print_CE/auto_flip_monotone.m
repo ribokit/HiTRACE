@@ -38,11 +38,11 @@ d_out = d_in;
 fprintf(['Input ', var_name, ' (1 x ',num2str(length(d_in)),') is ', str_flag]);
 
 if num_flag == -2 * val_mnt;
-    fprintf(', FLIPPED for use.\n');
+    fprintf(', '); fprintf(2, '<strong>FLIPPED</strong> '); fprintf('for use.\n');
     d_out = fliplr(d_in);
 elseif num_flag == 2 * val_mnt;
-    fprintf(', unchanged for use.\n');
+    fprintf(', '); fprintf(2, '<strong>unchanged</strong> '); fprintf('for use.\n');
 else
     fprintf(', please check.\n');
-    fprintf('** Strict monotonicity required! **\n');
+    fprintf(2,'** Strict monotonicity required! **\n');
 end;

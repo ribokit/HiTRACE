@@ -33,12 +33,15 @@ if ~exist('dir_name', 'var') || isempty(dir_name); dir_name = 'Figures'; end;
 if strcmp(dir_name, '/');
     dir_name = '';
 else
-    if ~exist(dir_name, 'dir'); mkdir(dir_name); end;
-    dir_name = strcat(current_dir, '/', dir_name,'/');
+    if ~strcmp(dir_name(1),'/');
+        if ~exist([current_dir, '/', dir_name], 'dir'); mkdir(dir_name); end;
+        dir_name = strcat(current_dir, '/', dir_name,'/');
+    end;
 end;
-
 full_path = [dir_name, file_name,'.eps'];
-if exist( 'export_fig' ) == 2
+
+[~, check_gs] = system('which gs'); 
+if exist( 'export_fig', 'file' ) && ~isempty(check_gs) %&& 0;
   full_path = strrep( full_path, '.eps', '.pdf' );
   export_fig( full_path );
 else

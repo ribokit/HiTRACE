@@ -84,7 +84,7 @@ if exist( 'Z','var' )
   end
 end
 
-fprintf( fid, '<param name="bpStyle" value="simple" />\n' );
+fprintf( fid, '<param name="bpStyle" value="lw" />\n' );
 fprintf( fid, '<param name="baseInner" value="#FFFFFF" />\n' );
 fprintf( fid, '<param name="baseOutline" value="#FFFFFF" />\n' );
 fprintf( fid, '<param name="bp" value="#000000" />\n' );
