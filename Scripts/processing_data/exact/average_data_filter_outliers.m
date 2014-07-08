@@ -28,15 +28,14 @@ L = size( reactivities, 1 );
 if ~exist( 'seqpos','var') seqpos = [1:L]; end;
 
 flags = ones(L,N);
-final_err = zeros(N,1);
-final_reactivity = zeros(N,1);
+final_err = zeros(L,1);
+final_reactivity = zeros(L,1);
 
 NITER = 5;
 for i = 1:L
   gp = 1:N;
 
   weights = max( 1./guessed_errors(i,:), 0 ) ;
-
   for n = 1:NITER
     m = sum( reactivities( i, gp ) .*weights(gp) ) / sum( weights(gp) ) ;
     dev = abs(reactivities(i,:) - m );

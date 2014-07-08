@@ -66,6 +66,7 @@ end
 reactivities = cell2mat(reactivities);
 errors = cell2mat(errors); %reformatting to use std function
 L = size( reactivities, 1 );
+sequence_full = rdats{1}.sequence;
 sequence = rdats{1}.sequence(1:minL);
 offset = rdats{1}.offset;
 seqpos = rdats{1}.seqpos(1:minL);
@@ -118,7 +119,7 @@ save( ['Figures/',basename(outfilename), '.fig'] );
 
 %RDAT PREPARATION using new filename, reactivity, and reactivity_error
 name = rdats{1}.name;
-if isempty(rdats{1}.structure); structure = []; else structure = rdats{1}.structure; end;
+if isempty(rdats{1}.structure); structure = []; else structure = rdats{1}.structure( 1:length( sequence_full) ); end;
 if isempty(rdats{1}.annotations); annotations = {}; else annotations = rdats{1}.annotations; end;
 if isempty(rdats{1}.data_annotations); data_annotations = {}; else data_annotations = rdats{1}.data_annotations; end;
 if isempty(rdats{1}.trace); trace_in = []; else trace_in = rdats{1}.trace_in; end;
@@ -126,7 +127,7 @@ if isempty(rdats{1}.xsel); xsel = []; else xsel = rdats{1}.xsel; end;
 if isempty(rdats{1}.xsel_refine); xsel_refine = []; else xsel_refine = rdats{1}.xsel_refine; end;
 if isempty(rdats{1}.comments); comments = []; else comments = rdats{1}.comments; end;
 
-final_rdat = output_workspace_to_rdat_file( outfilename, name, sequence, offset, ...
+final_rdat = output_workspace_to_rdat_file( outfilename, name, sequence_full, offset, ...
 			       seqpos, final_reactivity , ...
 			       structure, ...
 			       annotations, data_annotations, final_error,...
@@ -165,7 +166,9 @@ if ~exist( 'lw','var') lw = 1; end;
 if ~exist( 'c','var') c = 'k'; end;
 hold on
 for i = 1:length(seqpos )
-  plot( seqpos(i)*[1 1] + 0.02*randn(1), r(i) + e(i)*[-1 1], 'color',c,'linewidth',lw );
+  plot( seqpos(i)*[1 1], r(i) + e(i)*[-1 1], 'color',c,'linewidth',lw );
+  plot( seqpos(i) + [-0.5 0.5], r(i) + e(i)*[1 1], 'color',c,'linewidth',lw );
+  plot( seqpos(i) + [-0.5 0.5], r(i) - e(i)*[1 1], 'color',c,'linewidth',lw );
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -175,7 +178,7 @@ N = size( flags, 2 );
 for i = 1:L
   for j = 1:N
     if ( flags(i,j) )
-      rectangle( 'position', [seqpos(i)-0.5, j-0.5, 1, 1], 'edgecolor','r' );
+      rectangle( 'position', [seqpos(i)-0.5, j-0.5, 1, 1], 'edgecolor','r','linew',1.5 );
     end    
   end
   if all(flags(i,:) )
