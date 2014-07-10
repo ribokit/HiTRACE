@@ -1,6 +1,6 @@
-function [final_reactivity, final_error, flags ] = average_data_filter_outliers( reactivities, guessed_errors, seqpos ); 
+function [final_reactivity, final_error, flags ] = average_data_filter_outliers( reactivities, guessed_errors, seqpos, disallow_outlier_res ); 
 % AVERAGE_DATA_FILTER_OUTLIERS
-% [final_reactivity, final_error, flags ] = average_data_filter_outliers( reactivities, guessed_errors ); 
+% [final_reactivity, final_error, flags ] = average_data_filter_outliers( reactivities, guessed_errors, seqpos, disallow_outlier_res ); 
 %
 % Takes traces and initial error estimates; figures out outlier points and even outlier traces;
 %  and then returns reasonable final values and error estimates.
@@ -10,6 +10,7 @@ function [final_reactivity, final_error, flags ] = average_data_filter_outliers(
 %  guessed_errors = Matrix of corresponding error estimates. These are used to weight the average and
 %                     filter outliers, but final_error depends on the actual scatter seen in (non-outlier) points.
 %  seqpos         = [Optional] conventional sequence numbering -- for warnings.
+%  disallow_outlier_res = [Optional] define residues to be excluded from outlier filtering 
 %
 % Outputs:
 %  final_reactivity = final averaged reactivity, weighted by 1/error^2.
@@ -25,7 +26,9 @@ if ( nargin < 2 ) help( mfilename ); return; end;
 
 N = size( reactivities, 2 );
 L = size( reactivities, 1 );
-if ~exist( 'seqpos','var') seqpos = [1:L]; end;
+if ~exist( 'seqpos','var' ); seqpos = [1:L]; end;
+if ~exist( 'disallow_outlier_res','var' ); disallow_outlier_res = []; end;
+disallow_outlier_pos = disallow_outlier_res - min(seqpos) + 1;
 
 flags = ones(L,N);
 final_err = zeros(L,1);
@@ -37,9 +40,13 @@ for i = 1:L
 
   weights = max( 1./guessed_errors(i,:), 0 ) ;
   for n = 1:NITER
-    m = sum( reactivities( i, gp ) .*weights(gp) ) / sum( weights(gp) ) ;
-    dev = abs(reactivities(i,:) - m );
-    gp = find( dev < POINT_ERROR_RATIO_CUTOFF * guessed_errors(i,:)  );
+    m = sum( reactivities( i, gp ) .*weights(gp) ) / sum( weights(gp) ) ;   % calculate weighted sum
+    dev = abs(reactivities(i,:) - m );  % 
+    if any( i == disallow_outlier_pos );
+        fprintf( 'Not excluding residue %d\n', seqpos(i) );
+    else
+        gp = find( dev < POINT_ERROR_RATIO_CUTOFF * guessed_errors(i,:)  );
+    end
   end  
   flags(i,gp) = 0;
   
@@ -75,5 +82,5 @@ if length( good_traces ) > 3 & length( bad_traces ) > 0
   flags(:,bad_traces ) = 1.0;
 
   good_traces = setdiff( [1:N], bad_traces );
-  [final_reactivity, final_error, flags(:,good_traces)] = average_data_filter_outliers( reactivities(:,good_traces), guessed_errors(:,good_traces), seqpos );
+  [final_reactivity, final_error, flags(:,good_traces)] = average_data_filter_outliers( reactivities(:,good_traces), guessed_errors(:,good_traces), seqpos, disallow_outlier_res );
 end
