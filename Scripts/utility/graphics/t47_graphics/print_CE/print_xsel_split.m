@@ -361,7 +361,7 @@ for i = 1:page_num_W
             fig_w = 600; fig_h = 800; 
             set(gcf, 'PaperOrientation', 'Portrait', 'PaperPositionMode', 'Manual', ...
                 'PaperSize', [8.5 11], 'Color', 'White');
-            set(gcf, 'PaperPosition', [0 0 8.5 11]);
+            set(gcf, 'PaperPosition', [0 0.5 8.5 10]);
             set(h, 'Position', [(fig_num - 1) * 20, 0, fig_w, fig_h]);
             title_h = 0.45;
         else

@@ -9,10 +9,10 @@ function print_bpp_Z (bpp, Z, scale_factor, filename, if_print)
 % =========
 %   bpp                  Required        Provides the base pairing probability matrix.
 %   Z                    Required        Provides the Z score matrix.
-%   [scale_factor]       Optional        Provides the scale factor for Z score matrix,  
+%   [scale_factor]       Optional        Provides the scale factor for Z score matrix,
 %                                            value should be negative. Default is -5.
 %   [filename]           Optional        Provides the filename for output images. Default
-%                                            is blank, i.e. 'Z.png' and 'bpp.png'. Prefix, 
+%                                            is blank, i.e. 'Z.png' and 'bpp.png'. Prefix,
 %                                            underlines, and '.png' extension automatically
 %                                            append.
 %   [if_print]           Optional        Provides whether to output image file or not.
@@ -35,11 +35,13 @@ fprintf('scale_factor = %d\n', scale_factor);
 close all;
 
 % plot Z score
-h1 = figure(1);
-set(h1,'Position',[0, 0, 600, 600]);
-set(gcf, 'PaperOrientation', 'landscape', 'PaperPositionMode', 'auto', 'color', 'white');
-image(Z * scale_factor); colormap(1-gray());
-if if_print == 1; print(h1,'-dpng',['Z', filename, '.png']); end;
+if ~isempty(Z);
+    h1 = figure(1);
+    set(h1,'Position',[0, 0, 600, 600]);
+    set(gcf, 'PaperOrientation', 'landscape', 'PaperPositionMode', 'auto', 'color', 'white');
+    image(Z * scale_factor); colormap(1-gray());
+    if if_print == 1; print(h1,'-dpng',['Z', filename, '.png']); end;
+end;
 
 % plot bpp
 h2 = figure(2);

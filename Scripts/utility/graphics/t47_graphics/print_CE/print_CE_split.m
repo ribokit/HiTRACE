@@ -241,10 +241,16 @@ end;
 fprintf('\n'); fprintf(['sequence  ', sequence, '\n']);
 fprintf('structure ');
 if ~isempty(d_rdat.structure)
-    fprintf([d_rdat.structure, '\n\n']);
+    fprintf([d_rdat.structure, '\n']);
 else
-    fprintf([repmat('.',1,length(sequence)), '\n\n']);
+    fprintf([repmat('.',1,length(sequence)), '\n']);
 end;
+if length(xsel) ~= length(seqpos); fprintf(2,'WARNING: xsel and seqpos size mismatch.\n'); end;
+if length(xsel) ~= size(area_pred,1); fprintf(2,'WARNING: xsel and area_pred size mismatch.\n'); end;
+if length(seqpos) ~= size(area_pred,1); fprintf(2,'WARNING: seqpos and area_pred size mismatch.\n'); end;
+if size(d_align,2) ~= size(area_pred,2); fprintf(2,'WARNING: d_align and area_pred size mismatch.\n'); end;
+if length(mutpos) ~= size(d_align,2); fprintf(2,'WARNING: d_align and mutpos size mismatch.\n'); end;
+fprintf('\n');
 
 
 % set all auxillary parameters
@@ -361,6 +367,7 @@ end;
 % xsel be increasing, seqpos be decreasing, mutpos be increasing
 fprintf('\n');
 xsel = auto_flip_monotone(xsel, 1, 'xsel');
+if (min(xsel)<0); fprintf(2,'WARNING: negative xsel numbers detected, d_align not truncted properly.\n');end;
 seqpos = auto_flip_monotone(seqpos, -1, 'seqpos');
 fprintf('\n');
 
@@ -432,7 +439,12 @@ for i = 1:page_num_W
             set(gcf, 'PaperPosition', [0 2 8.5 8.5]);
             fig_h = 600; title_offset = 0.025;
         else
-            set(gcf, 'PaperPosition', [0 0 8.5 11]);
+            if page_num_H > 2;
+                set(gcf, 'PaperPosition', [0 0 8.5 11]);
+            else
+                set(gcf, 'PaperPosition', [0 0.5 8.5 10]);
+            end;
+            %set_print_page(gcf,1);
             fig_h = 800; title_offset = 0;
         end;
         set(h, 'Position', [(fig_num - 1) * 20, 0, fig_w, fig_h]);
@@ -573,7 +585,10 @@ for i = 1:page_num_W
         end;
         
         % print to file if asked
-        if is_print; print_save_figure(h, [file_name, num2str(fig_num)], dir_name, 0); end;
+        if is_print; 
+            print_save_figure(h, [file_name, num2str(fig_num)], dir_name, 0); 
+            %saveas(h, [file_name, num2str(fig_num)],'eps');
+        end;
     end;
 end;
 
