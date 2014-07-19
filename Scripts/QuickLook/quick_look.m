@@ -251,6 +251,10 @@ if FIX_LEAKAGE_OF_SATURATING_SIGNALS_TO_REF
     for i = 1:length( data_all )
         data_all{i}(:,refchannel) = fix_leakage_of_saturating_signals_to_ref( data_all{i}(:,sigchannels(m) ),  data_all{i}(:,refchannel) );
     end
+    wipeout_ref = 1800;
+    for i = 1:length( data_all )
+        data_all{i}(1:wipeout_ref,refchannel) = 0.0;
+    end
 end
 
 
@@ -258,7 +262,7 @@ end
 % STAGE 3
 reflane = 1; % this is a vestige of some old testing stuff.
 tic;
-
+data_set_starts
 group_count = 0;
 for i = 1:length(data_set_starts)
     start_index = data_set_starts(i);
@@ -303,14 +307,14 @@ for i = 1:length(data_set_starts)
     corr_test = median(corr_test);
     
     bad_threshold = max(corr_test) / 2;
-    
+
     if(corr_test(reflane) < bad_threshold)
         [~,another_ref] = max(corr_test);
         
         data_align_group{group_count} = align_capillaries( ...
             { data_all{[start_index:final_index]} }, refchannel, another_ref);
     end
-    
+
 end
 
 data_align = align_capillaries_group( data_align_group, refchannel, 1, 1);

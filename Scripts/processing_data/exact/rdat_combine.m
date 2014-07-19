@@ -71,51 +71,15 @@ sequence = rdats{1}.sequence(1:minL);
 offset = rdats{1}.offset;
 seqpos = rdats{1}.seqpos(1:minL);
 
-[final_reactivity, final_error, flags ] = average_data_filter_outliers( reactivities, errors, seqpos ); %averages data, weighted by uncertainty
-
-final_error = final_error;
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Make plots for visual feedback.
-set(gcf,'position',[ 10  300  1200  500]);
-clf;
+ %averages data, weighted by uncertainty
+[final_reactivity, final_error, flags ] = average_data_filter_outliers( reactivities, errors, seqpos, sequence, offset, trace_legends );
 subplot(2,1,1);
-colormap( 1 - gray(100))
-set(gca,'Position',[0.05 0.6 0.92 0.35] );
-image( seqpos, [1:N], 128 * reactivities' );
-make_lines_horizontal( [0:N],'k',0.5 );
-draw_sequence( seqpos, sequence, offset, N+0.5 );
-ylabel('Replicates');
-draw_flags_as_squares( flags, seqpos );
 h=title( outfilename );set(h,'interp','none','fontweight','bold');
-xlabel('Sequence Position');
-
-subplot(2,1,2);
-set(gca,'Position',[0.05 0.1 0.92 0.35] );
-colorcode = [ 0 0 1; 0 0.5 0; 0.5 0 0; 1 0 1; 1 0.5 0; 0.5 0.5 0.5; 0.5 0.5 1; 0.2 0.7 0.2; 1 0.5 0.5; 0.5 0 0.5; 1 0.7 0.3 ];
-if size( colorcode, 1 ) < N; colorcode = [ colorcode; jet( N-size(colorcode,1) ) ]; end;
-for j = 1:N;  make_plot( seqpos, reactivities(:,j), colorcode(j,:), 1 ); hold on; end;
-plot( seqpos, 0*seqpos+1,'-','color',[0.7 0.7 0.7] );
-make_plot(seqpos,final_reactivity,'k',1.5);
-for j = 1:N; make_flags( seqpos, reactivities(:,j), flags(:,j) );end;
-%  for i = 1:N;  make_plot_errors( seqpos, reactivities(:,i), errors(:,i), colorcode(i,:) ); hold on; end;
-make_plot_errors(seqpos,final_reactivity,final_error,'k',1);
-plot( seqpos, 0*seqpos, 'k' );
-
-h = legend( rdat_file_legends, 2 ); 
-set(h,'interp','none','fontsize',6,'position',[0.3 0.4 0.05 0.05]);
-draw_sequence( seqpos, sequence, offset, -0.1 );
-ylabel('Reactivity');
-ylim( [-0.5 4] );
-
-num_flags = [];
-set(gcf, 'PaperPositionMode','auto','color','white');
-drawnow;
 
 if ~exist( 'Figures', 'dir' ) mkdir( 'Figures/' ); end;
 export_fig(  ['Figures/',basename(outfilename), '.pdf'] );
 save( ['Figures/',basename(outfilename), '.fig'] );
+
 
 %RDAT PREPARATION using new filename, reactivity, and reactivity_error
 name = rdats{1}.name;
@@ -132,61 +96,6 @@ final_rdat = output_workspace_to_rdat_file( outfilename, name, sequence_full, of
 			       structure, ...
 			       annotations, data_annotations, final_error,...
 			       trace_in,xsel,xsel_refine,comments );
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function draw_sequence( seqpos, sequence, offset, seq_level );
-set(gca,'fontsize',12,'fontweight','bold','tickdir','out');
-for i = 1:length( seqpos ); 
-  text( seqpos(i), seq_level,sequence(seqpos(i)-offset),'verticalalign','top','fontsize',7,'horizontalalign','center' ); 
-end
-box off
-xlim( [min(seqpos)-1 max( seqpos )+1] );
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function  make_plot( seqpos, r, c, lw );
-if ~exist( 'lw','var') lw = 1; end;
-if ~exist( 'c','var') c = 'k'; end;
-plot( seqpos, r, '-','markerfacecolor',c,'color', c, 'linewidth',lw );
-hold on
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function  make_flags( seqpos, r, flags, c, lw );
-if ~exist( 'lw','var') lw = 1; end;
-if ~exist( 'c','var') c = 'r'; end;
-hold on
-if all( flags );  % distracting show circles if the whole thing is an outlier trace.
-  plot( seqpos, r, 'x','color',c,'markersize',5 );
-  return
-end; 
-bp = find( flags );
-plot( seqpos(bp), r(bp), 'o','color',c );
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function  make_plot_errors( seqpos, r, e, c, lw );
-if ~exist( 'lw','var') lw = 1; end;
-if ~exist( 'c','var') c = 'k'; end;
-hold on
-for i = 1:length(seqpos )
-  plot( seqpos(i)*[1 1], r(i) + e(i)*[-1 1], 'color',c,'linewidth',lw );
-  plot( seqpos(i) + [-0.5 0.5], r(i) + e(i)*[1 1], 'color',c,'linewidth',lw );
-  plot( seqpos(i) + [-0.5 0.5], r(i) - e(i)*[1 1], 'color',c,'linewidth',lw );
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function draw_flags_as_squares( flags, seqpos );
-L = size( flags, 1 );
-N = size( flags, 2 );
-for i = 1:L
-  for j = 1:N
-    if ( flags(i,j) )
-      rectangle( 'position', [seqpos(i)-0.5, j-0.5, 1, 1], 'edgecolor','r','linew',1.5 );
-    end    
-  end
-  if all(flags(i,:) )
-    rectangle( 'position', [seqpos(i)-0.5, -0.5, 1, N+1 ], 'edgecolor','r','linew',2 );
-  end
-end
-
-
 
 %%%%%%%%%%%%%%%
 function b = basename( tag );

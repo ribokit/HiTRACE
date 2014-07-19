@@ -9,7 +9,7 @@ if nargin == 0;  help( mfilename ); return; end;
 
 if ~exist( 'refcol', 'var');  refcol = 4; end
 if ~exist( 'reflane', 'var');  reflane = 1; end
-if ~exist('refgrp','var'); refgrp = 1; end
+if ~exist( 'refgrp','var'); refgrp = 1; end
 
 num_grp = length( data );
 num_capillaries = 0;

@@ -141,9 +141,9 @@ hText = text(XTick, y, xTickLabels,'fontsize',fs,'fontweight','bold');
 % Rotate the text objects by ROT degrees
 % set(hText,'Rotation',rot,'HorizontalAlignment','right',varargin{:})
 if ( strcmp( get(gca,'xaxis'),'bottom' ) )
-  set(hText,'Rotation',rot,'HorizontalAlignment','right',varargin{:},'interpreter','none')
+  set(hText,'Rotation',rot,'HorizontalAlignment','right',varargin{:},'interpreter','none','VerticalAlignment','middle')
 else
-  set(hText,'Rotation',rot,'HorizontalAlignment','left',varargin{:},'interpreter','none')
+  set(hText,'Rotation',rot,'HorizontalAlignment','left',varargin{:},'interpreter','none','VerticalAlignment','middle')
 end  
 % Adjust the size of the axis to accomodate for longest label (like if they are text ones)
 % This approach keeps the top of the graph at the same place and tries to keep xlabel at the same place
