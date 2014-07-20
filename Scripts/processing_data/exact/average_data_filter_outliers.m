@@ -1,6 +1,6 @@
-function [final_reactivity, final_error, flags ] = average_data_filter_outliers( reactivities, guessed_errors, seqpos, sequence, offset, trace_legends ); 
+function [final_reactivity, final_error, flags ] = average_data_filter_outliers( reactivities, guessed_errors, disallow_outlier_res, seqpos, sequence, offset, legends ); 
 % AVERAGE_DATA_FILTER_OUTLIERS
-% [final_reactivity, final_error, flags ] = average_data_filter_outliers( reactivities, guessed_errors ); 
+% [final_reactivity, final_error, flags ] = average_data_filter_outliers( reactivities, guessed_errors, disallow_outlier_res, seqpos, sequence, offset, legends ); 
 %
 % Takes traces and initial error estimates; figures out outlier points and even outlier traces;
 %  and then returns reasonable final values and error estimates.
@@ -9,18 +9,20 @@ function [final_reactivity, final_error, flags ] = average_data_filter_outliers(
 %  reactivities   = Matrix of input traces
 %  guessed_errors = Matrix of corresponding error estimates. These are used to weight the average and
 %                     filter outliers, but final_error depends on the actual scatter seen in (non-outlier) points.
+%  disallow_outlier_res = [Optional] define residues to be excluded from outlier filtering 
 %  seqpos         = [Optional] conventional sequence numbering -- for warnings.
 %  sequence       = [Optional] sequence -- for plotting
 %  offset         = [Optional] offset to get from 1:N to conventional numbering -- for plotting
-%  trace_legends  = [Optional] cell of legends for each trace
+%  legends  = [Optional] cell of legends for each trace
 %
-%
+
 % Outputs:
 %  final_reactivity = final averaged reactivity, weighted by 1/error^2.
 %  final_error      = error on final reactivity, from standard deviation across traces / sqrt(N).
 %  flags            = matrix of 0 and 1's, with 1 flagging problem points.
 %
 % (C) R. Das, T. Mann, Stanford University, 2013.
+% (C) R. Das, C. Cheng, Stanford University, 2014.
 
 POINT_ERROR_RATIO_CUTOFF = 5.0;
 PROFILE_ERROR_RATIO_CUTOFF = 2.5;
@@ -29,10 +31,16 @@ if ( nargin < 2 ) help( mfilename ); return; end;
 
 N = size( reactivities, 2 );
 L = size( reactivities, 1 );
+if exist( 'disallow_outlier_res','var' ) & exist( 'seqpos','var' ) & ...
+      length( seqpos ) ~= L & length( disallow_outlier_res ) == L % previous ordering convention.
+  temp = disallow_outlier_res; disallow_outlier_res = seqpos; seqpos = temp; 
+end
 if ~exist( 'seqpos','var') seqpos = [1:L]; end;
 if ~exist( 'sequence','var') sequence = ''; end;
 if ~exist( 'offset', 'var' ) offset = 0; end;
-if ~exist( 'trace_legends', 'var' ) trace_legends = {}; end;
+if ~exist( 'legends', 'var' ) legends = {}; end;
+if ~exist( 'disallow_outlier_res','var' ); disallow_outlier_res = []; end;
+disallow_outlier_pos = disallow_outlier_res - min(seqpos) + 1;
 
 flags = ones(L,N);
 final_err = zeros(L,1);
@@ -44,9 +52,13 @@ for i = 1:L
 
   weights = max( 1./guessed_errors(i,:), 0 ) ;
   for n = 1:NITER
-    m = sum( reactivities( i, gp ) .*weights(gp) ) / sum( weights(gp) ) ;
-    dev = abs(reactivities(i,:) - m );
-    gp = find( dev < POINT_ERROR_RATIO_CUTOFF * guessed_errors(i,:)  );
+    m = sum( reactivities( i, gp ) .*weights(gp) ) / sum( weights(gp) ) ;   % calculate weighted sum
+    dev = abs(reactivities(i,:) - m );  % 
+    if any( i == disallow_outlier_pos );
+        fprintf( 'Not excluding residue %d\n', seqpos(i) );
+    else
+        gp = find( dev < POINT_ERROR_RATIO_CUTOFF * guessed_errors(i,:)  );
+    end
   end  
   flags(i,gp) = 0;
   
@@ -82,7 +94,7 @@ if length( good_traces ) > 3 & length( bad_traces ) > 0
   flags(:,bad_traces ) = 1.0;
 
   good_traces = setdiff( [1:N], bad_traces );
-  [final_reactivity, final_error, flags(:,good_traces)] = average_data_filter_outliers( reactivities(:,good_traces), guessed_errors(:,good_traces), seqpos );
+  [final_reactivity, final_error, flags(:,good_traces)] = average_data_filter_outliers( reactivities(:,good_traces), guessed_errors(:,good_traces), seqpos, disallow_outlier_res, sequence, offset, legends );
 end
 
 
@@ -113,8 +125,8 @@ for j = 1:N; make_flags( seqpos, reactivities(:,j), flags(:,j) );end;
 make_plot_errors(seqpos,final_reactivity,final_error,'k',1);
 plot( seqpos, 0*seqpos, 'k' );
 
-if length( trace_legends ) > 2; 
-  h = legend( trace_legends, 2 ); 
+if length( legends ) > 2; 
+  h = legend( legends, 2 ); 
   set(h,'interp','none','fontsize',6,'position',[0.3 0.4 0.05 0.05]);
 end
 draw_sequence( seqpos, sequence, offset, -0.1 );

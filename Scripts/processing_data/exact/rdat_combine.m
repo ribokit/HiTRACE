@@ -1,6 +1,6 @@
-function [ final_rdat,flags ] = rdat_combine( rdat_files, outfilename)
+function [ final_rdat,flags ] = rdat_combine( rdat_files, outfilename, disallow_outlier_res )
 % RDAT_COMBINE - 
-% [ final_rdat,flags ] = rdat_combine( rdat_files, outfilename)
+% [ final_rdat,flags ] = rdat_combine( rdat_files, outfilename, disallow_exclude_res)
 %
 % Combines multiple rdat files into one, whose reactivity
 %   values come from an average of all profiles, weighted by uncertainty.
@@ -14,6 +14,7 @@ function [ final_rdat,flags ] = rdat_combine( rdat_files, outfilename)
 % Inputs:
 %   rdat_files  = cell of strings containing rdat filenames to combine
 %   outfilename = filename for final RDAT, formatted for RMDB
+%   disallow_outlier_res = [Optional] define residues to be excluded from outlier filtering 
 %
 % Outputs:
 %   final_rdat  = unified .rdat file with weighted average reactivities
@@ -25,6 +26,7 @@ function [ final_rdat,flags ] = rdat_combine( rdat_files, outfilename)
 if ( nargin < 1 | length( rdat_files ) < 1 ); help( mfilename); return; end;
 rdats = {};
 reactivities = {}; errors = {}; final_reactivity = {}; prop_err = {};
+if ~exist( 'disallow_outlier_res','var' ); disallow_outlier_res = []; end;
 
 %reads in all reactivities and errors together
 N_rdat = length( rdat_files );
@@ -72,13 +74,14 @@ offset = rdats{1}.offset;
 seqpos = rdats{1}.seqpos(1:minL);
 
  %averages data, weighted by uncertainty
-[final_reactivity, final_error, flags ] = average_data_filter_outliers( reactivities, errors, seqpos, sequence, offset, trace_legends );
-subplot(2,1,1);
+[final_reactivity, final_error, flags ] = average_data_filter_outliers( reactivities, errors, disallow_outlier_res, seqpos, sequence, offset, trace_legends );
+
 h=title( outfilename );set(h,'interp','none','fontweight','bold');
 
-if ~exist( 'Figures', 'dir' ) mkdir( 'Figures/' ); end;
+if ~exist( 'Figures', 'dir' ); mkdir( 'Figures/' ); end;
 export_fig(  ['Figures/',basename(outfilename), '.pdf'] );
-save( ['Figures/',basename(outfilename), '.fig'] );
+print(gcf, '-depsc2', '-loose', '-r300', ['Figures/',basename(outfilename)]);
+hgsave( ['Figures/',basename(outfilename), '.fig'] );
 
 
 %RDAT PREPARATION using new filename, reactivity, and reactivity_error
