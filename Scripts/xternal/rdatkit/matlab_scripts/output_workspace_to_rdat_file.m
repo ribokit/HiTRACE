@@ -5,10 +5,10 @@ function rdat = output_workspace_to_rdat_file( filename, name, sequence, offset,
 					       trace_in, xsel, xsel_refine, comments )
 %
 % output_workspace_to_rdat_file( filename, name, sequence, offset, seqpos, reactivity, ...
-%					       mutpos, structure, ...
+%					       structure, ...
 %					       annotations, data_annotations, ...
 %					       reactivity_error, ...
-%					       trace, xsel, xsel_refine, comments );
+%					       comments );
 %
 % Copyright R. Das, P. Cordero, Stanford University, 2010,2011
 %
@@ -30,6 +30,7 @@ if ~exist( 'data_annotations','var' ); data_annotations = {}; end;
 if ~exist( 'reactivity_error','var' ); reactivity_error = {}; end;
 if ~exist( 'xsel','var' ); xsel = []; end;
 if ~exist( 'xsel_refine','var' ); xsel_refine = []; end;
+if ~exist( 'comments','var' ) & exist( 'trace_in','var') & iscell( trace_in ); comments = trace_in; clear trace_in;  end;
 if ~exist( 'comments','var' ); comments = {}; end;
 if ~exist( 'trace_in','var' ); trace_in = []; end;
 trace = trace_in; % this is necessary because matlab has a function called trace, of course

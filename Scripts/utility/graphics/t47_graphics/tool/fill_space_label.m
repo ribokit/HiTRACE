@@ -25,7 +25,6 @@ function str_out = fill_space_label(str_in, pos)
 if nargin == 0; help( mfilename ); return; end;
 
 if ~exist('pos','var') || isempty(pos); pos = 1; end;
-
 max_l = max(cellfun(@length, str_in));
 str_out = cell(size(str_in));
 for i = 1:length(str_in)

@@ -248,6 +248,35 @@ while ~stop_sel
                     fprintf( 'Running auto-assign. This might take a minute.\n');
                     
                     xsel = auto_assign_sequence( d_align, sequence, area_pred_reverse, peak_spacing, input_bounds, data_types );
+                    size(area_pred_reverse)
+                    size(d_align)
+                    size(sequence)
+                    
+                    xsel = reverse_sort( xsel ); % should fix auto_assign to reverse.
+                end
+                update_plot = 1;
+            case {'y','Y'}
+                param.WINDOW_SIZE = 100;
+                param.window_jump = 'auto';
+                param.begin = 'auto';
+                param.end = 'auto';
+                param.peak_bonus_weight = 0.5;%1.5
+                param.peak_range = 10;
+                param.min_gamma = 'auto';
+                param.gamma_add = 0.5;
+                param.primary_weight = 'auto';
+            
+                if ~exist( 'area_pred','var' ) || isempty( area_pred )
+                    fprintf( 'You need to input data_types or area_pred if you want to use auto-assign!\n' )
+                else
+                    area_pred_reverse = area_pred(end:-1:1,:); % should fix auto_assign to reverse.
+                    fprintf( 'Running auto-assign. This might take a minute.\n');
+                    
+                    [xsel escore] = auto_assign_cubic (d_align, area_pred_reverse, sequence, param);
+                    
+                    size(area_pred_reverse)
+                    size(d_align)
+                    size(sequence)
                     
                     xsel = reverse_sort( xsel ); % should fix auto_assign to reverse.
                 end

@@ -180,6 +180,7 @@ elseif length(labels) < size(d_align, 2);
 else
     fprintf(['labels (1 x ',num2str(length(labels)),') provided by user.\n']);
 end;
+for i = 1:length( labels ); if iscell( labels{i} ); labels{i} = char(labels{i}); end; end;
 offset = round(offset);
 fprintf('\n'); fprintf(['sequence  ', sequence,'\n\n']);
 
@@ -453,7 +454,7 @@ for i = 1:page_num_W
             if is_auto_length; auto_font_size(txt, min((get(gcf,'PaperSize'))) * title_size_fc * 0.2, title_h / 2); end;
            
             title([' ' title_name ' '], 'HorizontalAlignment', 'Left', 'VerticalAlignment', 'Bottom',...
-                'FontWeight', ft_w_title_1, 'FontSize', ft_sz_title_1, 'FontName', 'Courier', 'Color', color_title_1);
+                'FontWeight', ft_w_title_1, 'FontSize', ft_sz_title_1, 'FontName', 'Courier', 'Color', color_title_1,'interp','none');
             tit = get(gca, 'Title'); pos = get(tit, 'Position');
             
             if ~is_one_page;

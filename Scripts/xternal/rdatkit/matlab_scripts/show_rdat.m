@@ -75,10 +75,11 @@ xticklabel_rotate_rdat();
 if size(xlab,2) > 48; y_ft_sz = 6; else; y_ft_sz = 10; end;
 set(gca, 'yTick', [1:size(xlab,2)], 'yTicklabel', char(xlab),'yaxisloc','left');
 plot_title = [ rdat.name,'; ', remove_tag_before_colon_cell( rdat.annotations )];
+plot_title = strrep( plot_title,  'StandardState','' );
 if length( filename ) > 0; plot_title = [ filename,': ',plot_title ]; end;
 h = title( plot_title );
 set(gca,'fontsize',y_ft_sz,'fontweight','bold','tickdir','out','ticklength',[0 0]);
-set( h, 'interpreter','none','fontsize',10,'fontweight','bold');
+set( h, 'interpreter','none','fontsize',8,'fontweight','bold');
 
 if length( rdat.structure > 0 ) & length( strfind( rdat.structure, '(') ) > 0 & length( rdat.seqpos ) > 1
   hold on
