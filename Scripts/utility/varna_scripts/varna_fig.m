@@ -126,7 +126,8 @@ if ( exist( 'offset','var' ) || exist( 'bpp_values','var' ) )
     if length( bpp_values ) ~= length( bpp_anchor_bases );  fprintf( 'Must specify a bpp_anchor_base for each bpp_value \n'); end;
     for i = 1:length( bpp_values )
       %fprintf( fid, '%3.0f%%:type=L,anchor=%d,color=#303030,size=9;', 100*bpp_values(i), bpp_anchor_bases(i) );
-      fprintf( fid, '%3.0f%%:type=L,anchor=%d,color=#FF3030,size=9;', 100*bpp_values(i), bpp_anchor_bases(i) );
+      %fprintf( fid, '%3.0f%%:type=L,anchor=%d,color=#FF3030,size=9;', 100*bpp_values(i), bpp_anchor_bases(i) );
+      fprintf( fid, '%3.0f%%:type=L,anchor=%d,color=#009000,size=9;', 100*bpp_values(i), bpp_anchor_bases(i) );
     end
   end
    

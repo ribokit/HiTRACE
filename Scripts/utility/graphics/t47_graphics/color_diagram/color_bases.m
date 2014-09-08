@@ -84,6 +84,7 @@ for k = which_res
     x_dist = base_locations(1, k) - residue_locations(1, k);
     y_dist = base_locations(2, k) - residue_locations(2, k);
     colorplot = getcolor(what2plot(count) - d_offset, max_color, min_color, color_scheme);
+    if what2plot(count) == -999; colorplot = [0.4 0.4 0.4]; end;
     
     % determine tick orientation from the relative position of
     % base_locations and residue_locations

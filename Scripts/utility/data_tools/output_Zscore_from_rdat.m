@@ -28,16 +28,16 @@ function [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, 
 
 if nargin == 0;  help( mfilename ); return; end;
 
-if ~exist( 'MEAN_EXPOSURE_CUTOFF' ) MEAN_EXPOSURE_CUTOFF = 1.0; end;
-if ~exist( 'APPLY_ZSCORE_OFFSET' ) APPLY_ZSCORE_OFFSET = 1; end;
-if ~exist( 'ZSCORE_OFFSET' ) ZSCORE_OFFSET = 0.0; end;
-if ~exist( 'ONLY_A_C' ) ONLY_A_C = 0; end;
-if ~exist( 'print_stuff' ); print_stuff = 0; end
-if ~exist( 'd_nomod' ) | length( d_nomod ) == 0; d_nomod = []; end
-if ~exist( 'ignore_mut' ); ignore_mut = []; end
+if ~exist( 'MEAN_EXPOSURE_CUTOFF','var' ); MEAN_EXPOSURE_CUTOFF = 1.0; end;
+if ~exist( 'APPLY_ZSCORE_OFFSET','var' ); APPLY_ZSCORE_OFFSET = 1; end;
+if ~exist( 'ZSCORE_OFFSET','var' ); ZSCORE_OFFSET = 0.0; end;
+if ~exist( 'ONLY_A_C','var' ); ONLY_A_C = 0; end;
+if ~exist( 'print_stuff','var' ); print_stuff = 0; end
+if ~exist( 'd_nomod','var' ) || isempty( d_nomod ); d_nomod = []; end
+if ~exist( 'ignore_mut','var' ); ignore_mut = []; end
 
 Z = []; mutpos = [];seqplot = [];
-if length( rdat_files ) == 0; return; end;
+if isempty( rdat_files ); return; end;
 
 if ~iscell( rdat_files ); rdat_files = { rdat_files }; end;
 
