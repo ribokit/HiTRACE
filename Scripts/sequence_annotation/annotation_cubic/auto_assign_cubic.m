@@ -1,4 +1,4 @@
-function [ xsel, escore, peak, score, bonus, peak_bonus_idx, gamma_] = auto_assign_cubic( data, prediction, sequence, param )
+function [ xsel, escore, peak, score, bonus, peak_bonus_idx, gamma_, processed_data] = auto_assign_cubic( data, prediction, sequence, param, data_types )
 % AUTO_ASSIGN_CUBIC - Tool for rapid manual assignment of bands in electropherograms through cubic dynamic programming.
 %
 % [ xsel, peak, score, bonus, peak_bonus_idx, gamma_] = auto_assign_cubic(data, prediction, sequence, param );
@@ -17,6 +17,8 @@ function [ xsel, escore, peak, score, bonus, peak_bonus_idx, gamma_] = auto_assi
 %            min_gamma
 %            gamma_add
 %            primary_weight
+%            exist_tailpeak
+%  data_types     = an array of data types
 %
 % Output:
 % xsel      = positions of bands across all lanes.
@@ -26,6 +28,8 @@ function [ xsel, escore, peak, score, bonus, peak_bonus_idx, gamma_] = auto_assi
 %
 % (C) Seungmyung Lee, 2014
 %
+
+
 
 %% automated primary_weight setting
 if (param.primary_weight == 'auto')
@@ -65,22 +69,79 @@ end
     end
 
     if (param.begin == 'auto')
-        param.begin = startline - round(param.WINDOW_SIZE/2);
+        param.begin = startline; % - round(param.WINDOW_SIZE/2);
     end
-    param.end = endline;
+    if (param.end == 'auto')
+        param.end = endline;
+        end_auto = 1;
+    else
+        end_auto = 0;
+    end
+
     if (param.window_jump == 'auto')
-        for j = 0:size(prediction,1)-1
-            if (prediction(end-j,end) == 1)
-                tailing_zeros = j;
-                break;
-            end
-        end
-        param.window_jump = (param.end-param.begin-param.WINDOW_SIZE)/(size(prediction,1) - j/2);
+        param.WINDOW_SIZE = round(max((param.end-param.begin)/10, 2*(param.end-param.begin)/size(prediction,1)));
     end
-        
+    param.window_jump = (param.end-param.begin-param.WINDOW_SIZE/3)/(size(prediction,1) - 1);
+
+ideal_spacing = (param.end - param.begin) / (size(prediction,1) - 1);
+    
+%% delete empty lanes and choose the primary lane among the lefts
+ddTTP = 0;
+if exist( 'data_types', 'var' ) & length( data_types ) > 0
+    for i = 1:min(size(data,2), length(data_types))
+        if strcmp(data_types{i},'ddTTP')
+            ddTTP = i;
+            break;
+        end
+    end
+end
+
+if ddTTP > 0
+    % if ddTTP exists, use it as primary lane
+    primary_lane = ddTTP;
+else
+    % if not, choose the lane with greatest number of bands as primary lane
+    band_num = sum(prediction);
+    [ll primary_lane] = max(band_num);
+    
+    % primary_lane = size(data,2);
+end
+
+primary_data = data(:, primary_lane);
+primary_pred = prediction(:, primary_lane);
+data(:, primary_lane) = data(:, end);
+prediction(:, primary_lane) = prediction(:, end);
+data(:, end) = primary_data;
+prediction(:, end) = primary_pred;
+
+% remove empty lanes
+peak_num = sum(prediction);
+data = data(:,peak_num>0);
+prediction = prediction(:,peak_num>0);
+
+[num_pixels num_lanes] = size(data);
+
+
+%% normalize and convlute data
+data = window_normalize( data, ideal_spacing * 2)/2;
+
+x = (1:num_pixels)';
+xmid = round(median(x));
+ideal_gaussian = get_gaussian( x, xmid, ideal_spacing/6 );
+
+n_fft_row = 2*num_pixels - 1;
+gaussian_fft =  fftn( ideal_gaussian, [n_fft_row num_lanes] );
+data_fft = fftn( data, [n_fft_row num_lanes]);
+f = real( ifft2( gaussian_fft .* data_fft ) );
+f = f( xmid + (0:num_pixels-1), : );
+data = f;
+    
 %% modify prediction matrix
     % the first row of prediction matrix always contains only 1
     prediction (1,:) = 1;
+    if (param.exist_tailpeak == 1)
+        prediction (end+1,:) = 2;
+    end
 
 %% build peak bonus matrix - (peak_bonus)
     % build gamma matrix
@@ -96,8 +157,28 @@ end
     gamma = [zeros(2,size(data,2));gamma;zeros(2,size(data,2))];
         
     peak_bonus = zeros(size(gamma));
+    
+    % deal with clustered peaks
+    for j = 1:size(data,2)
+        for i = 1:size(data,1)
+            if (gamma(i,j) == 0)
+                continue;
+            end
+            
+            for k = [max(1, i-round(ideal_spacing/2)):i-1 i+1:min(size(data,1), i+round(ideal_spacing/2))]
+                if (gamma(k,j) > 0 && data(k,j) < data(i,j))
+                    gamma(k,j) = 0;
+                end
+            end
+        end
+    end
+    
     for i = 1:size(data,2)
-        optimal_peak_num=round(sum(prediction(:,i))*2);
+        optimal_peak_num=min(round(sum(prediction(:,i))*2), size(prediction,1));
+        %optimal_peak_num=max(optimal_peak_num, round(sum(gamma(:,i)>0)/2));
+        if (optimal_peak_num == 0)
+            continue;
+        end
         if (param.min_gamma == 'auto')
             sorted_gamma = sortrows(gamma, -i);
             min_gamma = sorted_gamma(optimal_peak_num, i);
@@ -107,23 +188,40 @@ end
         gamma_i = gamma(:,i);
         
         gamma_add = param.gamma_add * mean(gamma_i(gamma_i > min_gamma));
-        peak_bonus(:,i) = (gamma_i + gamma_add) .* (gamma_i > min_gamma);
+        data_i = data(:,i);
+        peak_bonus(:,i) = (gamma_i + gamma_add) .* (gamma_i > min_gamma) ;%.* data_i / mean(data_i(gamma_i > min_gamma));
     end
+    
+    %{
+    peak_bonus = zeros(size(gamma));
+    peak_bonus(:,1:end-1) = data(:,1:end-1);
+    for j = size(data,2):size(data,2)
+        peaks = getpeaks( data(:,j), 'THRESHOLD', min([ mean(data(:,j)), median(data(:,j)), max(data(:,j))*0.05 ]) );
+        for i = 1:length(peaks)
+            peak_bonus(peaks(i),j) = data(peaks(i),j);
+        end
+    end
+    %}
+    
     peak_bonus (:,end) = peak_bonus (:,end) * primary_weight * (size(peak_bonus,2)-1);
     peak_bonus (:,1:end-1) = peak_bonus (:,1:end-1) * (1-primary_weight);
-    
+        
     peak_bonus = peak_bonus * param.peak_bonus_weight;
     
     gamma_ = peak_bonus;
 
 %% generate distance bonus - (dist_bonus)
     % based on the density function of Gaussian with mean 12 and stdv 4
-    x = [1:60];
-    dist_bonus = normpdf(x, 1, param.window_jump/3) / normpdf(1, 1, param.window_jump/3);
+    x = [1:round(ideal_spacing * 3)];
+    %dist_bonus = normpdf(x, 1, ideal_spacing/3) / normpdf(1, 1, ideal_spacing/3);
+    dist_bonus = 1 - (2*x/ideal_spacing).^2;
     
 %% proximity component of matching peak bonus - (prox_peak)
     % based on the density function of Gaussian with mean 0 and stdv 2
-    prox_peak = normpdf(1:param.peak_range+1,1.5, param.window_jump/6) / normpdf(1, 1, param.window_jump/6);
+    if (param.peak_range == 'auto')
+        param.peak_range = round(ideal_spacing/2)+1;
+    end
+    prox_peak = normpdf(1:ideal_spacing+1,1, ideal_spacing/6) / normpdf(1, 1, ideal_spacing/6);
    
     
 %% Preprocesesing for peak_bonus window for the last lane
@@ -141,8 +239,8 @@ end
     
     peak_bonus_window = zeros(size(data,1),2);
     for i = 1:size(peak_bonus_window,1)
-        peak_bonus_window(i,1) = sum(peak_bonus_idx(:,1) < i-5) + 1;
-        peak_bonus_window(i,2) = sum(peak_bonus_idx(:,1) <= i+5);
+        peak_bonus_window(i,1) = sum(peak_bonus_idx(:,1) < i-round(ideal_spacing/2)) + 1;
+        peak_bonus_window(i,2) = sum(peak_bonus_idx(:,1) <= i+round(ideal_spacing/2));
     end
     
 
@@ -152,15 +250,18 @@ end
     trace2 = zeros(size(prediction,1), param.WINDOW_SIZE, size(peak_bonus_idx,1)+1);
     
     % seq = 1
-    window_begin{1} = param.begin + 1;
-    for j1 = param.begin + round(param.WINDOW_SIZE/2)
+    window_begin{1} = param.begin - round(param.WINDOW_SIZE/3);
+    for j1 = param.begin
+        % in case such j2 does not exist
+        bonus(1,j1-window_begin{1} + 1, :) = 0;
+        %bonus(1, 1, :) = 0;
         for j2 = peak_bonus_window(j1,1):peak_bonus_window(j1,2)
             if (prediction(1,lanes) == 1)
                 dist = abs(peak_bonus_idx(j2,1) - j1);
                 bonus(1,j1 - window_begin{1} + 1,j2) = peak_bonus_idx(j2,2) * prox_peak(dist + 1);
             end
         end
-        bonus(1,j1 - window_begin{1} + 1,:) = bonus(1,j1 - window_begin{1} + 1,:) + calc_match_bonus (peak_bonus, j1, prediction(1,:), prox_peak);
+        bonus(1,j1 - window_begin{1} + 1,:) = bonus(1,j1 - window_begin{1} + 1,:) + calc_match_bonus (peak_bonus, j1, prediction(1,:), prox_peak, param.peak_range);
     end
 
     % seq > 1
@@ -172,19 +273,21 @@ end
             bonus_boost = 1;
         end
         
-        ideal_dist = round(param.window_jump) + 1;%13
+        ideal_dist = round(ideal_spacing*10/9) + 0;%13
         dist_weight = 1;
         if (sequence(seq-1) == 'G')
-            ideal_dist = round(param.window_jump*3/4) + 1;%10;
+            ideal_dist = round(ideal_spacing*3/5) + 0;%10;
             dist_weight = 1/1;
         end
-        window_begin{seq} = param.begin + round((seq-1)*param.window_jump) + 1;
-        for j1 = window_begin{seq}:window_begin{seq}+param.WINDOW_SIZE-1
+        window_begin{seq} = round(window_begin{1} + (seq-1)*param.window_jump) + 1;
+        for j1 = max(1,window_begin{seq}):window_begin{seq}+param.WINDOW_SIZE-1
             if (j1 >= param.end && seq <= size(prediction,1))
                 continue;
             end
-            for i1 = max(j1-30,max(window_begin{seq-1},j1-param.WINDOW_SIZE)):min(window_begin{seq-1}+param.WINDOW_SIZE-1,j1-1)
+            for i1 = max(1, max(j1-round(param.window_jump*2),max(window_begin{seq-1},j1-param.WINDOW_SIZE))):min(window_begin{seq-1}+param.WINDOW_SIZE-1,j1-1)
                 % fill in bonus(:,:,end).
+                peak_bonus_window(i1,1);
+                peak_bonus_window(i1,2);
                 for i2 = [peak_bonus_window(i1,1):peak_bonus_window(i1,2) size(peak_bonus_idx,1)+1]
                     % 'for loop' is not necessary in fact. to be revised later...
                     discr_dist = abs(j1 - i1 - ideal_dist);
@@ -220,7 +323,7 @@ end
                 end
            
             end
-            bonus(seq, j1 - window_begin{seq} + 1, :) = bonus(seq, j1 - window_begin{seq} + 1, :) + calc_match_bonus (peak_bonus, j1, prediction(seq,:), prox_peak);
+            bonus(seq, j1 - window_begin{seq} + 1, :) = bonus(seq, j1 - window_begin{seq} + 1, :) + calc_match_bonus (peak_bonus, j1, prediction(seq,:), prox_peak, param.peak_range);
         end
     end
 
@@ -231,13 +334,24 @@ end
     % find max for seq = end
     score = 0;
     
-    for i = 1:size(bonus,2)
-        for j = 1:size(bonus, 3)
-            if (bonus(end,i,j) > score)
-                score = bonus(end,i,j);
-                xsel(end) = i + window_begin{size(bonus,1)} - 1;
-                peak(end) = j;
+    if (end_auto == 1)
+        for i = 1:size(bonus,2)
+            for j = 1:size(bonus, 3)
+                if (bonus(end,i,j) > score)
+                    score = bonus(end,i,j);
+                    xsel(end) = i + window_begin{size(bonus,1)} - 1;
+                    peak(end) = j;
+                end
             end
+        end
+    else
+        xsel(end) = param.end-1;
+    end
+    
+    for j = 1:size(bonus,3)
+        if (bonus(end, param.end - window_begin{size(bonus,1)}, j) > score)
+            score = bonus(end, param.end - window_begin{size(bonus,1)}, j);
+            peak(end) = j;
         end
     end
     
@@ -249,9 +363,13 @@ end
 
 %% E-SCORE
     n1 = sum(peak == max(peak) & prediction(:,end)==1);
-    n2 = sum(diff(xsel) <= param.window_jump/4); 
-    n3 = sum(diff(xsel) > param.window_jump * 2);
+    n2 = sum(diff(xsel) <= ideal_spacing/4); 
+    n3 = sum(diff(xsel) > ideal_spacing * 2);
     
     escore = 1 - max(n1/sum(prediction(:,end)), (n2 + n3)/(size(prediction,1)-1));
     
+    xsel = xsel';
+    
+    processed_data.data = data;
+    processed_data.pred = prediction;
 end

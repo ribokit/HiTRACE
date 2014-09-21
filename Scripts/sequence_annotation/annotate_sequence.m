@@ -239,7 +239,7 @@ while ~stop_sel
                 if ~exist( 'area_pred','var' ) || isempty( area_pred )
                     fprintf( 'You need to input data_types or area_pred if you want to use auto-assign!\n' )
                 else
-                    input_bounds = [];
+                    input_bounds = [358 5755];
                     if length( xsel ) == 2;
                         input_bounds = sort(xsel);
                         peak_spacing = ( input_bounds(2) - input_bounds(1) ) / length( sequence );
@@ -256,15 +256,16 @@ while ~stop_sel
                 end
                 update_plot = 1;
             case {'y','Y'}
-                param.WINDOW_SIZE = 100;
+                param.WINDOW_SIZE = 'auto';
                 param.window_jump = 'auto';
-                param.begin = 'auto';
-                param.end = 'auto';
-                param.peak_bonus_weight = 0.5;%1.5
-                param.peak_range = 10;
+                param.begin = 293;%'auto';
+                param.end = 7800;%'auto';
+                param.peak_bonus_weight = 1;%1.5
+                param.peak_range = 'auto';
                 param.min_gamma = 'auto';
                 param.gamma_add = 0.5;
                 param.primary_weight = 'auto';
+                param.exist_tailpeak = 1;
             
                 if ~exist( 'area_pred','var' ) || isempty( area_pred )
                     fprintf( 'You need to input data_types or area_pred if you want to use auto-assign!\n' )
@@ -272,11 +273,12 @@ while ~stop_sel
                     area_pred_reverse = area_pred(end:-1:1,:); % should fix auto_assign to reverse.
                     fprintf( 'Running auto-assign. This might take a minute.\n');
                     
-                    [xsel escore] = auto_assign_cubic (d_align, area_pred_reverse, sequence, param);
+                    [xsel escore] = auto_assign_cubic (d_align, area_pred_reverse, reverse(sequence), param, data_types);
                     
                     size(area_pred_reverse)
                     size(d_align)
                     size(sequence)
+                    escore
                     
                     xsel = reverse_sort( xsel ); % should fix auto_assign to reverse.
                 end
