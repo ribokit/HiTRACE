@@ -43,7 +43,7 @@ if nargin == 0;  help( mfilename ); return; end;
 d = []; d_ref = []; labels = {};
 
 % make backwards compatible...
-if exist( 'trace_subset', 'var' ) && length(trace_subset) == 1 && length( trace_subset ) == 1 && trace_subset > ylimit
+if exist( 'trace_subset', 'var' ) && length(trace_subset) == 1 && length( trace_subset ) == 1 && trace_subset > ylimit;
     % this may be the old-style quick-look
     help( 'quick_look' );
     fprintf( '\nWARNING! WARNING! Are you using the old style quick_look with ymin and ymax as separate arguments?\n')
@@ -51,14 +51,23 @@ if exist( 'trace_subset', 'var' ) && length(trace_subset) == 1 && length( trace_
     fprintf( 'Press a key to continue\n' )
     pause
     ylimit = [ylimit, trace_subset ]; trace_subset = [];
-    if exist( 'signals_and_ref' ) trace_subset = signals_and_ref; end;
+    if exist( 'signals_and_ref', 'var' ); 
+        trace_subset = signals_and_ref; 
+    end;
     signals_and_ref = [];
 end
 
-if ~exist( 'ylimit', 'var'); ylimit = []; end;
-if ~exist( 'signals_and_ref', 'var' ) || isempty( signals_and_ref ); signals_and_ref = [1 4]; end;
-if length( signals_and_ref ) < 2; fprintf( 'Must have at least 2 channels specified in signals_and_ref!\n'); return; end;
-if (~exist( 'dye_names', 'var' )  || isempty( dye_names ))
+if ~exist( 'ylimit', 'var'); 
+    ylimit = []; 
+end;
+if ~exist( 'signals_and_ref', 'var' ) || isempty( signals_and_ref ); 
+    signals_and_ref = [1 4]; 
+end;
+if length( signals_and_ref ) < 2; 
+    fprintf( 'Must have at least 2 channels specified in signals_and_ref!\n'); 
+    return; 
+end;
+if (~exist( 'dye_names', 'var' ) || isempty( dye_names ));
     dye_names = {}; % signal to not apply a leakage correction -- later use FAM/ROX as default.
 end
 %if ~exist( 'dye_names', 'var' )  | ~iscell( dye_names )
@@ -70,7 +79,10 @@ end
 %    dye_names = {'FAM','HEX','TAMRA','ROX'};
 %  end
 %end;
-if ~ischar( dye_names ) && ~isempty( dye_names ) && length( signals_and_ref ) ~= length( dye_names) ; fprintf( 'Length of dye_names must be 0 or match length of signals_and_ref\n'); return; end;
+if ~ischar( dye_names ) && ~isempty( dye_names ) && length( signals_and_ref ) ~= length( dye_names) ; 
+    fprintf( 'Length of dye_names must be 0 or match length of signals_and_ref\n'); 
+    return; 
+end;
 
 % this creates a cell that has several elements, with blank strings where dye_names were not specified.
 % for example, if dyenames is { 'FAM', 'ROX' } and signals_and_ref is [1 4],
@@ -110,20 +122,18 @@ for m = 1:length( moreOptions )
             SMOOTH_BASELINE_SUBTRACT = 0;
         case 'noLeakageCorrection'
             dye_names_full = {};
+            FIX_LEAKAGE_OF_SATURATING_SIGNALS_TO_REF = 0;
         case 'noLocalAlign'
             LOCAL_ALIGN = 0;
         otherwise
             fprintf( 'Unrecognized options! %s\n', moreOptions{m} );
             return;
-    end
-end
-
+    end;
+end;
 
 d = [];
 d_ref = [];
 labels = {};
-d_noalign = {};
-d_ref_noalign = {};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % STAGE 1
@@ -154,8 +164,7 @@ drawnow
 if isempty( data_all ) ; return; end;
 
 subset_pos = data_set_starts - 1;
-numfiles = length( data_all );
-filenames_all;
+% numfiles = length( data_all );
 
 if ~exist( 'trace_subset','var' ) || isempty( trace_subset);
     trace_subset = [ 1 : length( data_all ) ];
@@ -197,14 +206,18 @@ for m = 1:length(sigchannels) % usually just channel 1.
         d0_reference_ladder(1:L,count) = baseline_subtract(data_all{ trace_subset(i) }(:,refchannel));
         
         labels{count} = filenames_all{ trace_subset(i) };
-    end
+    end;
     
     subset_pos = [subset_pos, count + subset_pos];
-end
+end;
 toc;
 
 % decide what labels to use
-if isempty(lane_names); labels_used = labels; else; labels_used = lane_names; end;
+if isempty(lane_names); 
+    labels_used = labels; 
+else
+    labels_used = lane_names; 
+end;
 
 % If user has not specified ymin,ymax in ylimit, figure it out.
 AUTOFIND_YLIMIT = 0;
@@ -251,10 +264,10 @@ if FIX_LEAKAGE_OF_SATURATING_SIGNALS_TO_REF
     for i = 1:length( data_all )
         data_all{i}(:,refchannel) = fix_leakage_of_saturating_signals_to_ref( data_all{i}(:,sigchannels(m) ),  data_all{i}(:,refchannel) );
     end
-    wipeout_ref = 1800;
-    for i = 1:length( data_all )
-        data_all{i}(1:wipeout_ref,refchannel) = 0.0;
-    end
+%     wipeout_ref = 1800;
+%     for i = 1:length( data_all )
+%         data_all{i}(1:wipeout_ref,refchannel) = 0.0;
+%     end
 end
 
 
