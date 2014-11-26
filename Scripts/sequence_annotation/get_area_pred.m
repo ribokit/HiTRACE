@@ -91,7 +91,7 @@ for k = 1:length( data_types )
 	  area_pred(i,k) = 1.0;
 	end
       end
-     case 'G'
+     case {'G','glyoxal','formaldehyde'}
       for i = 1:length( sequence )
 	if ( sequence(i) == 'G'  )
 	  area_pred(i,k) = 1.0;
