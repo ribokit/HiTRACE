@@ -135,19 +135,25 @@ switch colorscheme
         if (frac_color>1); frac_color = 1; end;
         colorplot = frac_color*colorval2 + (1-frac_color)*colorval1;
     case 8 %Red-orange-white
-        colorplot = [1,1,1];
-        a = colorvalue/maxplot;
+        a = (colorvalue - maxplot2)/(maxplot-maxplot2);
         
-        if (a >= 0.1 && a < 0.8 )
-            b = ( a - 0.1)/(0.8-0.1);
-            colorplot = [1, 1-0.5*b, 1-b ];
-        elseif ( a >= 0.8 && a < 1.0)
-            b = ( a - 0.8)/0.2;
-            colorplot = [1, 0.5 * (1-b), 0 ];
-        elseif ( a >= 1.0 )
-            colorplot = [1, 0, 0];
-        end
+        if (a >= 0.5);
+            colorplot = [1, min(max(1-a,0),1) ,0];
+        else
+            colorplot = [1, min(max(1-a,0),1) , min(max((0.5-a)*2,0),1)];
+        end;
         return
+        
+%         if (a >= 0.1 && a < 0.8 )
+%             b = ( a - 0.1)/(0.8-0.1);
+%             colorplot = [1, 1-0.5*b, 1-b ];
+%         elseif ( a >= 0.8 && a < 1.0)
+%             b = ( a - 0.8)/0.2;
+%             colorplot = [1, 0.5 * (1-b), 0 ];
+%         elseif ( a >= 1.0 )
+%             colorplot = [1, 0, 0];
+%         end
+%         return
     case 10 %Green-white-red
         colorplot = [1,1,1];
         a = colorvalue/maxplot;
