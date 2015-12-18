@@ -23,8 +23,8 @@ function [d, d_ref, ylimit, labels] = quick_look( dirnames, ylimit, trace_subset
 %     lane_names = Names of lanes to show on x-axis of each figure. Input this as a cell of strings.
 %                  Note: the number of lane names should correspond to the number of total lanes in trace_subset.
 %                    If lane names is given as {}, labels from ABI files will be used.
-%     moreOptions= Any of the following to turn off data processing steps: {'noNormalize',
-%             'noSmoothBaselineSubtract',  'noLeakageCorrection' 'noLocalAlign'}  [Default: run al processing steps]
+%     moreOptions= Any of the following to turn off or on data processing steps: {'noNormalize',
+%             'noSmoothBaselineSubtract',  'noLeakageCorrection', 'noLocalAlign', 'anotherLinearAlign' }  [Default: run al processing steps]
 %
 %  Outputs:
 %
@@ -111,6 +111,7 @@ FIX_LEAKAGE_OF_SATURATING_SIGNALS_TO_REF = 1;
 PLOT_STUFF = 1;
 NORMALIZE = 1;
 LOCAL_ALIGN = 1;
+REPEAT_LINEAR_ALIGN = 0;
 SMOOTH_BASELINE_SUBTRACT = 1;
 for m = 1:length( moreOptions )
     switch moreOptions{m}
@@ -123,6 +124,8 @@ for m = 1:length( moreOptions )
         case 'noLeakageCorrection'
             dye_names_full = {};
             FIX_LEAKAGE_OF_SATURATING_SIGNALS_TO_REF = 0;
+        case 'repeatLinearAlign'
+	 REPEAT_LINEAR_ALIGN = 1;
         case 'noLocalAlign'
             LOCAL_ALIGN = 0;
         otherwise
@@ -275,7 +278,6 @@ end
 % STAGE 3
 reflane = 1; % this is a vestige of some old testing stuff.
 tic;
-data_set_starts
 group_count = 0;
 for i = 1:length(data_set_starts)
     start_index = data_set_starts(i);
@@ -393,7 +395,24 @@ ymax_pad = min(ymax + 200, size(d, 1));
 if SMOOTH_BASELINE_SUBTRACT;   d = baseline_subtract_smooth( d, ymin_pad, ymax_pad);  end;
 toc;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% STAGE 5
+%  additional refinement of alignment
+%
+% STAGE 5B
+% align_using_ref -- simple linear alignment across
+%  all capillaries. There was already alignment in
+%  alignment_capillaries_group.
 tic;
+ywindow = [ ymin_pad:ymax_pad ];
+if (REPEAT_LINEAR_ALIGN)
+    [d(ywindow,:),d_ref(ywindow,:)] = align_using_ref( d(ywindow,:), d_ref(ywindow,:) );
+end
+
+% STAGE 5B
+% align_by_DP -- local refinement through
+% piece-wise linear transformation.
+
 if (LOCAL_ALIGN)
     ywindow = ymin_pad:ymax_pad;
     [ d(ywindow, :), d_ref(ywindow, :) ] = align_by_DP_using_ref( d(ywindow, :), d_ref(ywindow, :) );
@@ -403,10 +422,6 @@ d = d(ymin:ymax, :);
 d_ref = d_ref(ymin:ymax, :);
 toc;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% STAGE 5
-% align_by_DP -- local refinement through
-% piece-wise linear transformation.
 
 if PLOT_STUFF
     h = figure(4); clf;
