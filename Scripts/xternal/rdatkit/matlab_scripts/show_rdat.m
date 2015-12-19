@@ -49,9 +49,10 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % show values, i..e. fitted peak intensities or reactivity.
-h = figure(1); clf;
+h = gcf();
+clf;
 set(h, 'Name', 'RDAT Preview');
-set(h, 'Position', [100, 100, 800, 600]);
+%set(h, 'Position', [100, 100, 800, 600]);
 set(h, 'PaperOrientation', 'Landscape', 'PaperPositionMode', 'Manual', ...
       'PaperSize', [11 8.5], 'PaperPosition', [-0.65 0.15 12 8], 'Color', 'White');
 colormap( 1 - gray(100));
@@ -91,7 +92,7 @@ if length( rdat.structure > 0 ) & length( strfind( rdat.structure, '(') ) > 0 & 
   hold off
 end
 
-if size( d_filter, 2) < 200; make_lines_horizontal( [0:1:size(d_filter,2)],'k',0.25  ); end;
+if size( d_filter, 2) < 100; make_lines_horizontal( [0:1:size(d_filter,2)],'k',0.25  ); end;
   
 if ( print_postscript & length( filename )  > 0 ); 
   eps_file = [filename,'.eps']; fprintf( 'Outputting: %s\n',eps_file );
