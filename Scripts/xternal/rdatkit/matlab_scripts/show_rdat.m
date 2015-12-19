@@ -49,9 +49,10 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % show values, i..e. fitted peak intensities or reactivity.
-h = figure(1); clf;
+h = gcf();
+clf;
 set(h, 'Name', 'RDAT Preview');
-set(h, 'Position', [100, 100, 800, 600]);
+%set(h, 'Position', [100, 100, 800, 600]);
 set(h, 'PaperOrientation', 'Landscape', 'PaperPositionMode', 'Manual', ...
       'PaperSize', [11 8.5], 'PaperPosition', [-0.65 0.15 12 8], 'Color', 'White');
 colormap( 1 - gray(100));
@@ -60,6 +61,8 @@ d_filter = filter_ERROR_lanes( d, rdat.data_annotations );
 seq_order = [1:length( rdat.seqpos )];
 if ( length(rdat.seqpos) > 1 & rdat.seqpos( 2 ) < rdat.seqpos( 1 ) ) seq_order = length( rdat.seqpos ):-1:1;end;
 
+%scale_factor = 100;
+% image( 15 * d_filter( seq_order, :)' )
 image( 40 * d_filter( seq_order, :)' /mean(mean(max(d_filter,0)))  )
 
 % sorry for the x-y switch; decided in the end to transpose everything.
@@ -91,7 +94,8 @@ if length( rdat.structure > 0 ) & length( strfind( rdat.structure, '(') ) > 0 & 
   hold off
 end
 
-if size( d_filter, 2) < 200; make_lines_horizontal( [0:1:size(d_filter,2)],'k',0.25  ); end;
+% no make_lines_horizontal
+if size( d_filter, 2) < 100; make_lines_horizontal( [0:1:size(d_filter,2)],'k',0.25  ); end;
   
 if ( print_postscript & length( filename )  > 0 ); 
   eps_file = [filename,'.eps']; fprintf( 'Outputting: %s\n',eps_file );

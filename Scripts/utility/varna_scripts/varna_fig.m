@@ -48,7 +48,7 @@ vers=1;
 
 
 fprintf(fid,'%s\n','<HTML><HEAD><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"></HEAD><BODY>');
-fprintf(fid,'%s\n','<APPLET code="VARNA.class" codebase="http://rmdb.stanford.edu/site_media/bin" archive="VARNA.jar" width="1200" height="1200">');
+fprintf(fid,'%s\n','<APPLET code="VARNA.class" codebase="http://rmdb.stanford.edu/site_src/" archive="VARNA.jar" width="1200" height="1200">');
 fprintf(fid,'%s%s%s\n','<PARAM name="sequenceDBN"  value="',sequence,'"/>');
 fprintf(fid,'%s%s%s\n','<PARAM name="structureDBN" value="',structure,'"/>');
 fprintf(fid,'%s\n','<PARAM name="algorithm" value="radiate" />');
@@ -88,6 +88,13 @@ fprintf( fid, '<param name="bpStyle" value="lw" />\n' );
 fprintf( fid, '<param name="baseInner" value="#FFFFFF" />\n' );
 fprintf( fid, '<param name="baseOutline" value="#FFFFFF" />\n' );
 fprintf( fid, '<param name="bp" value="#000000" />\n' );
+fprintf( fid, '<param name="spaceBetweenBases" value="0.6" />\n' );
+fprintf( fid, '<param name="flat" value="false" />\n' );
+fprintf( fid, ['<param name="title" value="', strrep(filename,'.html',''), '" />\n'] );
+fprintf( fid, '<param name="titleColor" value="#000000" />\n' );
+fprintf( fid, '<param name="titleSize" value="20" />\n' );
+fprintf( fid, '<param name="colorMapCaption" value="Reactivity" />\n' );
+
 
 if exist( 'special_base_pairs','var' )
   if length( special_base_pairs ) ~= length( special_colors );  fprintf( 'Must specify a special_color for each special_base_pair set\n'); end;

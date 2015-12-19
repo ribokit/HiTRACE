@@ -3,8 +3,8 @@ function hText = xticklabel_rotate(XTick,rot,varargin)
 %
 % Syntax: xticklabel_rotate
 %
-% Input:    
-% {opt}     XTick       - vector array of XTick positions & values (numeric) 
+% Input:
+% {opt}     XTick       - vector array of XTick positions & values (numeric)
 %                           uses current XTick values by default (if empty)
 % {opt}     rot         - angle of rotation in degrees, 90¡ by default
 % {opt}     XTickLabel  - cell array of label strings
@@ -36,9 +36,9 @@ function hText = xticklabel_rotate(XTick,rot,varargin)
 % Modifications include Text labels (in the form of cell array)
 %                       Arbitrary angle rotation
 %                       Output of text handles
-%                       Resizing of axes and title/xlabel/ylabel positions to maintain same overall size 
+%                       Resizing of axes and title/xlabel/ylabel positions to maintain same overall size
 %                           and keep text on plot
-%                           (handles small window resizing after, but not well due to proportional placement with 
+%                           (handles small window resizing after, but not well due to proportional placement with
 %                           fixed font size. To fix this would require a serious resize function)
 %                       Uses current XTick by default
 %                       Uses current XTickLabel is different from XTick values (meaning has been already defined)
@@ -66,34 +66,34 @@ end
 
 % if no XTickLabel AND no XTick are defined use the current XTickLabel
 if nargin < 3 & (~exist('XTick') | isempty(XTick)),
-  xTickLabels = get(gca,'XTickLabel') ;  % use current XTickLabel
-  % remove trailing spaces if exist (typical with auto generated XTickLabel)
-  %temp1 = num2cell(xTickLabels,2)         ;
-  temp1 = num2cell(char(xTickLabels),2)         ;
-  for loop = 1:length(temp1),
-    temp1{loop} = deblank(temp1{loop})  ;
-  end
-  xTickLabels = temp1                     ;
+    xTickLabels = get(gca,'XTickLabel') ;  % use current XTickLabel
+    % remove trailing spaces if exist (typical with auto generated XTickLabel)
+    %temp1 = num2cell(xTickLabels,2)         ;
+    temp1 = num2cell(char(xTickLabels),2)         ;
+    for loop = 1:length(temp1),
+        temp1{loop} = deblank(temp1{loop})  ;
+    end
+    xTickLabels = temp1                     ;
 end
 
 % if no XTick is defined use the current XTick
 if (~exist('XTick') | isempty(XTick)),
-    XTick = get(gca,'XTick')        ; % use current XTick 
+    XTick = get(gca,'XTick')        ; % use current XTick
 end
 
 %Make XTick a column vector
 XTick = XTick(:);
 
 if ~exist('xTickLabels'),
-  % Define the xtickLabels 
-  % If XtickLabel is passed as a cell array then use the text
-  if (length(varargin)>0) & (iscell(varargin{1})),
-    xTickLabels = varargin{1};
-    varargin = varargin(2:length(varargin));
-  else
-    xTickLabels = num2str(XTick);
-  end
-end  
+    % Define the xtickLabels
+    % If XtickLabel is passed as a cell array then use the text
+    if (length(varargin)>0) & (iscell(varargin{1})),
+        xTickLabels = varargin{1};
+        varargin = varargin(2:length(varargin));
+    else
+        xTickLabels = num2str(XTick);
+    end
+end
 
 if length(XTick) ~= length(xTickLabels),
     error('xticklabel_rotate : must have smae number of elements in "XTick" and "XTickLabel"')  ;
@@ -121,25 +121,25 @@ ylim = get(gca,'ylim');
 
 %y = xLabelPosition(2);
 %if  strcmp(get(gca,'xaxisloc'),'bottom')
-%  if strcmp(get(gca,'ydir'),'reverse') 
+%  if strcmp(get(gca,'ydir'),'reverse')
 %    y = y + 0.065*(ylim(2)-ylim(1));
 %  else
 %    y = y - 0.065*(ylim(2)-ylim(1));
-% end  
+% end
 %end
 ylim =  get(gca,'ylim');
 if ( strcmp( get(gca,'xaxis'),'bottom' ) )
-  if ( strcmp( get(gca,'ydir'),'reverse') )
-    y = ylim(2);
-  else
-    y = ylim(1);
-  end
+    if ( strcmp( get(gca,'ydir'),'reverse') )
+        y = ylim(2);
+    else
+        y = ylim(1);
+    end
 else
-  if ( strcmp( get(gca,'ydir'),'reverse') )
-    y = ylim(1); 
-  else
-    y = ylim(2);
-  end
+    if ( strcmp( get(gca,'ydir'),'reverse') )
+        y = ylim(1);
+    else
+        y = ylim(2);
+    end
 end
 
 
@@ -159,22 +159,22 @@ hText = text(XTick, y, xTickLabels,'Fontsize',fs,'Color',fc,'Fontweight',fw,'Fon
 % Rotate the text objects by ROT degrees
 % set(hText,'Rotation',rot,'HorizontalAlignment','right',varargin{:})
 if ( strcmp( get(gca,'xaxis'),'bottom' ) )
-  set(hText,'Rotation',rot,'HorizontalAlignment','right',varargin{:},'interpreter','none')
+    set(hText,'Rotation',rot,'HorizontalAlignment','right',varargin{:},'interpreter','none')
 else
-  set(hText,'Rotation',rot,'HorizontalAlignment','left',varargin{:},'interpreter','none')
-end  
+    set(hText,'Rotation',rot,'HorizontalAlignment','left',varargin{:},'interpreter','none')
+end
 %set(hText,'Rotation',rot,'HorizontalAlignment','left',varargin{:},'interpreter','none')
 
 % Adjust the size of the axis to accomodate for longest label (like if they are text ones)
 % This approach keeps the top of the graph at the same place and tries to keep xlabel at the same place
-% This approach keeps the right side of the graph at the same place 
+% This approach keeps the right side of the graph at the same place
 
 set(get(gca,'xlabel'),'units','data')           ;
-    labxorigpos_data = get(get(gca,'xlabel'),'position')  ;
+labxorigpos_data = get(get(gca,'xlabel'),'position')  ;
 set(get(gca,'ylabel'),'units','data')           ;
-    labyorigpos_data = get(get(gca,'ylabel'),'position')  ;
+labyorigpos_data = get(get(gca,'ylabel'),'position')  ;
 set(get(gca,'title'),'units','data')           ;
-    labtorigpos_data = get(get(gca,'title'),'position')  ;
+labtorigpos_data = get(get(gca,'title'),'position')  ;
 
 set(gca,'units','pixel')                        ;
 set(hText,'units','pixel')                      ;
@@ -182,7 +182,11 @@ set(get(gca,'xlabel'),'units','pixel')          ;
 set(get(gca,'ylabel'),'units','pixel')          ;
 
 origpos = get(gca,'position')                   ;
-textsizes = cell2mat(get(hText,'extent'))       ;
+if iscell(get(hText,'extent'));
+    textsizes = cell2mat(get(hText,'extent'))   ;
+else
+    textsizes = get(hText,'extent')             ;
+end;
 longest =  max(textsizes(:,4))                  ;
 
 laborigext = get(get(gca,'xlabel'),'extent')    ;
@@ -223,7 +227,7 @@ set(get(gca,'ylabel'),'position',labyorigpos_data)      ;
 set(get(gca,'title'),'position',labtorigpos_data)       ;
 
 set(get(gca,'xlabel'),'units','data')                   ;
-    labxorigpos_data_new = get(get(gca,'xlabel'),'position')  ;
+labxorigpos_data_new = get(get(gca,'xlabel'),'position')  ;
 set(get(gca,'xlabel'),'position',[labxorigpos_data(1) labxorigpos_data_new(2)])   ;
 
 
