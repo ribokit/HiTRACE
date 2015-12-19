@@ -466,6 +466,7 @@ for i = 1:page_num_W
                 tit_adjst = 0.6;
             end;
             if is_auto_length && ~isempty(title_name); auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc * tit_adjst, title_h); end;
+            uistack(tit, 'top');
         end;
         hold off;
         

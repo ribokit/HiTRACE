@@ -79,7 +79,7 @@ new_rdat.trace = [];
 
 
 for i = 2:length( rdats )
-  new_rdat.mutpos = [ new_rdat.mutpos, rdats{i}.mutpos ];
+  %new_rdat.mutpos = [ new_rdat.mutpos, rdats{i}.mutpos ];
   new_rdat.comments = [ new_rdat.comments, rdats{i}.comments ];
   new_rdat.reactivity = [new_rdat.reactivity, rdats{i}.reactivity ];
   new_rdat.reactivity_error = [new_rdat.reactivity_error, rdats{i}.reactivity_error ];
