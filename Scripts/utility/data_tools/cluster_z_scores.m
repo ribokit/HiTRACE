@@ -6,7 +6,7 @@ function  cluster_z_scores( zscore_matrix, structure, offset  );
 if nargin == 0;  help( mfilename ); return; end;
 
 if ischar( zscore_matrix ); 
-  d = load( zscore_file );
+  d = load( zscore_matrix );
 else  
   d = zscore_matrix;
 end
