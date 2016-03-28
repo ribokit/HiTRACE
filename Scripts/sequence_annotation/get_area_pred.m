@@ -75,7 +75,7 @@ for k = 1:length( data_types )
     for n = 1:length( tags )
         tag = tags{n};
         switch tag
-            case 'SHAPE'
+            case {'SHAPE', 'NMIA','1M7'}
                 for i = 1:length( sequence )
                     if construct_structure(i) == '.'
                         area_pred(i,k) = 1.0;
