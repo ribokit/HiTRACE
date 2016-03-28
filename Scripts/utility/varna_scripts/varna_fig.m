@@ -28,8 +28,8 @@ if ~isempty( DATA )
   %%%Z=hSHAPE(DATA);
   Z=DATA;
   
-  Z = max( Z, 0 );
-  Z = min( Z, 2.0 );
+%   Z = max( Z, 0 );
+%   Z = min( Z, 2.0 );
   
   %Z=100*Z;
 
@@ -48,9 +48,10 @@ vers=1;
 
 
 fprintf(fid,'%s\n','<HTML><HEAD><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"></HEAD><BODY>');
-fprintf(fid,'%s\n','<APPLET code="VARNA.class" codebase="http://rmdb.stanford.edu/site_src/" archive="VARNA.jar" width="1200" height="1200">');
+fprintf(fid,'%s\n','<APPLET code="VARNA.class" codebase="file:///Users/t47/Desktop/" archive="VARNA.jar" width="1200" height="1200">');
 fprintf(fid,'%s%s%s\n','<PARAM name="sequenceDBN"  value="',sequence,'"/>');
 fprintf(fid,'%s%s%s\n','<PARAM name="structureDBN" value="',structure,'"/>');
+% fprintf(fid,'%s\n','<PARAM name="algorithm" value="naview" />');
 fprintf(fid,'%s\n','<PARAM name="algorithm" value="radiate" />');
 
 if ~isempty( DATA )
@@ -66,7 +67,7 @@ if exist( 'Z','var' )
    case 0 % previous default
     fprintf(fid,'%s\n','<param name="colorMapStyle" value="0:#0000FF;10:#0000FF;40:#FFFFFF;60:#FFFFFF;90:#FF0000;100:#FF0000" />'); 
    case 1 % new default
-    fprintf(fid,'%s\n','<param name="colorMapStyle" value="0:#0000FF;0.5:#FFFFFF;1:#FF0000" />'); 
+    fprintf(fid,'%s\n','<param name="colorMapStyle" value="-0.01:#B0B0B0;0:#0000FF;1:#FFFFFF;2:#FF0000" />'); 
    case 2 % white orange to red
 	  % slight pain because of VARNA rescaling:
 	  if ( sum( Z < 0 ) > 0 )
@@ -95,6 +96,8 @@ fprintf( fid, '<param name="titleColor" value="#000000" />\n' );
 fprintf( fid, '<param name="titleSize" value="20" />\n' );
 fprintf( fid, '<param name="colorMapCaption" value="Reactivity" />\n' );
 
+fprintf( fid, '<param name="colorMapMax" value="2" />\n' );
+fprintf( fid, '<param name="colorMapMin" value="0" />\n' );
 
 if exist( 'special_base_pairs','var' )
   if length( special_base_pairs ) ~= length( special_colors );  fprintf( 'Must specify a special_color for each special_base_pair set\n'); end;
@@ -121,7 +124,7 @@ if ( exist( 'offset','var' ) || exist( 'bpp_values','var' ) )
   
   fprintf( fid, '<param name="annotations" value="' );
   if exist( 'offset','var' )
-    PERIOD = 10;
+    PERIOD = 50;
     for i = 1:length( sequence )
       if ( mod( i+offset, PERIOD) == 0 )
 	fprintf( fid, '%d:type=B,anchor=%d,color=#000000,size=8;', i+offset, i );

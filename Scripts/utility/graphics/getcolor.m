@@ -21,6 +21,8 @@ function  colorplot = getcolor(colorvalue, maxplot,maxplot2,colorscheme)
 %            ( 8) Red-orange-white
 %            (10) Green-white-red
 %            (11) blue-white-red
+%            (12) red-yellow-white [t47]
+%            (13) red-white-blue [t47]
 %
 % (C) R. Das, 2008-2012
 %
@@ -143,17 +145,36 @@ switch colorscheme
             colorplot = [1, min(max(1-a,0),1) , min(max((0.5-a)*2,0),1)];
         end;
         return
+    case 12 %Red-yellow-white [t47]
+        a = (colorvalue - maxplot2)/(maxplot-maxplot2);
+        a = min(max(a,0),1);
         
-%         if (a >= 0.1 && a < 0.8 )
-%             b = ( a - 0.1)/(0.8-0.1);
-%             colorplot = [1, 1-0.5*b, 1-b ];
-%         elseif ( a >= 0.8 && a < 1.0)
-%             b = ( a - 0.8)/0.2;
-%             colorplot = [1, 0.5 * (1-b), 0 ];
-%         elseif ( a >= 1.0 )
-%             colorplot = [1, 0, 0];
-%         end
-%         return
+        if (a >= 0.33);
+            colorplot = [1, 0.76-0.5*2*(a-0.33),0.21*2*(a-0.33)];
+        else
+            colorplot = [1, 1-0.24*3.33*a, 1-a*3.33];
+        end;
+        colorplot(colorplot < 0) = 0;
+        colorplot(colorplot > 1) = 1;
+        return        
+    case 13 %Red-white-blue [t47]
+        a = (colorvalue - maxplot2)/(maxplot-maxplot2);
+        a = min(max(a,-1),1);
+        
+        if (a >= 0.66);
+            colorplot = [1, 0.76-0.5*3.33*(a-0.66),0.21*3.33*(a-0.66)];
+        elseif (a >= 0.5);
+            colorplot = [1, 1-0.24*6*(a-0.5), 1-6*(a-0.5)];
+        elseif (a >= 0.16);
+            colorplot = [(a-0.16)*3, 0.66+(a-0.16)*3*0.34, 1];
+        else
+            colorplot = [0.33*(1-a*6), 0.58+a*6*0.08, 0.84+a*6*0.16];
+        end;
+        colorplot(colorplot < 0) = 0;
+        colorplot(colorplot > 1) = 1;
+        return        
+
+    
     case 10 %Green-white-red
         colorplot = [1,1,1];
         a = colorvalue/maxplot;
@@ -171,7 +192,7 @@ switch colorscheme
         else
             colorplot = [max(1+colorvalue/abs(maxplot2),0),  max(1+colorvalue/abs(maxplot2),0), 1 ] ;
         end
-        colorplot = 1 - 0.5*( 1-colorplot);
+%         colorplot = 1 - 0.5*( 1-colorplot);
         return
 end
 

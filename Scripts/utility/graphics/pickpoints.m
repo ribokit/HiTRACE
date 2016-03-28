@@ -33,13 +33,16 @@ if (nargin>2)
         ypick = residue_locations(2,k);
         h(k) = rectangle('Position',...
             [xpick - square_width/2, ypick-square_width/2,...
-                square_width,square_width]);
+                square_width,square_width], 'Curvature', [1 1]);
+%         h(k) = rectangle('Position',...
+%             [xpick - square_width/2, ypick-square_width/2,...
+%                 square_width,square_width]);
         set(h(k),'edgecolor','b');
     end
 end  
 
-set(gcf,'color','w');
-axis off
+% set(gcf,'color','w');
+% axis off
 
 while (stop_pick<1)
     title(['left-click, select;  middle-click, replace any box; \newline i,j,k,l, adjust last box; q, done; next: ', num2str(count+offset)])
@@ -51,7 +54,10 @@ while (stop_pick<1)
             residue_locations(:,count) = [xpick;ypick];
             h(count) = rectangle('Position',...
                 [xpick - square_width/2, ypick-square_width/2,...
-                square_width,square_width]);
+                square_width,square_width], 'Curvature', [1 1]);
+%             h(count) = rectangle('Position',...
+%                 [xpick - square_width/2, ypick-square_width/2,...
+%                 square_width,square_width]);
             set(h(count),'edgecolor','r');
             count= count+1;
             title(['next: ', num2str(count+offset)])
@@ -68,9 +74,12 @@ while (stop_pick<1)
                 xpick = xpick - mod(xpick,GRIDSIZE);
                 ypick = ypick - mod(ypick,GRIDSIZE);
                 residue_locations(:,erasesquare) = [xpick;ypick];
+%                 h(erasesquare) = rectangle('Position',...
+%                     [xpick - square_width/2, ypick-square_width/2,...
+%                     square_width,square_width]);
                 h(erasesquare) = rectangle('Position',...
                     [xpick - square_width/2, ypick-square_width/2,...
-                    square_width,square_width]);
+                    square_width,square_width], 'Curvature', [1 1]);
                 set(h(erasesquare),'edgecolor','r');
             end
         case 3
