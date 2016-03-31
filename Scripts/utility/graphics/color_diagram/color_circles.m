@@ -22,13 +22,16 @@ function color_circles(imagex, residue_locations, which_res, what2plot, color_pr
 %   square_width       Optional        Provides the size of boxes. Default is 24.
 %   file_name          Optional        Provides file name for EPS file. Default is 'circles'.
 
-if ~exist('square_width', 'var'); square_width = 24; end;
-if ~exist('file_name','var'); file_name = 'circles'; end;
+if ~exist('square_width', 'var') || isempty(square_width); square_width = 24; end;
+if ~exist('file_name','var') || isempty(file_name); file_name = 'circles'; end;
 
 [color_scheme, d_offset, max_color, min_color] = parse_color_profile(color_profile);
+[xsize, ysize, zsize] = size(imagex);
 
-figure(); image(ones(size(imagex)));
-hold on; axis equal; axis off;
+figure(); hold on; axis equal; axis off;
+axis([0 ysize 0 xsize]);
+set(gca, 'ydir', 'reverse')
+
 count = 1; h = [];
 for k = which_res
     x = residue_locations(1, k);
