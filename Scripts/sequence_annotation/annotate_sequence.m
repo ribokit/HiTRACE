@@ -110,10 +110,18 @@ while ~stop_sel;
     update_contrast = 0;
     update_ylim = 0;
     
-    title(['-,+ : zoom. up/down arrows : up/down. q -- quit. left-click -- select. \newline',...
-        'middle button -- erase.', ' r -- reset.', 'x -- auto-assign. ',...
-        sprintf(' # of Annotation: %d / %d', length(xsel),length(sequence))]);
-    
+    title(['{\fontsize{14}{\bf{Keys: }}}',...
+        '{\fontsize{14}{\color{blue}\bf{left click}}}: Select',...
+        '; {\fontsize{14}{\color{red}\bf{middle click, e}}}: Erase Closest',...
+        '; {\fontsize{14}{\color[rgb]{0,0.8,0}\bf{up/down, i/k}}}: Move View', ...
+        '; {\fontsize{14}{\color{orange}\bf{-/+, j/l}}}: Zoom In/Out', ...
+        '; {\fontsize{14}{\color{gray}\bf{1/2}}}: Contrast Dark/Light', char(10), ...
+        '{\fontsize{14}{\color{magenta}\bf{q}}}: Save and Quit', ...
+        '; {\fontsize{14}{\color{cyan}\bf{r}}}: Reset', ...
+        '; {\fontsize{14}{\color[rgb]{0,0.5,0.5}\bf{x}}}: Autoassign (Old)', ...
+        '; {\fontsize{14}{\color[rgb]{0.5,0.5,0}\bf{y}}}: Autoassign (New)', char(10), ...
+        '{\fontsize{14}{\color[rgb]{0.5,0,0.5}\bf{# of Annotations}}: \bf{', num2str(length(xsel)), ' / ', num2str(length(sequence)), '}}']);
+
     %  [yselpick, xselpick, button ]  = ginput(1);
     
     keydown = waitforbuttonpress;
@@ -142,20 +150,20 @@ while ~stop_sel;
         %f double(keychar) == 34; keychar = 's'; end; % page down
         
         switch keychar;
-            case {'p', 'P'};
-                [name, path] = uiputfile('xsel.mat', 'Write xsel to matlab file');
-                if(name);
-                    save(strcat(path, name), 'xsel');
-                end;
-            case {'o','O'};
-                [name, path] = uigetfile('*.mat', 'Read xsel from matlab file');
-                if(name)
-                    a = load(strcat(path, name));
-                    xsel = [xsel a.xsel];
-                    xsel = reverse_sort(xsel);
-                end;
-                update_plot = 1;
-            case {'q','Q','z','Z'};
+%             case {'p', 'P'};
+%                 [name, path] = uiputfile('xsel.mat', 'Write xsel to matlab file');
+%                 if(name);
+%                     save(strcat(path, name), 'xsel');
+%                 end;
+%             case {'o','O'};
+%                 [name, path] = uigetfile('*.mat', 'Read xsel from matlab file');
+%                 if(name)
+%                     a = load(strcat(path, name));
+%                     xsel = [xsel a.xsel];
+%                     xsel = reverse_sort(xsel);
+%                 end;
+%                 update_plot = 1;
+            case {'q','Q'};
                 stop_sel = 1;
                 if(~isempty(xsel) && (length(xsel) < length(sequence) || length(xsel) > length(sequence)));
                     %if isstruct(USE_GUI)
