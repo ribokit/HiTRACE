@@ -51,7 +51,16 @@ set(gcf,'color','w');
 while (stop_pick < 1);
     if JUST_PLOT == 1; break; end;
     
-    title(['left-click, select;  middle-click, replace any box; \newline i,j,k,l, adjust last box; q, done; next: ', num2str(count + offset)])
+    title(['{\fontsize{14}{\bf{Mouse: }}}',...
+        '{\color{blue}\bf{left click}}: Select',...
+        '; {\color{red}\bf{middle click}}: Replace Last',...
+        '; {\color[rgb]{0,0.8,0}\bf{right click}}: Zoom In/Out', ...
+        '; {\fontsize{14}{\bf{Keys: }}}',...
+        '{\color{magenta}\bf{q}}: Save and Quit', ...
+        '; {\color{cyan}\bf{r}}: Reset',...
+        '; {\color{orange}\bf{i,j,k,l}}: Nudge Last', char(10), ...
+        '{\fontsize{14}{\color[rgb]{0.5,0,0.5}\bf{Next}}: #', num2str(count + offset), '}']);
+
     [xpick, ypick, button] = ginput(1);
     switch button;
         case 1;
@@ -98,6 +107,13 @@ while (stop_pick < 1);
         case {'q','Q'};
             stop_pick = 1;
             if JUST_PLOT == 2; set(gcf, 'closerequestfcn', 'closereq'); end;
+        case {'r', 'R'};
+            residue_locations = []; % reset
+            for handle = h;
+                delete(handle);
+            end;
+            h = [];
+            count = 1;
         case {'i','w','I','W'};
             residue_locations(2, count - 1) = residue_locations(2, count - 1) - GRIDSIZE;
         case {'k','s','K','S'};
