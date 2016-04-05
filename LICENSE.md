@@ -1,17 +1,24 @@
-## LICENSE for HiTRACE, v1.0
+## Copyright (c) 2011-2016, Leland Stanford Junior University
+All rights reserved.
 
-1. Copyright &copy; 2011-2016 The Board of Trustees of the Leland Stanford Junior University. All Rights Reserved. Permission to use, copy, and modify, (but not to distribute, transfer or sublicense), this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that you comply with the following terms.  (To obtain a license for commercial use, please contact Ximena Ares at the Stanford Office of Technology Licensing: ximena.ares@stanford.edu, TE 650-724-0960)
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the Leland Stanford Junior University nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
 
-2. You agree to use this software solely for non-commercial internal research purposes and not for commercial use (which includes commercial research or consulting). You agree not to use this software for diagnosis, treatment, cure, prevention, or mitigation of disease or other conditions in man or other animals.  You agree to not distribute nor transfer this software to any other person.
-
-3. You agree to use this software solely for non-commercial research purposes. You represent and warrant that you are not an employee of a for-profit entity, and that your use of this software is not directed towards commercial advantage or for-profit activities. Commercial entities wishing to use this software should contact Stanford University's Office of Technology Licensing.
-
-4. This software program and documentation are copyrighted by The Board of Trustees of the Leland Stanford Junior University ("Stanford"), and you agree to preserve the same.  You agree to assign to Stanford any changes or modifications made to this software and related materials. 
-
-5. You agree not to use (i) Stanford's name or other trademarks, or (ii) the name of any Stanford faculty member, employee, student or volunteer without the prior written consent of Stanford. Permission may be withheld at Stanford's sole discretion. 
-
-6. All rights not expressly granted to you in this Agreement are reserved and retained by Stanford or its licensors.
-
-7. You agree that this Agreement and any dispute arising under it is governed by the laws of the State of California, United States of America, applicable to agreements negotiated, executed, and performed within California.
-
-8. <strong>THE SERVICE IS OFFERED "AS IS", AND, TO THE EXTENT PERMITTED BY LAW, STANFORD MAKES NO REPRESENTATIONS AND EXTENDS NO WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. STANFORD SHALL NOT BE LIABLE FOR ANY CLAIMS OR DAMAGES WITH RESPECT TO ANY LOSS OR OTHER CLAIM BY YOU OR ANY THIRD PARTY ON ACCOUNT OF, OR ARISING FROM THE USE OF THE SOFTWARE. YOU HEREBY AGREE TO DEFEND AND INDEMNIFY STANFORD, ITS TRUSTEES, EMPLOYEES, OFFICERS, STUDENTS, AGENTS, FACULTY, REPRESENTATIVES, AND VOLUNTEERS ("STANFORD INDEMNITEES") FROM ANY LOSS OR CLAIM ASSERTED AGAINST STANFORD INDEMNITEES ARISING FROM YOUR USE OF THE SOFTWARE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
