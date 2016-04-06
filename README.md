@@ -24,5 +24,6 @@ To install **HiTRACE**, simply:
 Copyright &copy; of **HiTRACE** _Source Code_ is described in [LICENSE.md](https://github.com/hitrace/hitrace/blob/master/LICENSE.md).
 
 <br/>
-by **Das lab** (_Leland Stanford Junior University_) and **Yoon lab** (_Seoul National University_) and colleagues, *April 2016*.
+Develpedby **Das lab** (_Leland Stanford Junior University_) and **Yoon lab** (_Seoul National University_) and colleagues.
+README by [**t47**](http://t47.io/), *April 2016*.
 
