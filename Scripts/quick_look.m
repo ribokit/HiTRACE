@@ -24,7 +24,7 @@ function [d, d_ref, ylimit, labels] = quick_look( dirnames, ylimit, trace_subset
 %                  Note: the number of lane names should correspond to the number of total lanes in trace_subset.
 %                    If lane names is given as {}, labels from ABI files will be used.
 %     moreOptions= Any of the following to turn off or on data processing steps: {'noNormalize',
-%             'noSmoothBaselineSubtract',  'noLeakageCorrection', 'noLocalAlign', 'anotherLinearAlign' }  [Default: run al processing steps]
+%             'noSmoothBaselineSubtract',  'noLeakageCorrection', 'noLocalAlign', 'noRepeatLinearAlign' }  [Default: run al processing steps]
 %
 %  Outputs:
 %
@@ -51,21 +51,21 @@ if exist( 'trace_subset', 'var' ) && length(trace_subset) == 1 && length( trace_
     fprintf( 'Press a key to continue\n' )
     pause
     ylimit = [ylimit, trace_subset ]; trace_subset = [];
-    if exist( 'signals_and_ref', 'var' ); 
-        trace_subset = signals_and_ref; 
+    if exist( 'signals_and_ref', 'var' );
+        trace_subset = signals_and_ref;
     end;
     signals_and_ref = [];
 end
 
-if ~exist( 'ylimit', 'var'); 
-    ylimit = []; 
+if ~exist( 'ylimit', 'var');
+    ylimit = [];
 end;
-if ~exist( 'signals_and_ref', 'var' ) || isempty( signals_and_ref ); 
-    signals_and_ref = [1 4]; 
+if ~exist( 'signals_and_ref', 'var' ) || isempty( signals_and_ref );
+    signals_and_ref = [1 4];
 end;
-if length( signals_and_ref ) < 2; 
-    fprintf( 'Must have at least 2 channels specified in signals_and_ref!\n'); 
-    return; 
+if length( signals_and_ref ) < 2;
+    fprintf( 'Must have at least 2 channels specified in signals_and_ref!\n');
+    return;
 end;
 if (~exist( 'dye_names', 'var' ) || isempty( dye_names ));
     dye_names = {}; % signal to not apply a leakage correction -- later use FAM/ROX as default.
@@ -79,9 +79,9 @@ end
 %    dye_names = {'FAM','HEX','TAMRA','ROX'};
 %  end
 %end;
-if ~ischar( dye_names ) && ~isempty( dye_names ) && length( signals_and_ref ) ~= length( dye_names) ; 
-    fprintf( 'Length of dye_names must be 0 or match length of signals_and_ref\n'); 
-    return; 
+if ~ischar( dye_names ) && ~isempty( dye_names ) && length( signals_and_ref ) ~= length( dye_names) ;
+    fprintf( 'Length of dye_names must be 0 or match length of signals_and_ref\n');
+    return;
 end;
 
 % this creates a cell that has several elements, with blank strings where dye_names were not specified.
@@ -111,7 +111,7 @@ FIX_LEAKAGE_OF_SATURATING_SIGNALS_TO_REF = 1;
 PLOT_STUFF = 1;
 NORMALIZE = 1;
 LOCAL_ALIGN = 1;
-REPEAT_LINEAR_ALIGN = 0;
+REPEAT_LINEAR_ALIGN = 1;
 SMOOTH_BASELINE_SUBTRACT = 1;
 for m = 1:length( moreOptions )
     switch moreOptions{m}
@@ -124,8 +124,8 @@ for m = 1:length( moreOptions )
         case 'noLeakageCorrection'
             dye_names_full = {};
             FIX_LEAKAGE_OF_SATURATING_SIGNALS_TO_REF = 0;
-        case 'repeatLinearAlign'
-	 REPEAT_LINEAR_ALIGN = 1;
+        case 'noRepeatLinearAlign'
+            REPEAT_LINEAR_ALIGN = 0;
         case 'noLocalAlign'
             LOCAL_ALIGN = 0;
         otherwise
@@ -216,10 +216,10 @@ end;
 toc;
 
 % decide what labels to use
-if isempty(lane_names); 
-    labels_used = labels; 
+if isempty(lane_names);
+    labels_used = labels;
 else
-    labels_used = lane_names; 
+    labels_used = lane_names;
 end;
 
 % If user has not specified ymin,ymax in ylimit, figure it out.
@@ -267,10 +267,10 @@ if FIX_LEAKAGE_OF_SATURATING_SIGNALS_TO_REF
     for i = 1:length( data_all )
         data_all{i}(:,refchannel) = fix_leakage_of_saturating_signals_to_ref( data_all{i}(:,sigchannels(m) ),  data_all{i}(:,refchannel) );
     end
-%     wipeout_ref = 1800;
-%     for i = 1:length( data_all )
-%         data_all{i}(1:wipeout_ref,refchannel) = 0.0;
-%     end
+    %     wipeout_ref = 1800;
+    %     for i = 1:length( data_all )
+    %         data_all{i}(1:wipeout_ref,refchannel) = 0.0;
+    %     end
 end
 
 
@@ -322,14 +322,14 @@ for i = 1:length(data_set_starts)
     corr_test = median(corr_test);
     
     bad_threshold = max(corr_test) / 2;
-
+    
     if(corr_test(reflane) < bad_threshold)
         [~,another_ref] = max(corr_test);
         
         data_align_group{group_count} = align_capillaries( ...
             { data_all{[start_index:final_index]} }, refchannel, another_ref);
     end
-
+    
 end
 
 data_align = align_capillaries_group( data_align_group, refchannel, 1, 1);
@@ -494,10 +494,11 @@ if ~isempty( dye_names_full );
 else
     fprintf( 'No leakage correction applied to color channels. [specify <strong>dye_names</strong> to turn on]\n' );
 end
-if AUTOFIND_YLIMIT;              fprintf( 'Used auto-find of ymin, ymax.  [specify <strong>ylimit</strong> to turn off]\n' ); end;
-if NORMALIZE;                    fprintf( 'Normalized data based on mean peak intensity. [set <strong>noNormalize</strong> to turn off]\n' ); end;
+if AUTOFIND_YLIMIT;              fprintf( 'Used auto-find of ymin, ymax [specify <strong>ylimit</strong> to turn off].\n' ); end;
+if NORMALIZE;                    fprintf( 'Normalized data based on mean peak intensity [set <strong>noNormalize</strong> to turn off]/\n' ); end;
 if SMOOTH_BASELINE_SUBTRACT;     fprintf( 'Applied subtraction of smooth base line [set <strong>noSmoothBaselineSubtract</strong> to turn off].\n' ); end;
-if LOCAL_ALIGN;                  fprintf( 'Applied local alignment based on piece-wise linear transform [set <strong>noLocalAlign</strong> to turn off].\n' ); end;
+if REPEAT_LINEAR_ALIGN;          fprintf( 'Applied additional linear alignment. [set <strong>noRepeatLinearAlign</strong> to turn off].\n' ); end;
+if LOCAL_ALIGN;                  fprintf( 'Applied local alignment based on pice-wise linear transform [set <strong>noLocalAlign</strong> to turn off].\n' ); end;
 
 fprintf( '\nFor all options, type: help %s\n', mfilename );
 
