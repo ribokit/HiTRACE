@@ -131,7 +131,7 @@ if length( legends ) > 2;
 end
 draw_sequence( seqpos, sequence, offset, -0.1 );
 ylabel('Reactivity');
-ylim( [-0.5 4] );
+ylim( [-1 4] );
 
 set(gcf, 'PaperPositionMode','auto','color','white');
 drawnow;

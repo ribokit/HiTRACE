@@ -28,8 +28,7 @@ Copyright &copy; of **HiTRACE** _Source Code_ is described in [LICENSE.md](https
 ## Reference
 
 >Lee, S., Kim, H., Tian, S., Lee, T., Yoon, S., and Das, R. (**2015**)<br/>
->[Automated band annotation for RNA structure probing experiments with numerous capillary electrophoresis p
-rofiles.](http://bioinformatics.oxfordjournals.org/content/31/17/2808.abstract)<br/>
+>[Automated band annotation for RNA structure probing experiments with numerous capillary electrophoresis profiles](http://bioinformatics.oxfordjournals.org/content/31/17/2808.abstract)<br/>
 >*Bioinformatics* **31 (17)**: 2808 - 2815.
 
 >Kladwang, W., Mann, T.H., Becka, A., Tian, S., Kim, H., Yoon, S., and Das, R. (**2014**)<br/>
