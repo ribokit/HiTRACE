@@ -21,7 +21,7 @@ imagex = imread('pfl_secstr.tif');
 
 residue_locations = [];
 base_locations = [];
-square_width = 50;
+square_width = 28;
 
 sequence = 'GGGUCGUGACUGGCGAACAGGUGGGAAACCACCGGGGAGCGACCCCGGCAUCGAUAGCCGCCCGCCUGGGC';
 seqpos = 1:71;
@@ -33,12 +33,12 @@ residue_locations = pick_points(imagex, offset, residue_locations, square_width)
 
 % mark stub coordinates
 direction_cell = { ...
-    [13:19, 34,35, 60:62, 69:71], ...    % top
-    [26, 27, 46:59, 63:65], ...          % bottom
-    [8:12, 20:24, 28, 39:45, 67,68], ... % left
-    [1:7, 25, 29:33, 36:38, 66], ...     % right
+    [25, 29:33, 46:56, 61:62], ...          % top
+    [18:24, 28, 60], ...                    % bottom
+    [8:17, 26:27, 39:45, 57:59, 67:68], ... % left
+    [1:7, 34:38, 63:66, 69:71], ...         % right
 };
-base_locations = move_base_locations(residue_locations, direction_cell, offset, square_width / 2, 10);
+base_locations = move_base_locations(residue_locations, direction_cell, offset, square_width / 2, 5);
 
 base_locations = pick_bases(imagex, offset, residue_locations, base_locations, square_width);
 save(mat_name);
@@ -46,7 +46,7 @@ save(mat_name);
 
 % get color scheme
 whichres = seqpos - offset;
-colorscheme = 17;
+color_scheme = 17;
 
 whattoplot = d_SHAPE_plus;
 color_profile = color_palette(whattoplot, 1.5, 0, color_scheme, seqpos, sequence);
@@ -62,7 +62,7 @@ imagex_2 = color_bases(imagex_1, base_locations, residue_locations, whichres, wh
 
 % add legend
 orient_legend = [1 0];
-pos_legend = [1 9 7 4];
+pos_legend = [1 3 5 4];
 labels = {'1.5', '0', 'SHAPE  '};
 font_size = 0.8;
 
