@@ -485,19 +485,19 @@ fprintf( '\n' );
 fprintf( 'signal channel(s) = %s\n', num2str(sigchannels) )
 fprintf( 'reference channel = %d\n\n', refchannel)
 if ~isempty( dye_names_full );
-    fprintf( 'Applied leakage correction for color channels: [set <strong>noLeakageCorrection</strong> to turn off]\n' );
+    fprintf( 'Applied leakage correction for color channels: [set <strong>noLeakageCorrection</strong> to turn off].\n' );
     if ischar( dye_names_full );
         fprintf( [' ',dye_names_full,'\n'] );
     else
         for m = 1:length( dye_names_full ) fprintf( [' ',dye_names_full{m},'\n'] ); end;
     end
 else
-    fprintf( 'No leakage correction applied to color channels. [specify <strong>dye_names</strong> to turn on]\n' );
+    fprintf( 'No leakage correction applied to color channels [specify <strong>dye_names</strong> to turn on].\n' );
 end
 if AUTOFIND_YLIMIT;              fprintf( 'Used auto-find of ymin, ymax [specify <strong>ylimit</strong> to turn off].\n' ); end;
-if NORMALIZE;                    fprintf( 'Normalized data based on mean peak intensity [set <strong>noNormalize</strong> to turn off]/\n' ); end;
+if NORMALIZE;                    fprintf( 'Normalized data based on mean peak intensity [set <strong>noNormalize</strong> to turn off].\n' ); end;
 if SMOOTH_BASELINE_SUBTRACT;     fprintf( 'Applied subtraction of smooth base line [set <strong>noSmoothBaselineSubtract</strong> to turn off].\n' ); end;
-if REPEAT_LINEAR_ALIGN;          fprintf( 'Applied additional linear alignment. [set <strong>noRepeatLinearAlign</strong> to turn off].\n' ); end;
+if REPEAT_LINEAR_ALIGN;          fprintf( 'Applied additional linear alignment [set <strong>noRepeatLinearAlign</strong> to turn off].\n' ); end;
 if LOCAL_ALIGN;                  fprintf( 'Applied local alignment based on pice-wise linear transform [set <strong>noLocalAlign</strong> to turn off].\n' ); end;
 
 fprintf( '\nFor all options, type: help %s\n', mfilename );
