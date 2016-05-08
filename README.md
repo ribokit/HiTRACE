@@ -12,18 +12,18 @@ To install **HiTRACE**, simply:
 
 - Download the zip or tar file of the repository and unpack; or 
 ```bash
-git clone https://github.com/hitrace/hitrace.git
+git clone https://github.com/hitrace/HiTRACE.git
 ```
 
-- In *MATLAB*, go to "**Set Path**". Then "**Add with Subfolders**" of the target `path/to/hitrace/Scripts/`.
+- In *MATLAB*, go to "**Set Path**". Then "**Add with Subfolders**" of the target `path/to/HiTRACE/Scripts/`.
 
 ## Usage 
 
-*MATLAB* Tutorial is available at https://ribokit.github.io/hitrace/tutorial/.
+Documentation (*MATLAB* tutorial) is available at https://hitrace.github.io/HiTRACE/.
 
 ## License
 
-Copyright &copy; of **HiTRACE** _Source Code_ is described in [LICENSE.md](https://github.com/hitrace/hitrace/blob/master/LICENSE.md).
+Copyright &copy; of **HiTRACE** _Source Code_ is described in [LICENSE.md](https://github.com/hitrace/HiTRACE/blob/master/LICENSE.md).
 
 ## Reference
 
