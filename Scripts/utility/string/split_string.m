@@ -1,7 +1,7 @@
 function cols = split_string( l, delimiter );
 
-if ~exist( 'delimiter') delimiter = ' '; end;
-delimiter = sprintf( delimiter );
+if ~exist('delimiter', 'var'); delimiter = ' '; end;
+delimiter = sprintf(delimiter);
 
 remain = l;
 cols = {};
