@@ -139,7 +139,7 @@ make_lines([min(seqpos_out):0, 72:(max(seqpos_out) + 20)] - 0.5, [0.4 0.4 0.4], 
 make_lines(ref_peak - 0.5, 'y', 1.5, 1, 0);
 axis([-25 100 -0.5 5]);
 legend('(-) ZMP', '(+) 10 uM ZMP');
-title('1D DMS', 'fontweight', 'bold', 'fontsize', 15);
+title('1D CMCT', 'fontweight', 'bold', 'fontsize', 15);
 set(gca, 'xgrid', 'off', 'ygrid', 'on');
 set(gca, 'xtick', [seqpos_out, first_RT_nucleotide + 1:20], 'xticklabel', sequence', 'fontsize', 8);
 make_lines([-20:20:100] - 0.5, 'k', 0.5, 0, 1);
@@ -154,7 +154,7 @@ make_lines([min(seqpos_out):0, 72:(max(seqpos_out) + 20)] - 0.5, [0.4 0.4 0.4], 
 make_lines(ref_peak - 0.5, 'y', 1.5, 1, 0);
 axis([-25 100 -0.5 3]);
 legend('(-) ZMP', '(+) 10 uM ZMP');
-title('1D DMS', 'fontweight', 'bold', 'fontsize', 15);
+title('1D SHAPE', 'fontweight', 'bold', 'fontsize', 15);
 set(gca, 'xgrid', 'off', 'ygrid', 'on');
 set(gca, 'xtick', [seqpos_out, first_RT_nucleotide + 1:20], 'xticklabel', sequence', 'fontsize', 8);
 make_lines([-20:20:100] - 0.5, 'k', 0.5, 0, 1);

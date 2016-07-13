@@ -125,7 +125,7 @@ for k = 1:length( data_types )
                     if ( sequence(i+1) == 'A' ); area_pred(i,k) = 1.0; end;
                 end
             otherwise
-                if sum( area_pred(:,k) ) == 0 && ~isnan( mutpos );
+                if sum( area_pred(:,k) ) == 0 & ~isnan( mutpos );
                     area_pred(:,k) = 0.0;
                     if ( seqidx <= length( sequence) && seqidx >= 1 )
                         area_pred(seqidx ,k) = 1.0;
