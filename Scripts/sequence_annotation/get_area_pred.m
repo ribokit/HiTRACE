@@ -40,8 +40,7 @@ end;
 for k = 1:length( data_types )
     
     construct_structure = structure;
-    
-    if isempty( data_types{k} ) continue; end;
+    if isempty( data_types{k} ); continue; end;
     
     tags = split_string( data_types{k} );
     mutpos = NaN;
@@ -75,7 +74,7 @@ for k = 1:length( data_types )
     for n = 1:length( tags )
         tag = tags{n};
         switch tag
-            case 'SHAPE'
+            case {'SHAPE', 'NMIA','1M7'}
                 for i = 1:length( sequence )
                     if construct_structure(i) == '.'
                         area_pred(i,k) = 1.0;
@@ -93,8 +92,8 @@ for k = 1:length( data_types )
                         area_pred(i,k) = 1.0;
                     end
                 end
-
-	    case {'G','glyoxal','formaldehyde'}
+                
+            case {'glyoxal','formaldehyde'}
                 if tag ~=71;
                     for i = 1:length( sequence )
                         if ( sequence(i) == 'G'  )
@@ -126,7 +125,7 @@ for k = 1:length( data_types )
                     if ( sequence(i+1) == 'A' ); area_pred(i,k) = 1.0; end;
                 end
             otherwise
-                if sum( area_pred(:,k) ) == 0 &  ~isnan( mutpos );
+                if sum( area_pred(:,k) ) == 0 & ~isnan( mutpos );
                     area_pred(:,k) = 0.0;
                     if ( seqidx <= length( sequence) && seqidx >= 1 )
                         area_pred(seqidx ,k) = 1.0;
@@ -135,7 +134,7 @@ for k = 1:length( data_types )
                         area_pred( partner_idx,k ) = 1.0;
                     end;
                 end
-        end        
+        end
     end
 end
 

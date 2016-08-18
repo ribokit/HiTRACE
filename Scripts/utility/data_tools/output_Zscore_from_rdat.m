@@ -77,6 +77,7 @@ for i = 1:length( rdat_files )
 
 end
 
+
 for i = 1:NRES
   if ( mut_weights_sum(i) > 0 )
     Z(:,i) = Z_sum(:,i)/mut_weights_sum(i);    

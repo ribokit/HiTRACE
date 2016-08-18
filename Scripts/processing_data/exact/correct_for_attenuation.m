@@ -33,7 +33,7 @@ for k = 1:size(d_in,2);
   % skip last few values, as they might be unextended primer
   % also ignore data right at beginning [large peak from fully extended primer]
   minpos = min( 5, length(d) );
-  maxpos = max( length(d)-3, 1 );
+  maxpos = max( length(d)-5, 1 );
   sum_mod = sum( d(minpos : maxpos));
   sum_all = sum( d(1:maxpos) );
   modification_fractions(k) = sum_mod / sum_all;
