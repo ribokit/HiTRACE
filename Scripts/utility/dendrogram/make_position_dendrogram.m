@@ -12,7 +12,7 @@ if (nargin < 1); help( mfilename ); return; end;
 
 
 if ~exist( 'seq_labels' ) | isempty( seq_labels ); seq_labels = {}; end;
-if exist( 'seq_labels' ) & ~iscell( seq_labels) & isnumeric( seq_labels ); seqlabels = num2str( seqlabels ); end;
+if exist( 'seq_labels' ) & ~iscell( seq_labels) & isnumeric( seq_labels ); seq_labels = num2str( seq_labels ); end;
 for i= 1:length(subset_mod); blank_tags{i} = ''; end;
 clf;
 
@@ -56,6 +56,8 @@ end
 dm_seq2 = squareform( dm_seq );
 z_seq = linkage( dm_seq, 'weighted' );
 %z_seq = linkage( dm_seq, 'ward' );
+
+
 leaf_order_seq = optimalleaforder( z_seq, dm_seq );
 
 [h,t,perm_seq] = dendrogram( z_seq, 0, 'labels',seq_labels( subset_seq) ,'colorthreshold',0.4,'reorder',leaf_order_seq );
