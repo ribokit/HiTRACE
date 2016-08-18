@@ -14,10 +14,7 @@ if ~iscell( seqpos_tags ) & isnumeric( seqpos_tags ) seqpos = seqpos_tags; clear
 if ~exist( 'USE_CORRELATION' ) USE_CORRELATION = 0; end;
 clf;
 
-%r = quick_norm( max(reactivity( subset_seq,subset_mod),0) );
-
-r = max(remove_offset(reactivity( subset_seq,subset_mod) ), 0);
-[r, norm_factor, r_error] = quick_norm( r, [], reactivity_error( subset_seq, subset_mod) );
+[r, norm_factor, r_error ] = prepare_data( reactivity, subset_seq, subset_mod, reactivity_error );
 
 if ~isempty( find( sum( r )  == 0 ) )
   error( 'One of the input traces is zero!' );
@@ -39,9 +36,9 @@ end
 %z = linkage( dm, 'average' );
 z = linkage( dm, 'weighted' );
 
-
 leaf_order_mod = optimalleaforder( z, dm );
 [h,t,perm_mod] = dendrogram( z, 0, 'labels',labels( subset_mod),'reorder',leaf_order_mod );
+%[h,t,perm_mod] = dendrogram( z, 0,'reorder',leaf_order_mod );
 
 set(gca,'Position', [0.05 0.85 0.95 0.10],'fontsize',7 )
 xlim([0.5 length(perm_mod)+0.5]);

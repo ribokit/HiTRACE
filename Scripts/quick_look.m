@@ -24,7 +24,7 @@ function [d, d_ref, ylimit, labels] = quick_look( dirnames, ylimit, trace_subset
 %                  Note: the number of lane names should correspond to the number of total lanes in trace_subset.
 %                    If lane names is given as {}, labels from ABI files will be used.
 %     moreOptions= Any of the following to turn off or on data processing steps: {'noNormalize',
-%             'noSmoothBaselineSubtract',  'noLeakageCorrection', 'noLocalAlign', 'noRepeatLinearAlign' }  [Default: run al processing steps]
+%             'noSmoothBaselineSubtract',  'noLeakageCorrection', 'noLocalAlign', 'noRepeatLinearAlign' }  [Default: run all processing steps]
 %
 %  Outputs:
 %
