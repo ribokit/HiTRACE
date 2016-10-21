@@ -3,7 +3,7 @@ function [reactivity, reactivity_error ] = apply_normalization( reactionProb, re
 %  [reactivity, reactivity_error ] = apply_normalization( reactionProb, reactionProb_error, refpos, seqpos, data_type, sequence, offset );
 %
 % Required Inputs
-%  reactionProb        = reactivities 
+%  reactionProb        = reactivities
 %  reactionProb_error  = errors on reactivities
 %  refpos              = reference positions; after normalization these will average to 1.0.
 %
@@ -20,17 +20,17 @@ function [reactivity, reactivity_error ] = apply_normalization( reactionProb, re
 % (C) R. Das, Stanford University, 2013
 
 for j = 1:size( reactionProb, 2 )
-
-  ref_pos_in = [];
-  for k = 1:length( refpos )
-    if length( data_type ) > 0 & length( sequence ) > 0
-      nt = upper(sequence( refpos(k) - offset ));
-      if ( strcmp( data_type{j}, 'DMS' )  & nt ~= 'A' & nt ~= 'C' ) continue; end;
-      if ( strcmp( data_type{j}, 'CMCT' ) & nt ~= 'U' ) continue; end;
+    
+    ref_pos_in = [];
+    for k = 1:length( refpos )
+        if ~isempty( data_type ) & ~isempty( sequence );
+            nt = upper(sequence( refpos(k) - offset ));
+            if ( strcmp( data_type{j}, 'DMS' )  & nt ~= 'A' & nt ~= 'C' ); continue; end;
+            if ( strcmp( data_type{j}, 'CMCT' ) & nt ~= 'U' ); continue; end;
+        end
+        ref_pos_in = [ ref_pos_in, find( seqpos == refpos(k) ) ];
     end
-    ref_pos_in = [ ref_pos_in, find( seqpos == refpos(k) ) ];
-  end
-  
-  [reactivity(:,j), norm_scalefactors, reactivity_error(:,j) ] = quick_norm( reactionProb(:,j), ref_pos_in, reactionProb_error(:,j) );
-
+    
+    [reactivity(:,j), norm_scalefactors, reactivity_error(:,j) ] = quick_norm( reactionProb(:,j), ref_pos_in, reactionProb_error(:,j) );
+    
 end
