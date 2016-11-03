@@ -27,6 +27,7 @@ for j = 1:size( reactionProb, 2 )
             nt = upper(sequence( refpos(k) - offset ));
             if ( strcmp( data_type{j}, 'DMS' )  & nt ~= 'A' & nt ~= 'C' ); continue; end;
             if ( strcmp( data_type{j}, 'CMCT' ) & nt ~= 'U' ); continue; end;
+           if ( strcmp( data_type{j}, 'glyoxal' ) & nt ~= 'G' ); continue; end;
         end
         ref_pos_in = [ ref_pos_in, find( seqpos == refpos(k) ) ];
     end
