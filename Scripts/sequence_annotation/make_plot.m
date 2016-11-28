@@ -53,15 +53,12 @@ for i = length( xsel ):-1:1
     else % need to create the handle.
         
         %fprintf( 'New handle: %d\n', handle_idx );
-        
-        handles = {};
-        handles{1} = xsel(i);
-        
+                
         mycolor = [ 1 0 1]; % magenta for unknown.
         
         hold on
         h = plot( [0.5 numlanes+0.5 ], [xsel(i) xsel(i)], 'color',mycolor );
-        handles = [ handles, h ];
+        handles = { xsel(i), h };
         
         if ( seq_idx >=1  &&  seq_idx <= length(sequence) )
             
@@ -77,11 +74,11 @@ for i = length( xsel ):-1:1
             h = text( 0.5, xsel(i), txt_to_show );
             set(h,'HorizontalAlignment','right');
             set(h,'fontweight','bold','fontsize', font_size);%,'clipping','on');
-            handles = [handles, h ];
+            handles{3} = h;
             
             mark_points = find( area_pred(seq_idx,:) > 0.5 );
             h = plot( mark_points, mark_points*0 + xsel(i) , 'ro' );
-            handles = [handles, h ];
+            handles{4} = h;
             
         end
         
