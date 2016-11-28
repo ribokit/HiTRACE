@@ -93,7 +93,8 @@ update_plot = 1;
 update_ylim = 1;
 update_contrast = 1;
 
-set(gcf, 'PaperPositionMode', 'auto', 'color', 'white', 'pointer', 'fullcross');
+set(gcf, 'PaperPositionMode', 'auto', 'color', 'white');
+%set(gcf, 'pointer', 'fullcross');
 figure_full_screen();
 if JUST_PLOT == 2; set(gcf, 'closerequestfcn', ''); end;
 
@@ -122,12 +123,19 @@ while ~stop_sel;
         '; {\fontsize{14}{\color[rgb]{0.5,0.5,0}\bf{y}}}: Autoassign (New)', char(10), ...
         '{\fontsize{14}{\color[rgb]{0.5,0,0.5}\bf{# of Annotations}}: \bf{', num2str(length(xsel)), ' / ', num2str(length(sequence)), '}}']);
 
-    %  [yselpick, xselpick, button ]  = ginput(1);
+    [yselpick, xselpick, button ]  = ginput(1);
+    keydown = (button > 3 );
+    if ( button == 1 ) 
+       button = 'normal';
+    elseif ( button == 2 | button == 3 ) 
+       button = 'extend';
+    end;
     
-    keydown = waitforbuttonpress;
-    button = get(gcf, 'SelectionType');
-    mouse_pos = get(gca, 'CurrentPoint');
-    xselpick = mouse_pos(1,2);
+    % This used to be the code, instead of the ginput(1) block above.
+    %keydown = waitforbuttonpress;
+    %button = get(gcf, 'SelectionType');
+    %mouse_pos = get(gca, 'CurrentPoint');
+    %xselpick = mouse_pos(1,2);
     
     if (~keydown); % mousebutton pressed!
         switch(button);
@@ -140,7 +148,12 @@ while ~stop_sel;
                 update_plot = 1;
         end;
     else
-        keychar = get(gcf, 'CurrentCharacter');
+        
+        % This used to be the code to get they keypress -- now, based on
+        % button.
+        %keychar = get(gcf, 'CurrentCharacter');
+        keychar = char( button );
+
         if double(keychar) == 28; keychar = '+'; end; % left arrow
         if double(keychar) == 29; keychar = '-'; end; % right arrow
         if double(keychar) == 30; keychar = 'i'; end; % up arrow
