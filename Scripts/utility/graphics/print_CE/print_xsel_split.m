@@ -146,7 +146,7 @@ function print_xsel_split(d_align, xsel, seqpos, sequence, offset, area_pred, la
 %
 
 if nargin == 0; help( mfilename ); return; end;
-Script_VER = '1.3';
+Script_VER = '1.4';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % preparation before splitting
