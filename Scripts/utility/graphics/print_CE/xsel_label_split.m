@@ -42,7 +42,11 @@ if nargin == 0; help( mfilename ); return; end;
 % read in band names (Y-axis)
 xsel_all = cell(length(seqpos), 2);
 for i = 1:length(seqpos)
-    xsel_all{i, 1} = [sequence(seqpos(i) - offset), num2str(seqpos(i))];
+    if ( seqpos(i) - offset ) > 0
+       xsel_all{i, 1} = [sequence(seqpos(i) - offset), num2str(seqpos(i))];
+    else
+       xsel_all{i,1} = ['X',num2str(seqpos(i))];
+    end
     xsel_all{i, 2} = xsel(i);
 end;
 
