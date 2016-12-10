@@ -59,13 +59,22 @@ function hText = xticklabel_rotate(XTick,rot,varargin)
 %   email: gilbertd@dfo-mpo.gc.ca  Web: http://www.qc.dfo-mpo.gc.ca/iml/
 %   February 1998; Last revision: 24-Mar-2003
 
+
+% for Matlab >= R2014b, use built-in instead
+% T47, Dec 2016
+if ~check_graphic_interface();
+    set(gca,'XTickLabelRotation', 90);
+    return
+end;
+
+
 % check to see if xticklabel_rotate has already been here (no other reasdon for this to happen)
 if isempty(get(gca,'XTickLabel')),
     error('xticklabel_rotate : can not process, either xticklabel_rotate has already been run or XTickLabel field has been erased')  ;
 end
 
 % if no XTickLabel AND no XTick are defined use the current XTickLabel
-if nargin < 3 & (~exist('XTick') | isempty(XTick)),
+if nargin < 3 && (~exist('XTick','var') || isempty(XTick)),
     xTickLabels = get(gca,'XTickLabel') ;  % use current XTickLabel
     % remove trailing spaces if exist (typical with auto generated XTickLabel)
     %temp1 = num2cell(xTickLabels,2)         ;
@@ -77,17 +86,17 @@ if nargin < 3 & (~exist('XTick') | isempty(XTick)),
 end
 
 % if no XTick is defined use the current XTick
-if (~exist('XTick') | isempty(XTick)),
+if (~exist('XTick','var') || isempty(XTick)),
     XTick = get(gca,'XTick')        ; % use current XTick
 end
 
 %Make XTick a column vector
 XTick = XTick(:);
 
-if ~exist('xTickLabels'),
+if ~exist('xTickLabels','var'),
     % Define the xtickLabels
     % If XtickLabel is passed as a cell array then use the text
-    if (length(varargin)>0) & (iscell(varargin{1})),
+    if (length(varargin)>0) && (iscell(varargin{1})),
         xTickLabels = varargin{1};
         varargin = varargin(2:length(varargin));
     else
@@ -128,7 +137,7 @@ ylim = get(gca,'ylim');
 % end
 %end
 ylim =  get(gca,'ylim');
-if ( strcmp( get(gca,'xaxis'),'bottom' ) )
+if ( strcmp( get(gca,'xaxisloc'),'bottom' ) )
     if ( strcmp( get(gca,'ydir'),'reverse') )
         y = ylim(2);
     else
@@ -158,7 +167,7 @@ hText = text(XTick, y, xTickLabels,'Fontsize',fs,'Color',fc,'Fontweight',fw,'Fon
 
 % Rotate the text objects by ROT degrees
 % set(hText,'Rotation',rot,'HorizontalAlignment','right',varargin{:})
-if ( strcmp( get(gca,'xaxis'),'bottom' ) )
+if ( strcmp( get(gca,'xaxisloc'),'bottom' ) )
     set(hText,'Rotation',rot,'HorizontalAlignment','right',varargin{:},'interpreter','none')
 else
     set(hText,'Rotation',rot,'HorizontalAlignment','left',varargin{:},'interpreter','none')
