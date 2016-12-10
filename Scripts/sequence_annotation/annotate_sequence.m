@@ -28,6 +28,7 @@ function [xsel,seqpos,area_pred] = annotate_sequence(d_align, xsel, sequence_ful
 %
 
 if nargin == 0; help(mfilename); return; end;
+ver_flag = check_graphic_interface();
 
 % initialize outputs.
 if ~exist('xsel', 'var') || isempty(xsel);  xsel = []; end
@@ -94,7 +95,7 @@ update_ylim = 1;
 update_contrast = 1;
 
 set(gcf, 'PaperPositionMode', 'auto', 'color', 'white');
-%set(gcf, 'pointer', 'fullcross');
+if ver_flag; set(gcf, 'pointer', 'fullcross'); end;
 figure_full_screen();
 if JUST_PLOT == 2; set(gcf, 'closerequestfcn', ''); end;
 
@@ -123,19 +124,22 @@ while ~stop_sel;
         '; {\fontsize{14}{\color[rgb]{0.5,0.5,0}\bf{y}}}: Autoassign (New)', char(10), ...
         '{\fontsize{14}{\color[rgb]{0.5,0,0.5}\bf{# of Annotations}}: \bf{', num2str(length(xsel)), ' / ', num2str(length(sequence)), '}}']);
 
-    [yselpick, xselpick, button ]  = ginput(1);
-    keydown = (button > 3 );
-    if ( button == 1 ) 
-       button = 'normal';
-    elseif ( button == 2 | button == 3 ) 
-       button = 'extend';
+    if ver_flag;
+        % This used to be the code, instead of the ginput(1) block above.
+        keydown = waitforbuttonpress;
+        button = get(gcf, 'SelectionType');
+        mouse_pos = get(gca, 'CurrentPoint');
+        xselpick = mouse_pos(1,2);
+    else
+        [~, xselpick, button ]  = ginput(1);
+        keydown = (button > 3 );
+        if ( button == 1 ) 
+           button = 'normal';
+        elseif ( button == 2 || button == 3 ) 
+           button = 'extend';
+        end;
     end;
     
-    % This used to be the code, instead of the ginput(1) block above.
-    %keydown = waitforbuttonpress;
-    %button = get(gcf, 'SelectionType');
-    %mouse_pos = get(gca, 'CurrentPoint');
-    %xselpick = mouse_pos(1,2);
     
     if (~keydown); % mousebutton pressed!
         switch(button);
@@ -149,10 +153,13 @@ while ~stop_sel;
         end;
     else
         
-        % This used to be the code to get they keypress -- now, based on
-        % button.
-        %keychar = get(gcf, 'CurrentCharacter');
-        keychar = char( button );
+        if ver_flag;
+            % This used to be the code to get they keypress -- now, based on
+            % button.
+            keychar = get(gcf, 'CurrentCharacter');
+        else
+            keychar = char( button );
+        end;
 
         if double(keychar) == 28; keychar = '+'; end; % left arrow
         if double(keychar) == 29; keychar = '-'; end; % right arrow
@@ -333,7 +340,7 @@ return
 function xsel = remove_pick(xsel, xselpick)
 
 if ~isempty(xsel);
-    [dummy, closestpick] = min(abs(xsel - xselpick));
+    [~, closestpick] = min(abs(xsel - xselpick));
     
     xsel = xsel([1:(closestpick-1) ...
         (closestpick+1):length(xsel)] ...
