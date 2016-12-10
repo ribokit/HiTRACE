@@ -397,13 +397,13 @@ for i = 1:page_num_W
         % axis labeling
         % X-axis-tick, mutant names
         set(gca, 'FontSize', ft_sz_x_tick, 'FontWeight', ft_w_x_tick);
-        set(gca, 'XTick', 1:size(name, 2), 'XTickLabel', char(name{i, :}), 'XColor', color_x_tick);
+        set(gca, 'XTick', 1:size(name, 2), 'XTickLabel', char(name{i, :}), 'XColor', color_x_tick, 'XAxisLoc', 'Bottom');
         xticklabel_rotate();
         hold on;
         
         % Y-axis-tick, band positions
         set(gca, 'FontSize', ft_sz_y_tick, 'FontWeight', ft_w_y_tick, 'YColor', color_y_tick);
-        set(gca, 'YTick', xsel_pos_sub(:), 'YTickLabel', char(xsel_txt_sub(:)), 'YAxisLoc', 'Right');
+        set(gca, 'YTick', xsel_pos_sub(:), 'YTickLabel', char(xsel_txt_sub(:)), 'YAxisLoc', 'Left');
         hold on;
         
         % make color lines
@@ -439,7 +439,7 @@ for i = 1:page_num_W
         % second y-axis labels
         if ~is_one_page;
             y_1 = gca; y_2 = copyobj(y_1, gcf);
-            set(y_2, 'YAxisLoc', 'Left');
+            set(y_2, 'YAxisLoc', 'Right');
             hold on;
         end;
         
@@ -466,7 +466,7 @@ for i = 1:page_num_W
                 tit_adjst = 0.6;
             end;
             if is_auto_length && ~isempty(title_name); auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc * tit_adjst, title_h); end;
-            uistack(tit, 'top');
+            if check_graphic_interface(); uistack(tit, 'top'); end;
         end;
         hold off;
         
