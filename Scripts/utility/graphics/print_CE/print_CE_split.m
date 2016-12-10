@@ -571,7 +571,7 @@ for i = 1:page_num_W
                 tit = get(gca, 'Title'); pos = get(tit, 'Position');
                 set (tit, 'Position', [1 (pos(2) + title_offset) pos(3)]);
                 if is_auto_length; auto_font_size(tit, min((get(gcf,'PaperSize'))) * title_size_fc, title_h); end;
-                
+                if check_graphic_interface(); uistack(tit, 'top'); end;
             end;
         end;
         
