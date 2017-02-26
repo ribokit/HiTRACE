@@ -63,7 +63,7 @@ function hText = xticklabel_rotate(XTick,rot,varargin)
 % for Matlab >= R2014b, use built-in instead
 % T47, Dec 2016
 if ~check_graphic_interface();
-    set(gca,'XTickLabelRotation', 90);
+    set(gca,'XTickLabelRotation', 90, 'TickLabelInterpreter','none');
     return
 end;
 
