@@ -1,5 +1,5 @@
-function [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_OFFSET, APPLY_ZSCORE_OFFSET, ONLY_A_C, ignore_mut, print_stuff );
-% [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, rdat_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_OFFSET, APPLY_ZSCORE_OFFSET, ONLY_A_C, ignore_mut, print_stuff );
+function [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_OFFSET, APPLY_ZSCORE_OFFSET, ONLY_A_C, ignore_mut, print_stuff, mask_diag );
+% [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, rdat_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_OFFSET, APPLY_ZSCORE_OFFSET, ONLY_A_C, ignore_mut, print_stuff, mask_diag );
 %
 % Z = [ reactivity value -  mean reactivity at residue across mutants]/ 
 %                               standard-deviation at residue across mutants.
@@ -22,6 +22,7 @@ function [ Z, mutpos, seqplot ] = output_Zscore_from_rdat( outfile, rdat_files, 
 %               (Default: 0)
 %  ignore_mut  = ignore variants with mutations at the specified positions. (Default: [])
 %  print_stuff = verbose output (Default: 0)
+%  mask_diag   = remove data +/- this value from diag before Z-score compute (Default: -1 means no masking)
 %
 % (C) R. Das, 2010-2013.
 %
@@ -35,6 +36,7 @@ if ~exist( 'ONLY_A_C','var' ); ONLY_A_C = 0; end;
 if ~exist( 'print_stuff','var' ); print_stuff = 0; end
 if ~exist( 'd_nomod','var' ) || isempty( d_nomod ); d_nomod = []; end
 if ~exist( 'ignore_mut','var' ); ignore_mut = []; end
+if ~exist( 'mask_diag','var' ); mask_diag = -1; end
 
 Z = []; mutpos = [];seqplot = [];
 if isempty( rdat_files ); return; end;
@@ -54,8 +56,12 @@ mut_weights_sum = zeros( 1, NRES );
 
 for i = 1:length( rdat_files )
 
-  d = read_rdat_file( rdat_files{i} );
-
+  if ( ischar( rdat_files{i} ) )
+      d = read_rdat_file( rdat_files{i} );
+  else
+      d = rdat_files{i};
+      assert( isobject( d ) );
+  end
   if ( NRES == 0 )
     NRES = length(d.sequence);
     Z_sum = zeros( NRES, NRES );
@@ -64,14 +70,12 @@ for i = 1:length( rdat_files )
     fprintf( 'WARNING! WARNING! NRES problem! %s\n', rdat_files{i} );
   end
 
-  [ Z, mutpos ] = get_Zscore_and_apply_filter( d, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_OFFSET, APPLY_ZSCORE_OFFSET, ONLY_A_C, ignore_mut );
-  
+  [ Z, mutpos ] = get_Zscore_and_apply_filter( d, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_OFFSET, APPLY_ZSCORE_OFFSET, ONLY_A_C, ignore_mut, mask_diag );
   % just a check
-  if ~isempty(strfind( rdat_files{i}, 'P4P6'));    Z( 176-d.offset, : ) = 0.0;   end;
+  if ~isempty(strfind( d.name, 'P4P6'));    Z( 176-d.offset, : ) = 0.0;   end;
 
-  Z_sum = Z_sum + Z; % + smooth2d( Z );
+  Z_sum = Z_sum + Z; % + smooth2d( Z );  
 
-  
   mut_weights = ( sum( Z, 1 ) < 0 );
   mut_weights_sum = mut_weights_sum + mut_weights;
 
@@ -86,17 +90,26 @@ end
 
 seqplot = [1:length( d.sequence )] + d.offset;
 plot_and_save(Z, seqplot,  outfile, print_stuff );
-
 return;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [ Zscore_full, mutpos ] = get_Zscore_and_apply_filter( d, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_OFFSET, APPLY_ZSCORE_OFFSET, ONLY_A_C, ignore_mut  );
+function [ Zscore_full, mutpos ] = get_Zscore_and_apply_filter( d, d_nomod, MEAN_EXPOSURE_CUTOFF, ZSCORE_OFFSET, APPLY_ZSCORE_OFFSET, ONLY_A_C, ignore_mut, mask_diag );
 
 Zscore = [];
 
 a_input = d.reactivity;
-normbins = [ 10: size( a_input,1)-10 ];
-a = quick_norm( a_input, normbins );
+
+a_mask = a_input;
+if ( mask_diag >= 0 )
+    [idx_i, idx_j ] = ndgrid( [1:size(a_input,1)], [1:size(a_input,2)] );
+    length( a_input );
+    diag_pts = find( abs( 1 + idx_i - idx_j ) <= mask_diag ); 
+    size( a_mask )
+    a_mask( diag_pts ) = 0;
+ end
+
+normbins = [ 10: size( a_mask,1)-10 ];
+a = quick_norm( a_mask, normbins );
 
 for i = 1:size( a, 1 )
   Zscore(i,:) =  ( a(i,:) - mean( a(i,:)) )/ std( a(i,:),0,2);
@@ -226,8 +239,9 @@ mutpos = mutpos( gp );
 function plot_and_save(Z, seqplot,  outfile, print_stuff );
 
 if ~exist( 'print_stuff' ); print_stuff = 0; end
+%image( seqplot, seqplot,  (-Z' - 1.5 ) * 64 );
+image( seqplot, seqplot,  (-Z') * 64 );
 
-image( seqplot, seqplot,  (-Z' - 1.5 ) * 64 );
 hold on
 plot( seqplot, seqplot, 'k' ); 
 hold off
@@ -235,17 +249,18 @@ colormap( 1 - gray(100) );
 h=title( outfile );set(h,'interpreter','none');
 xlabel( 'seqpos');
 ylabel( 'mutpos' );
-save( outfile, '-ascii','Z');
 
-set(gcf,'PaperPositionMode','Auto');
-set(gcf,'Position',[0, 0, 600, 600]);
 
-if ( print_stuff )
-  eps_file = [outfile, '.eps' ];
-  fprintf( 'Outputting to postscript file: %s\n', eps_file );
-  print( eps_file, '-depsc2', '-tiff' );
+if length( outfile ) > 0
+    save( outfile, '-ascii','Z');
+    if ( print_stuff )
+    set(gcf,'PaperPositionMode','Auto');
+    %set(gcf,'Position',[0, 0, 600, 600]);
+        eps_file = [outfile, '.eps' ];
+        fprintf( 'Outputting to postscript file: %s\n', eps_file );
+        print( eps_file, '-depsc2', '-tiff' );
+    end
 end
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function  d = fill_mutpos( d )
