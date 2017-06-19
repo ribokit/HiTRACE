@@ -1,18 +1,15 @@
 function cols = split_string( l, delimiter );
 
-cols = strsplit( l, delimiter );
-return;
+if ~exist('delimiter', 'var'); delimiter = ' '; end;
+delimiter = sprintf(delimiter);
 
-% if ~exist('delimiter', 'var'); delimiter = ' '; end;
-% delimiter = sprintf(delimiter);
-% 
-% remain = l;
-% cols = {};
-% while length( remain ) > 0
-%   [token, remain] = strtok(remain, delimiter);
-%   cols = [cols, token];
-% end
-% 
+remain = l;
+cols = {};
+while length( remain ) > 0
+  [token, remain] = strtok(remain, delimiter);
+  cols = [cols, token];
+end
+
 
 %in_space = 1;
 %count = 0;
