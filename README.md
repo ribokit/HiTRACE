@@ -13,18 +13,18 @@ To install **HiTRACE**, simply:
 
 - Download the zip or tar file of the repository and unpack; or 
 ```bash
-git clone https://github.com/hitrace/HiTRACE.git
+git clone https://github.com/ribokit/HiTRACE.git
 ```
 
 - In *MATLAB*, go to "**Set Path**". Then "**Add with Subfolders**" of the target `path/to/HiTRACE/Scripts/`.
 
 ## Usage 
 
-Documentation (*MATLAB* tutorial) is available at https://hitrace.github.io/HiTRACE/.
+Documentation (*MATLAB* tutorial) is available at https://ribokit.github.io/HiTRACE/.
 
 ## License
 
-Copyright &copy; of **HiTRACE** _Source Code_ is described in [LICENSE.md](https://github.com/hitrace/HiTRACE/blob/master/LICENSE.md).
+Copyright &copy; of **HiTRACE** _Source Code_ is described in [LICENSE.md](https://github.com/ribokit/HiTRACE/blob/master/LICENSE.md).
 
 ## Reference
 
@@ -44,7 +44,8 @@ Copyright &copy; of **HiTRACE** _Source Code_ is described in [LICENSE.md](https
 >[HiTRACE: High-throughput robust analysis for capillary electrophoresis](http://bioinformatics.oxfordjournals.org/content/27/13/1798)<br/>
 >*Bioinformatics* **27 (13)**: 1798 - 1805.
 
-<br/>
+<hr/>
+
 Developed by **Das lab** (_Leland Stanford Junior University_) and **Yoon lab** (_Seoul National University_) and colleagues.
-<br/>
-README by [**t47**](http://t47.io/), *April 2016*.
+
+README by [**t47**](https://t47.io/), *April 2016*.
