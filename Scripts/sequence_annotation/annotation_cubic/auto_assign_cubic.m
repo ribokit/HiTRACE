@@ -280,7 +280,7 @@ data = f;
             dist_weight = 1/1;
         end
         window_begin{seq} = round(window_begin{1} + (seq-1)*param.window_jump) + 1;
-        for j1 = max(1,window_begin{seq}):window_begin{seq}+param.WINDOW_SIZE-1
+        for j1 = max(1,window_begin{seq}) : min( window_begin{seq}+param.WINDOW_SIZE-1,size( peak_bonus_window,1))
             if (j1 >= param.end && seq <= size(prediction,1))
                 continue;
             end

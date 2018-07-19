@@ -6,7 +6,7 @@ function [ bonus ] = calc_match_bonus( peak_bonus, pos, prediction, prox_peak, p
         end
         tmp = zeros(peak_range*2+1, 1);
         for i = -peak_range:peak_range
-            if (pos + i > 0)
+            if (pos + i > 0  &  pos + i <= size( peak_bonus, 1 ) )
                 tmp(i + peak_range + 1) = peak_bonus(pos + i, lane) * prox_peak(abs(i)+1);
             end
         end
