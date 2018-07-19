@@ -1,6 +1,10 @@
-function [reactivity, reactivity_error ] = apply_normalization( reactionProb, reactionProb_error, refpos, seqpos, data_type, sequence, offset );
+function [reactivity, reactivity_error, norm_scalefactors ] = apply_normalization( reactionProb, reactionProb_error, refpos, seqpos, data_type, sequence, offset );
 %
 %  [reactivity, reactivity_error ] = apply_normalization( reactionProb, reactionProb_error, refpos, seqpos, data_type, sequence, offset );
+%
+% Data type of DMS will flag use of A & C; CMCT will flag use of U.
+% Data type of 'nomod' or ddATP, ddCTP, ddGTP, or ddTTP will flag use of
+% a  verage normalization scalefactor used in other lanes.
 %
 % Required Inputs
 %  reactionProb        = reactivities
@@ -16,8 +20,9 @@ function [reactivity, reactivity_error ] = apply_normalization( reactionProb, re
 % Outputs
 %  reactivity          = normalized reactivity
 %  reactivity_error    = error on normalized reactivity
+%  norm_scalefactors   = scalefactors applied to each lane
 %
-% (C) R. Das, Stanford University, 2013
+% (C) R. Das, Stanford University, 2013, 2018
 
 for j = 1:size( reactionProb, 2 )
     
@@ -32,6 +37,18 @@ for j = 1:size( reactionProb, 2 )
         ref_pos_in = [ ref_pos_in, find( seqpos == refpos(k) ) ];
     end
     
-    [reactivity(:,j), norm_scalefactors, reactivity_error(:,j) ] = quick_norm( reactionProb(:,j), ref_pos_in, reactionProb_error(:,j) );
+    [reactivity(:,j), norm_scalefactors(j), reactivity_error(:,j) ] = quick_norm( reactionProb(:,j), ref_pos_in, reactionProb_error(:,j) );
     
+end
+
+% don't normalize the 'reference' lanes ? nomod, ddNTP ladders ? instead
+% apply the normalization factor used in other lanes.
+reference_lanes = find( strcmp( data_type, 'nomod' ) | strcmp( data_type, 'ddATP' )| strcmp( data_type, 'ddTTP' ) | strcmp( data_type, 'ddCTP' ) |  strcmp( data_type, 'ddGTP' ) );
+normalize_lanes = setdiff( [1:size( reactionProb, 2 )], reference_lanes );
+mean_scalefactor = 0;
+if length( normalize_lanes ) > 0; mean_scalefactor = mean( norm_scalefactors( normalize_lanes ) ); end;
+for j = reference_lanes
+    norm_scalefactors(j) = mean_scalefactor;
+    reactivity(:,j) = reactionProb(:,j) * mean_scalefactor;
+    reactivity_error(:,j) = reactionProb_error(:,j) * mean_scalefactor;
 end
