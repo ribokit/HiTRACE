@@ -40,6 +40,8 @@ if ~all( size(diluted_array) == size(diluted_array_error) )
   error( 'The diluted_array_error does not match size of diluted_array!\n');
 end;
 
+set_print_page(gcf, 0, [0 0 500 800], 'Saturation Correction');
+
 [num_rows, num_cols] = size(undiluted_array);
 
 NITER = 3;
@@ -101,7 +103,7 @@ if ~exist( 'seqpos','var' ); seqpos = [0 : size( undiluted_array, 1 ) - 1]; end;
 
 scalefactor = 40 / mean( mean( max(area_peak_unsaturated, 0 ) ) );
 
-set_print_page(gcf, 0, [0 0 800 600], 'Unsaturation');
+%set_print_page(gcf, 0, [0 0 800 600], 'Unsaturation');
 
 subplot(1,3,1); make_image( undiluted_array, is_saturated_position, scalefactor, seqpos );
 title( 'Undiluted Sample', 'FontSize', 11, 'FontWeight', 'Bold');

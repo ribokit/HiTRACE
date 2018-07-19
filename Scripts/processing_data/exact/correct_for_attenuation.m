@@ -55,7 +55,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % some visual feedback
 clf;
-set_print_page(gcf, 0, [0 0 800 600], 'Attenuation Correction');
+set_print_page(gcf, 0, [0 0 500 800], 'Attenuation Correction');
 
 subplot(1,2,1);
 image( [1:size(d_ratios,2)], seqpos, d_ratios*2000 );

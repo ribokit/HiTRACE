@@ -72,6 +72,9 @@ reactivity = [];
 reactionProb = {};
 seqpos_out = [];
 
+set_print_page(gcf, 0, [0 0 500 800], 'Get Reactivities');
+clf()
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ( ~isempty( diluted ) &&  ~all( size( undiluted ) == size( diluted )) ); 
     error( 'Mismatch in size of undiluted and diluted.\n'); 

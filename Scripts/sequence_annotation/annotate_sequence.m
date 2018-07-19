@@ -59,6 +59,7 @@ end;
 % capitalize the sequence...
 sequence = upper(sequence);
 
+
 % fill out area_pred, based on data_types.
 numlanes = size(d_align,2);
 area_pred = generate_area_pred(sequence, structure, offset, data_types, numlanes);
@@ -96,7 +97,8 @@ update_contrast = 1;
 
 set(gcf, 'PaperPositionMode', 'auto', 'color', 'white');
 if ver_flag; set(gcf, 'pointer', 'fullcross'); end;
-figure_full_screen();
+%figure_full_screen();
+set(gcf, 'Units', 'Normalized', 'OuterPosition', [0 0 0.3 0.9]);
 if JUST_PLOT == 2; set(gcf, 'closerequestfcn', ''); end;
 
 while ~stop_sel;
