@@ -84,7 +84,7 @@ if PLOT_STUFF;
   
 end
 
-gong
+%gong
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function show_anchor_nodes( anchor_nodes );

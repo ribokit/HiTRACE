@@ -147,7 +147,7 @@ elseif PLOT_STUFF == 2
 end
 
 % gong notice when finished
-gong
+%gong
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % several matrices are shared across all peak fitting calculations.

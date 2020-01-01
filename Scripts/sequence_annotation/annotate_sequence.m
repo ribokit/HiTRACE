@@ -137,7 +137,7 @@ while ~stop_sel;
         keydown = (button > 3 );
         if ( button == 1 ) 
            button = 'normal';
-        elseif ( button == 2 || button == 3 ) 
+        elseif ( button == 2 | button == 3 ) 
            button = 'extend';
         end;
     end;

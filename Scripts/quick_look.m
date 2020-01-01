@@ -503,7 +503,7 @@ if LOCAL_ALIGN;                  fprintf( 'Applied local alignment based on pice
 fprintf( '\nFor all options, type: help %s\n', mfilename );
 
 % gong notice when finished
-gong
+%gong
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function  make_dividers( trace_subset, subset_pos, ymin, ymax )
