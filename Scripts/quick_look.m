@@ -414,7 +414,9 @@ end
 % piece-wise linear transformation.
 
 if (LOCAL_ALIGN)
-    ywindow = ymin_pad:ymax_pad;
+    % padding seems produces weird behavior in some data sets.
+    % ywindow = ymin_pad:ymax_pad; 
+    ywindow = ymin:ymax;  
     [ d(ywindow, :), d_ref(ywindow, :) ] = align_by_DP_using_ref( d(ywindow, :), d_ref(ywindow, :) );
 end
 
