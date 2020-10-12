@@ -6,7 +6,9 @@ An online user-friendly GUI is available at the [**HiTRACE Web**](http://hitrace
 
 ## Installation
 
-**HiTRACE** requires *MATLAB* version `>= R2011a`. 
+**HiTRACE** requires *MATLAB* version `>= R2011a`. The MATLAB installation must include *Image Processing* and *Signal Processing* toolboxes.
+
+
 For *Mac OS X* users with version `>= 10.10`, you may need this [patch](https://www.mathworks.com/support/bugreports/1098655) to settle a *Java* exception.
 
 To install **HiTRACE**, simply:
