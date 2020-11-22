@@ -50,7 +50,7 @@ NITER = 5;
 for i = 1:L
   gp = 1:N;
 
-  weights = max( 1./guessed_errors(i,:), 0 ) ;
+  weights = max( 1./guessed_errors(i,:), 0 ) ;  
   for n = 1:NITER
     m = sum( reactivities( i, gp ) .*weights(gp) ) / sum( weights(gp) ) ;   % calculate weighted sum
     dev = abs(reactivities(i,:) - m );  % 
@@ -73,6 +73,9 @@ for i = 1:L
   if length( gp ) < 2; gp = [1:N]; end;
   s = std( reactivities(i, gp) );
   final_error(i) = max( s/sqrt( length(gp)), 0 );
+  if final_error(i) == 0;
+      final_error(i) = sum(guessed_errors(i,:));
+  end;
 end
 final_error = final_error';
 
@@ -106,7 +109,9 @@ clf;
 subplot(2,1,1);
 colormap( 1 - gray(100))
 set(gca,'Position',[0.05 0.6 0.92 0.35] );
-image( seqpos, [1:N], 128 * reactivities' );
+meanval = mean(mean( max(reactivities,0) ));
+if meanval <=0; meanval = 1; end;
+imagesc( seqpos, [1:N], reactivities', [0, 2*meanval] );
 make_lines_horizontal( [0:N],'k',0.5 );
 draw_sequence( seqpos, sequence, offset, N+0.5 );
 ylabel('Replicates');
@@ -131,7 +136,7 @@ if length( legends ) > 2;
 end
 draw_sequence( seqpos, sequence, offset, -0.1 );
 ylabel('Reactivity');
-ylim( [-1 4] );
+ylim( 2*meanval*[-1 4] );
 
 set(gcf, 'PaperPositionMode','auto','color','white');
 drawnow;
