@@ -367,6 +367,10 @@ final_nodes = final_nodes - max_shift + 1;
 %start_nodes
 %final_nodes
 
+% a little nudge to make sure monotonic increase in nodes
+start_nodes = start_nodes + [1:length(start_nodes)]*0.0001;
+final_nodes = final_nodes + [1:length(final_nodes)]*0.0001;
+
 nodes = [ start_nodes final_nodes(end) ];
 nodes_ref = [ start_nodes_ref final_nodes_ref(end)];
 %[ nodes; nodes_ref; nodes-nodes_ref]
